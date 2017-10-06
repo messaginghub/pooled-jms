@@ -24,7 +24,7 @@
 
   <artifactId>pooled-jms-docs</artifactId>
   <packaging>pom</packaging>
-  <name>Pooled JMS Docs</name>
+  <name>PooledJMS Documentation</name>
 
   <properties>
     <jacoco.skip>true</jacoco.skip>

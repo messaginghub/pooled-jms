@@ -26,7 +26,7 @@
   </parent>
 
   <artifactId>pooled-jms</artifactId>
-  <name>Generic JMS Pool</name>
+  <name>PooledJMS Library</name>
   <description>Generic JMS Pooled Connection library</description>
   <packaging>bundle</packaging>
 

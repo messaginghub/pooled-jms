@@ -24,7 +24,7 @@
   </parent>
 
   <artifactId>pooled-jms-activemq-tests</artifactId>
-  <name>ActiveMQ JMS Client Interop Tests</name>
+  <name>PooledJMS ActiveMQ JMS Client Interop Tests</name>
   <description>Tests the JMS Pool using the client from the ActiveMQ Broker.</description>
   <packaging>jar</packaging>
   <properties>

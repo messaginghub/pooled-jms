@@ -24,7 +24,7 @@
   </parent>
 
   <artifactId>pooled-jms-artemis-tests</artifactId>
-  <name>ActiveMQ Artemis JMS Client Interop Tests</name>
+  <name>PooledJMS ActiveMQ Artemis JMS Client Interop Tests</name>
   <description>Tests the JMS Pool using the client from the ActiveMQ Artemis client and broker.</description>
   <packaging>jar</packaging>
   <properties>

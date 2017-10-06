@@ -25,8 +25,8 @@
   <packaging>pom</packaging>
   <inceptionYear>2017</inceptionYear>
 
-  <name>JMS Connection Pool</name>
-  <description>Generic JMS Connection pool</description>
+  <name>PooledJMS</name>
+  <description>Generic JMS Connection pooling library</description>
   <url>https://github.com/messaginghub/pooled-jms</url>
 
   <licenses>

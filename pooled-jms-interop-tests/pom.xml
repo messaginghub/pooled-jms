@@ -23,7 +23,7 @@
   </parent>
 
   <artifactId>pooled-jms-interop-tests</artifactId>
-  <name>JMS Client Interop Tests</name>
+  <name>PooledJMS Client Interop Tests</name>
   <description>A set of modules meant for testing interoperability between the JMS Pool and various JMS client implementations.</description>
   <packaging>pom</packaging>
   <properties>

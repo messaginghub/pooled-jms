@@ -24,7 +24,7 @@
   </parent>
 
   <artifactId>pooled-jms-qpid-jms-tests</artifactId>
-  <name>Qpid JMS Client Interop Tests</name>
+  <name>PooledJMS Qpid JMS Client Interop Tests</name>
   <description>Tests the JMS Pool using the Qpid JMS Client library.</description>
   <packaging>jar</packaging>
   <properties>

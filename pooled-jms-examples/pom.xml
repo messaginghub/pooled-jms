@@ -24,7 +24,7 @@
   </parent>
 
   <artifactId>pooled-jms-examples</artifactId>
-  <name>Pooled JMS Examples</name>
+  <name>PooledJMS Examples</name>
   <description>Examples showing the use of the JMS Pool</description>
   <packaging>jar</packaging>
 
