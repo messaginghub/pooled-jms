@@ -1,0 +1,46 @@
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+*~
+*.swp
+
+# Start of IntelliJ IDE files
+.idea
+.idea/*
+*.iml
+*.ipr
+*.iws
+# End of IntelliJ IDE files
+
+/build/
+*.class
+*.pyc
+*.pyo
+target
+
+.DS_Store
+
+# Start of Eclipse IDE files
+.project
+.classpath
+.settings
+.cproject
+eclipse-classes
+# End of Eclipse IDE files
