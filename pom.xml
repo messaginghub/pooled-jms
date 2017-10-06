@@ -91,7 +91,7 @@
   </properties>
 
   <modules>
-    <module>pooled-jms-pool</module>
+    <module>pooled-jms</module>
     <module>pooled-jms-interop-tests</module>
     <module>pooled-jms-docs</module>
     <module>pooled-jms-examples</module>

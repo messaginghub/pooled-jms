@@ -25,7 +25,7 @@
     <version>0.1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>pooled-jms-pool</artifactId>
+  <artifactId>pooled-jms</artifactId>
   <name>Generic JMS Pool</name>
   <description>Generic JMS Pooled Connection library</description>
   <packaging>bundle</packaging>
