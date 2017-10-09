@@ -111,8 +111,8 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.messaginghub.jms</groupId>
-        <artifactId>pooled-jms-pool</artifactId>
+        <groupId>org.messaginghub</groupId>
+        <artifactId>pooled-jms</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

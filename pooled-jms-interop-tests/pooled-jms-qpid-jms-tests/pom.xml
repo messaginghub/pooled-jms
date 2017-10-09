@@ -44,8 +44,8 @@
       <artifactId>geronimo-jms_2.0_spec</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.messaginghub.jms</groupId>
-      <artifactId>pooled-jms-pool</artifactId>
+      <groupId>org.messaginghub</groupId>
+      <artifactId>pooled-jms</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

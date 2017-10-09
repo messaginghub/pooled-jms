@@ -34,8 +34,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.messaginghub.jms</groupId>
-      <artifactId>pooled-jms-pool</artifactId>
+      <groupId>org.messaginghub</groupId>
+      <artifactId>pooled-jms</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.qpid</groupId>
