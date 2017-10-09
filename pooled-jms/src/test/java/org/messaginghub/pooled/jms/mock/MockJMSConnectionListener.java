@@ -24,22 +24,22 @@ import javax.jms.Message;
  */
 public interface MockJMSConnectionListener {
 
-    default void onCreateTemporaryQueue(MockJMSTemporaryQueue queue) throws JMSException {}
+    void onCreateTemporaryQueue(MockJMSTemporaryQueue queue) throws JMSException;
 
-    default void onDeleteTemporaryQueue(MockJMSTemporaryQueue queue) throws JMSException {}
+    void onDeleteTemporaryQueue(MockJMSTemporaryQueue queue) throws JMSException;
 
-    default void onCreateTemporaryTopic(MockJMSTemporaryTopic topic) throws JMSException {}
+    void onCreateTemporaryTopic(MockJMSTemporaryTopic topic) throws JMSException;
 
-    default void onDeleteTemporaryTopic(MockJMSTemporaryTopic topic) throws JMSException {}
+    void onDeleteTemporaryTopic(MockJMSTemporaryTopic topic) throws JMSException;
 
-    default void onCreateSession(MockJMSSession session) throws JMSException {}
+    void onCreateSession(MockJMSSession session) throws JMSException;
 
-    default void onCloseSession(MockJMSSession session) throws JMSException {}
+    void onCloseSession(MockJMSSession session) throws JMSException;
 
-    default void onMessageSend(MockJMSSession session, Message message) throws JMSException {}
+    void onMessageSend(MockJMSSession session, Message message) throws JMSException;
 
-    default void onCreateMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {}
+    void onCreateMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException;
 
-    default void onCloseMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {}
+    void onCloseMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException;
 
 }

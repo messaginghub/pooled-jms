@@ -32,9 +32,8 @@ import javax.jms.MessageListener;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolJMSContext;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
-import org.messaginghub.pooled.jms.mock.MockJMSConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSMessageConsumer;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 
@@ -200,7 +199,7 @@ public class JmsPoolJMSConsumerTest extends JmsPoolTestSupport {
         JMSConsumer consumer = context.createConsumer(context.createTemporaryQueue());
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onCloseMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {

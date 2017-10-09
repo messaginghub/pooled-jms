@@ -35,10 +35,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolQueueSender;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
-import org.messaginghub.pooled.jms.mock.MockJMSConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSQueueSender;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 
@@ -102,7 +100,7 @@ public class JmsPoolQueueSenderTest extends JmsPoolTestSupport {
 
         final AtomicBoolean sent = new AtomicBoolean();
         MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -125,7 +123,7 @@ public class JmsPoolQueueSenderTest extends JmsPoolTestSupport {
 
         final AtomicBoolean sent = new AtomicBoolean();
         MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {

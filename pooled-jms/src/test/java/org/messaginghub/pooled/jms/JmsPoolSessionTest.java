@@ -40,12 +40,9 @@ import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolSession;
-import org.messaginghub.pooled.jms.JmsPoolSessionEventListener;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultSessionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
-import org.messaginghub.pooled.jms.mock.MockJMSSessionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryTopic;
 import org.messaginghub.pooled.jms.mock.MockJMSTopic;
@@ -144,7 +141,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(Session.SESSION_TRANSACTED);
         MockJMSSession mockSession = (MockJMSSession) session.getInternalSession();
-        mockSession.addSessionListener(new MockJMSSessionListener() {
+        mockSession.addSessionListener(new MockJMSDefaultSessionListener() {
 
             @Override
             public void onSessionRollback(MockJMSSession session) throws JMSException {
@@ -167,7 +164,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertEquals(0, connection.getNumtIdleSessions());
 
         MockJMSSession mockSession = (MockJMSSession) session.getInternalSession();
-        mockSession.addSessionListener(new MockJMSSessionListener() {
+        mockSession.addSessionListener(new MockJMSDefaultSessionListener() {
 
             @Override
             public void onSessionRollback(MockJMSSession session) throws JMSException {
@@ -483,7 +480,12 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         session.close();
 
         try {
-            session.setMessageListener((message) -> {});
+            session.setMessageListener(new MessageListener() {
+
+                @Override
+                public void onMessage(Message message) {
+                }
+            });
             fail("Should not be able to setMessageListener when closed");
         } catch (JMSException ex) {}
 

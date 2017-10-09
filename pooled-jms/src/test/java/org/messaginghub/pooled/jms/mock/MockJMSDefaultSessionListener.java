@@ -18,19 +18,21 @@ package org.messaginghub.pooled.jms.mock;
 
 import javax.jms.JMSException;
 
-/**
- * Listener on events from the MockJMSSession
- */
-public interface MockJMSSessionListener {
+public class MockJMSDefaultSessionListener implements MockJMSSessionListener {
 
-    void onSessionCommit(MockJMSSession session) throws JMSException;
+    @Override
+    public void onSessionCommit(MockJMSSession session) throws JMSException {}
 
-    void onSessionRollback(MockJMSSession session) throws JMSException;
+    @Override
+    public void onSessionRollback(MockJMSSession session) throws JMSException {}
 
-    void onSessionClosed(MockJMSSession session) throws JMSException;
+    @Override
+    public void onSessionClosed(MockJMSSession session) throws JMSException {}
 
-    void onConsumerClose(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException;
+    @Override
+    public void onConsumerClose(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {}
 
-    void onProducerClose(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException;
+    @Override
+    public void onProducerClose(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {}
 
 }

@@ -24,6 +24,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateRuntimeException;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
@@ -34,7 +35,6 @@ import javax.jms.Session;
 import javax.jms.Topic;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolJMSContext;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSContext;
 import org.messaginghub.pooled.jms.mock.MockJMSUser;
@@ -89,7 +89,12 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
     public void testGetExceptionListener() {
         JMSContext context = cf.createContext();
         assertNull(context.getExceptionListener());
-        context.setExceptionListener((exception) -> {});
+        context.setExceptionListener(new ExceptionListener() {
+
+            @Override
+            public void onException(JMSException exception) {
+            }
+        });
         assertNotNull(context.getExceptionListener());
 
         context.close();
@@ -100,7 +105,12 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
 
         try {
-            context.setExceptionListener((exception) -> {});
+            context.setExceptionListener(new ExceptionListener() {
+
+                @Override
+                public void onException(JMSException exception) {
+                }
+            });
             fail("Should not be able to set ExceptionListener from closed.");
         } catch (JMSRuntimeException jmsre) {}
     }

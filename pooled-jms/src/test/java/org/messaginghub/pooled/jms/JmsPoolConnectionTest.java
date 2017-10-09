@@ -42,12 +42,9 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
-import org.messaginghub.pooled.jms.JmsPoolSession;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
-import org.messaginghub.pooled.jms.mock.MockJMSConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryTopic;
 import org.messaginghub.pooled.jms.util.Wait;
@@ -63,7 +60,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testExceptionListenerGetsNotified() throws Exception {
-        CountDownLatch signal = new CountDownLatch(1);
+        final CountDownLatch signal = new CountDownLatch(1);
         Connection connection = cf.createConnection();
         connection.setExceptionListener(new ExceptionListener() {
 
@@ -379,10 +376,10 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
 
         assertSame(connection1.getConnection(), connection2.getConnection());
 
-        Set<TemporaryQueue> deleted = new HashSet<>();
+        final Set<TemporaryQueue> deleted = new HashSet<>();
 
         MockJMSConnection mockConnection = (MockJMSConnection) connection1.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onDeleteTemporaryQueue(MockJMSTemporaryQueue queue) throws JMSException {
@@ -422,10 +419,10 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
 
         assertSame(connection1.getConnection(), connection2.getConnection());
 
-        Set<TemporaryTopic> deleted = new HashSet<>();
+        final Set<TemporaryTopic> deleted = new HashSet<>();
 
         MockJMSConnection mockConnection = (MockJMSConnection) connection1.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onDeleteTemporaryTopic(MockJMSTemporaryTopic queue) throws JMSException {
@@ -463,7 +460,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
 
         MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onDeleteTemporaryQueue(MockJMSTemporaryQueue queue) throws JMSException {

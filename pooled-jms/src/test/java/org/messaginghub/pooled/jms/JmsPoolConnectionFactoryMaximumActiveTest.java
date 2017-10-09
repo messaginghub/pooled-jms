@@ -34,7 +34,6 @@ import javax.jms.Session;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,11 +75,24 @@ public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSuppor
         // blocks on the call to createSession()
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
-        Future<Boolean> result1 = executor.submit(new SessionTakerAndReturner());
-        Future<Boolean> result2 = executor.submit(new SessionTaker());
+        final Future<Boolean> result1 = executor.submit(new SessionTakerAndReturner());
+        final Future<Boolean> result2 = executor.submit(new SessionTaker());
 
-        assertTrue(Wait.waitFor(() -> { return result1.isDone(); }, 5000, 10));
-        assertTrue(Wait.waitFor(() -> { return result2.isDone(); }, 5000, 10));
+        assertTrue(Wait.waitFor(new Wait.Condition() {
+
+            @Override
+            public boolean isSatisfied() throws Exception {
+                return result1.isDone();
+            }
+        }, 5000, 10));
+
+        assertTrue(Wait.waitFor(new Wait.Condition() {
+
+            @Override
+            public boolean isSatisfied() throws Exception {
+                return result2.isDone();
+            }
+        }, 5000, 10));
 
         // Two sessions should have been returned
         assertEquals(2, sessions.size());
@@ -113,10 +125,16 @@ public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSuppor
         // blocks on the call to createSession()
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
-        Future<Boolean> result1 = executor.submit(new SessionTaker());
-        Future<Boolean> result2 = executor.submit(new SessionTaker());
+        final Future<Boolean> result1 = executor.submit(new SessionTaker());
+        final Future<Boolean> result2 = executor.submit(new SessionTaker());
 
-        assertTrue(Wait.waitFor(() -> { return result1.isDone(); }, 5000, 10));
+        assertTrue(Wait.waitFor(new Wait.Condition() {
+
+            @Override
+            public boolean isSatisfied() throws Exception {
+                return result1.isDone();
+            }
+        }, 5000, 10));
 
         // second task should not have finished, instead wait on getting a JMS Session
         assertEquals(false, result2.isDone());
@@ -125,12 +143,24 @@ public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSuppor
         assertEquals(1, sessions.size());
 
         // The create session should have stalled waiting for a new connection
-        assertFalse(Wait.waitFor(() -> { return result2.isDone(); }, 100, 10));
+        assertFalse(Wait.waitFor(new Wait.Condition() {
+
+            @Override
+            public boolean isSatisfied() throws Exception {
+                return result2.isDone();
+            }
+        }, 100, 10));
 
         cf.stop();
 
         // The create session should have exited on stop of the factory
-        assertTrue(Wait.waitFor(() -> { return result2.isDone(); }, 5000, 10));
+        assertTrue(Wait.waitFor(new Wait.Condition() {
+
+            @Override
+            public boolean isSatisfied() throws Exception {
+                return result2.isDone();
+            }
+        }, 5000, 10));
 
         // Only 1 session should have been created
         assertEquals(1, sessions.size());

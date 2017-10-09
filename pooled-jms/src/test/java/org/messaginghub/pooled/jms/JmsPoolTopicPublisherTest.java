@@ -35,10 +35,8 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolTopicPublisher;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
-import org.messaginghub.pooled.jms.mock.MockJMSConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 import org.messaginghub.pooled.jms.mock.MockJMSTopicPublisher;
 
@@ -102,7 +100,7 @@ public class JmsPoolTopicPublisherTest extends JmsPoolTestSupport {
 
         final AtomicBoolean published = new AtomicBoolean();
         MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -125,7 +123,7 @@ public class JmsPoolTopicPublisherTest extends JmsPoolTestSupport {
 
         final AtomicBoolean published = new AtomicBoolean();
         MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -161,7 +159,7 @@ public class JmsPoolTopicPublisherTest extends JmsPoolTestSupport {
 
         final AtomicBoolean published = new AtomicBoolean();
         MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -187,7 +185,7 @@ public class JmsPoolTopicPublisherTest extends JmsPoolTestSupport {
 
         final AtomicBoolean published = new AtomicBoolean();
         MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
-        mockConnection.addConnectionListener(new MockJMSConnectionListener() {
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {

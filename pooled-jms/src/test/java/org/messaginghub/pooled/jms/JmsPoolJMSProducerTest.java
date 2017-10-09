@@ -46,10 +46,8 @@ import javax.jms.MessageFormatRuntimeException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolJMSContext;
-import org.messaginghub.pooled.jms.JmsPoolJMSProducer;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
-import org.messaginghub.pooled.jms.mock.MockJMSConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 import org.messaginghub.pooled.jms.mock.MockJMSTopic;
@@ -925,7 +923,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean messageSent = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -980,7 +978,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean persistentMessage = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1036,7 +1034,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean highPriority = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1092,7 +1090,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean defaultTTL = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1124,7 +1122,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean bodyValidated = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1149,7 +1147,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean bodyValidated = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1170,7 +1168,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean bodyValidated = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1198,7 +1196,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         final AtomicBoolean bodyValidated = new AtomicBoolean();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1218,7 +1216,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         JMSProducer producer = context.createProducer();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1237,7 +1235,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         JMSProducer producer = context.createProducer();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1256,7 +1254,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         JMSProducer producer = context.createProducer();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1275,7 +1273,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         JMSProducer producer = context.createProducer();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1294,7 +1292,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         JMSProducer producer = context.createProducer();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
@@ -1313,7 +1311,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         JMSProducer producer = context.createProducer();
 
         MockJMSConnection connection = (MockJMSConnection) context.getConnection();
-        connection.addConnectionListener(new MockJMSConnectionListener() {
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
             public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
