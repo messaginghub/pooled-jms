@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.messaginghub.jms</groupId>
+    <groupId>org.messaginghub</groupId>
     <artifactId>pooled-jms-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
@@ -87,8 +87,8 @@
         <artifactId>maven-bundle-plugin</artifactId>
         <configuration>
           <instructions>
-            <Bundle-SymbolicName>org.messaginghub.jms.pool</Bundle-SymbolicName>
-            <Export-Package>org.messaginghub.jms.pool.*</Export-Package>
+            <Bundle-SymbolicName>org.messaginghub.pooled.jms</Bundle-SymbolicName>
+            <Export-Package>org.messaginghub.pooled.jms.*</Export-Package>
             <!-- TODO Should probably make transaction bits optional -->
             <Import-Package>*</Import-Package>
             <Dynamic-ImportPackage>*</Dynamic-ImportPackage>
