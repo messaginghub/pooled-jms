@@ -10,7 +10,7 @@ To use the PooledJMS library in your projects you can include the maven
 dependency in your project pom file:
 
     <dependency>
-      <groupId>org.messaginghub.jms</groupId>
+      <groupId>org.messaginghub</groupId>
       <artifactId>pooled-jms</artifactId>
       <version>${pooled-jms-version}</version>
     </dependency>
