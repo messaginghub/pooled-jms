@@ -183,7 +183,7 @@ public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory impleme
 
     @Override
     public XAConnection createXAConnection(String userName, String password) throws JMSException {
-        return createProviderConnection( new PooledConnectionKey(userName, password));
+        return createProviderConnection(new PooledConnectionKey(userName, password));
     }
 
     @Override
