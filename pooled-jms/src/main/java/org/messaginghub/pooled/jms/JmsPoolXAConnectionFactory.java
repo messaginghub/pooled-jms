@@ -21,7 +21,6 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
@@ -44,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * A pooled connection factory that automatically enlists sessions in the
  * current active XA transaction if any.
  */
-public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory implements ObjectFactory, Serializable {
+public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory implements ObjectFactory, Serializable, XAConnectionFactory {
 
     private static final transient Logger LOG = LoggerFactory.getLogger(JmsPoolXAConnectionFactory.class);
     private static final long serialVersionUID = 7753681333583183646L;
@@ -102,14 +101,14 @@ public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory impleme
 
     @Override
     protected XAJMSContext createProviderContext(String username, String password, int sessionMode) {
-        if (connectionFactory instanceof ConnectionFactory) {
+        if (connectionFactory instanceof XAConnectionFactory) {
             if (username == null && password == null) {
                 return ((XAConnectionFactory) connectionFactory).createXAContext();
             } else {
                 return ((XAConnectionFactory) connectionFactory).createXAContext(username, password);
             }
         } else {
-            throw new javax.jms.IllegalStateRuntimeException("connectionFactory should implement javax.jms.ConnectionFactory");
+            throw new javax.jms.IllegalStateRuntimeException("connectionFactory should implement javax.jms.XAConnectionFactory");
         }
     }
 
@@ -175,5 +174,25 @@ public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory impleme
      */
     public void setTmFromJndi(boolean tmFromJndi) {
         this.tmFromJndi = tmFromJndi;
+    }
+
+    @Override
+    public XAConnection createXAConnection() throws JMSException {
+        return createProviderConnection(new PooledConnectionKey(null, null));
+    }
+
+    @Override
+    public XAConnection createXAConnection(String userName, String password) throws JMSException {
+        return createProviderConnection( new PooledConnectionKey(userName, password));
+    }
+
+    @Override
+    public XAJMSContext createXAContext() {
+        return createProviderContext(null, null, 0);
+    }
+
+    @Override
+    public XAJMSContext createXAContext(String userName, String password) {
+        return createProviderContext(userName, password, 0);
     }
 }
