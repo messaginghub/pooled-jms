@@ -48,4 +48,10 @@ public class MockJMSDefaultConnectionListener implements MockJMSConnectionListen
     @Override
     public void onCloseMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {}
 
+    @Override
+    public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {}
+
+    @Override
+    public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {}
+
 }

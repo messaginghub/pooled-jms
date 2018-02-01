@@ -1,5 +1,5 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.messaginghub.pooled.jms;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +41,10 @@ import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 
 import org.junit.Test;
+import org.messaginghub.pooled.jms.mock.MockJMSConnection;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultSessionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
 import org.messaginghub.pooled.jms.mock.MockJMSQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryQueue;
@@ -493,5 +497,229 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
             session.getMessageListener();
             fail("Should not be able to setMessageListener when closed");
         } catch (JMSException ex) {}
+    }
+
+    @Test(timeout = 60000)
+    public void testCachedProducersEnabledReturnsCached() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(2);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Queue queue1 = session.createTemporaryQueue();
+        Queue queue2 = session.createTemporaryQueue();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue2);
+
+        assertNotSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        JmsPoolMessageProducer producer4 = (JmsPoolMessageProducer) session.createProducer(queue2);
+
+        assertSame(producer1.getMessageProducer(), producer3.getMessageProducer());
+        assertSame(producer2.getMessageProducer(), producer4.getMessageProducer());
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testCachedProducersEnabledReturnsCachedOnNewSession() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(1);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Queue queue1 = session.createTemporaryQueue();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue1);
+
+        session.close();
+        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        // Should return a wrapper whose underlying MessageProducer matches what we got from
+        // the first session as they underlying session will be the same.
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue1);
+
+        assertSame(producer1.getDelegate(), producer2.getDelegate());
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testCachedProducersEnabledEvictsOldAndCreatesNew() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(2);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Queue queue1 = session.createTemporaryQueue();
+        Queue queue2 = session.createTemporaryQueue();
+        Queue queue3 = session.createTemporaryQueue();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue2);
+
+        assertNotSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createProducer(queue3);
+        JmsPoolMessageProducer producer4 = (JmsPoolMessageProducer) session.createProducer(queue1);
+
+        assertNotSame(producer1.getMessageProducer(), producer3.getMessageProducer());
+        assertNotSame(producer2.getMessageProducer(), producer3.getMessageProducer());
+
+        // Original MessageProducer should have been evicted from the cache and a new one created
+        // for the second call to create a producer on Queue #1
+        assertNotSame(producer1.getMessageProducer(), producer4.getMessageProducer());
+
+        JmsPoolMessageProducer producer5 = (JmsPoolMessageProducer) session.createProducer(queue1);
+
+        // Now we should be back to caching Queue #1
+        assertNotSame(producer1.getMessageProducer(), producer5.getMessageProducer());
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testCachedProducersEvictedFromCacheNotClosedUntilAllReferencesAreClosed() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(1);
+
+        final AtomicBoolean producerClosed = new AtomicBoolean();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Queue queue1 = session.createTemporaryQueue();
+        Queue queue2 = session.createTemporaryQueue();
+
+        final JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        final JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue1);
+
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                if (producer.equals(producer1.getDelegate())) {
+                    producerClosed.set(true);
+                }
+            }
+        });
+
+        assertSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+
+        // This replaces cached producer
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createProducer(queue2);
+
+        assertNotSame(producer1.getMessageProducer(), producer3.getMessageProducer());
+
+        try {
+            producer1.send(session.createMessage());
+        } catch (JMSException ex) {
+            fail("Should be able to send on evicted producer");
+        }
+
+        try {
+            producer2.send(session.createMessage());
+        } catch (JMSException ex) {
+            fail("Should be able to send on evicted producer");
+        }
+
+        producer1.close();
+        assertFalse(producerClosed.get());
+
+        try {
+            producer1.send(session.createMessage());
+            fail("Should not be able to send on closed evicted producer");
+        } catch (JMSException ex) {
+        }
+
+        try {
+            producer2.send(session.createMessage());
+        } catch (JMSException ex) {
+            fail("Should be able to send on alternate evicted producer");
+        }
+
+        producer2.close();
+        assertTrue(producerClosed.get());
+
+        try {
+            producer2.send(session.createMessage());
+            fail("Should not be able to send on closed evicted producer");
+        } catch (JMSException ex) {
+        }
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateAnonymousProducerDoesNotEvictCachedExplicitProducer() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(1);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Queue queue = session.createTemporaryQueue();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue);
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue);
+
+        assertSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+
+        // Creating an anonymous producer should not use the same producer and on next create of
+        // explicit producer we should get the cached version.
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createProducer(null);
+
+        assertNotSame(producer1.getMessageProducer(), producer3.getMessageProducer());
+        assertNotSame(producer2.getMessageProducer(), producer3.getMessageProducer());
+
+        JmsPoolMessageProducer producer4 = (JmsPoolMessageProducer) session.createProducer(queue);
+
+        assertSame(producer1.getMessageProducer(), producer4.getMessageProducer());
+        assertSame(producer2.getMessageProducer(), producer4.getMessageProducer());
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testEvictedProducerClosedOnSessionClose() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(1);
+
+        final AtomicBoolean producer1Closed = new AtomicBoolean(false);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Queue queue1 = session.createTemporaryQueue();
+        Queue queue2 = session.createTemporaryQueue();
+
+        // Producer 1 would enter the cache, and then be evicted by producer 2
+        final JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        final JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue2);
+
+        assertNotSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                if (producer.equals(producer1.getDelegate())) {
+                    producer1Closed.set(true);
+                }
+            }
+        });
+
+        session.close();
+
+        assertTrue(producer1Closed.get());
+
+        connection.close();
     }
 }

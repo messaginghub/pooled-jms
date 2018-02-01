@@ -42,4 +42,8 @@ public interface MockJMSConnectionListener {
 
     void onCloseMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException;
 
+    void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException;
+
+    void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException;
+
 }

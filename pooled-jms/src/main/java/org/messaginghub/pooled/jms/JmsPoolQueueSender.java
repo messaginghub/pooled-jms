@@ -16,6 +16,8 @@
  */
 package org.messaginghub.pooled.jms;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -27,8 +29,8 @@ import javax.jms.QueueSender;
  */
 public class JmsPoolQueueSender extends JmsPoolMessageProducer implements QueueSender, AutoCloseable {
 
-    public JmsPoolQueueSender(JmsPoolSession session, QueueSender messageProducer, Destination destination, boolean shared) throws JMSException {
-        super(session, messageProducer, destination, shared);
+    public JmsPoolQueueSender(JmsPoolSession session, QueueSender messageProducer, Destination destination, AtomicInteger refCount) throws JMSException {
+        super(session, messageProducer, destination, refCount);
     }
 
     @Override

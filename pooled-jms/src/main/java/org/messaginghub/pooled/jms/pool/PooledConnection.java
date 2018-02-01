@@ -59,6 +59,7 @@ public class PooledConnection implements ExceptionListener {
     private int idleTimeout = 30 * 1000;
     private long expiryTimeout = 0l;
     private boolean useAnonymousProducers = true;
+    private int explicitProducerCacheSize = 0;
     private int jmsMajorVersion = 1;
     private int jmsMinorVersion = 1;
 
@@ -89,7 +90,8 @@ public class PooledConnection implements ExceptionListener {
             new KeyedPooledObjectFactory<PooledSessionKey, PooledSessionHolder>() {
                 @Override
                 public PooledObject<PooledSessionHolder> makeObject(PooledSessionKey sessionKey) throws Exception {
-                    return new DefaultPooledObject<PooledSessionHolder>(new PooledSessionHolder(PooledConnection.this, makeSession(sessionKey)));
+                    return new DefaultPooledObject<PooledSessionHolder>(
+                        new PooledSessionHolder(PooledConnection.this, makeSession(sessionKey), useAnonymousProducers, explicitProducerCacheSize));
                 }
 
                 @Override
@@ -151,7 +153,7 @@ public class PooledConnection implements ExceptionListener {
         PooledSessionKey key = new PooledSessionKey(transacted, ackMode);
         JmsPoolSession session;
         try {
-            session = new JmsPoolSession(key, sessionPool.borrowObject(key), sessionPool, key.isTransacted(), useAnonymousProducers);
+            session = new JmsPoolSession(key, sessionPool.borrowObject(key), sessionPool, key.isTransacted());
             session.addSessionEventListener(new JmsPoolSessionEventListener() {
 
                 @Override
@@ -292,6 +294,14 @@ public class PooledConnection implements ExceptionListener {
 
     public void setUseAnonymousProducers(boolean value) {
         this.useAnonymousProducers = value;
+    }
+
+    public int getExplicitProducerCacheSize() {
+        return this.explicitProducerCacheSize;
+    }
+
+    public void setExplicitProducerCacheSize(int cacheSize) {
+        this.explicitProducerCacheSize = cacheSize;
     }
 
     /**

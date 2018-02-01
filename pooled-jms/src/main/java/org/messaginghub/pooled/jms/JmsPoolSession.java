@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JmsPoolSession implements Session, TopicSession, QueueSession, XASession, AutoCloseable {
+
     private static final transient Logger LOG = LoggerFactory.getLogger(JmsPoolSession.class);
 
     private final PooledSessionKey key;
@@ -69,14 +70,12 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
     private boolean transactional = true;
     private boolean ignoreClose;
     private boolean isXa;
-    private boolean useAnonymousProducers = true;
 
-    public JmsPoolSession(PooledSessionKey key, PooledSessionHolder sessionHolder, KeyedObjectPool<PooledSessionKey, PooledSessionHolder> sessionPool, boolean transactional, boolean anonymous) {
+    public JmsPoolSession(PooledSessionKey key, PooledSessionHolder sessionHolder, KeyedObjectPool<PooledSessionKey, PooledSessionHolder> sessionPool, boolean transactional) {
         this.key = key;
         this.sessionHolder = sessionHolder;
         this.sessionPool = sessionPool;
         this.transactional = transactional;
-        this.useAnonymousProducers = anonymous;
     }
 
     @Override
@@ -424,17 +423,23 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
 
     @Override
     public MessageProducer createProducer(Destination destination) throws JMSException {
-        return addMessageProducer(getMessageProducer(destination), destination);
+        JmsPoolMessageProducer result = safeGetSessionHolder().getOrCreateProducer(this, destination);
+        producers.add(result);
+        return result;
     }
 
     @Override
     public QueueSender createSender(Queue queue) throws JMSException {
-        return addQueueSender(getQueueSender(queue), queue);
+        JmsPoolQueueSender result = safeGetSessionHolder().getOrCreateSender(this, queue);
+        producers.add(result);
+        return result;
     }
 
     @Override
     public TopicPublisher createPublisher(Topic topic) throws JMSException {
-        return addTopicPublisher(getTopicPublisher(topic), topic);
+        JmsPoolTopicPublisher result = safeGetSessionHolder().getOrCreatePublisher(this, topic);
+        producers.add(result);
+        return result;
     }
 
     //----- Session configuration methods ------------------------------------//
@@ -507,9 +512,12 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
      *
      * @param producer
      * 		the producer which is being closed.
+     *
+     * @throws JMSException if an error occurs while closing the provider MessageProducer.
      */
-    protected void onMessageProducerClosed(MessageProducer producer) {
+    protected void onMessageProducerClosed(JmsPoolMessageProducer producer) throws JMSException {
         producers.remove(producer);
+        safeGetSessionHolder().onJmsPoolProducerClosed(producer);
     }
 
     //----- Internal support methods -----------------------------------------//
@@ -526,42 +534,6 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
         if (closed.get()) {
             throw new IllegalStateException("Session is closed");
         }
-    }
-
-    private MessageProducer getMessageProducer(Destination destination) throws JMSException {
-        MessageProducer result = null;
-
-        if (useAnonymousProducers) {
-            result = safeGetSessionHolder().getOrCreateProducer();
-        } else {
-            result = getInternalSession().createProducer(destination);
-        }
-
-        return result;
-    }
-
-    private QueueSender getQueueSender(Queue destination) throws JMSException {
-        QueueSender result = null;
-
-        if (useAnonymousProducers) {
-            result = safeGetSessionHolder().getOrCreateSender();
-        } else {
-            result = ((QueueSession) getInternalSession()).createSender(destination);
-        }
-
-        return result;
-    }
-
-    private TopicPublisher getTopicPublisher(Topic destination) throws JMSException {
-        TopicPublisher result = null;
-
-        if (useAnonymousProducers) {
-            result = safeGetSessionHolder().getOrCreatePublisher();
-        } else {
-            result = ((TopicSession) getInternalSession()).createPublisher(destination);
-        }
-
-        return result;
     }
 
     private QueueBrowser addQueueBrowser(QueueBrowser browser) {
@@ -586,24 +558,6 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
         receiver = new JmsPoolQueueReceiver(this, receiver);
         consumers.add(receiver);
         return receiver;
-    }
-
-    private QueueSender addQueueSender(QueueSender sender, Queue queue) throws JMSException {
-        sender = new JmsPoolQueueSender(this, sender, queue, useAnonymousProducers);
-        producers.add(sender);
-        return sender;
-    }
-
-    private TopicPublisher addTopicPublisher(TopicPublisher publisher, Topic topic) throws JMSException {
-        publisher = new JmsPoolTopicPublisher(this, publisher, topic, useAnonymousProducers);
-        producers.add(publisher);
-        return publisher;
-    }
-
-    private MessageProducer addMessageProducer(MessageProducer producer, Destination destination) throws JMSException {
-        producer = new JmsPoolMessageProducer(this, producer, destination, useAnonymousProducers);
-        producers.add(producer);
-        return producer;
     }
 
     private PooledSessionHolder safeGetSessionHolder() throws JMSException {

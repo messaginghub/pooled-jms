@@ -16,7 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
@@ -28,10 +30,6 @@ import javax.jms.Topic;
 import javax.jms.TopicSession;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolMessageProducer;
-import org.messaginghub.pooled.jms.JmsPoolQueueSender;
-import org.messaginghub.pooled.jms.JmsPoolTopicPublisher;
 
 public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
 
@@ -149,5 +147,56 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
             fail("Should only be able to send to queue 1");
         } catch (Exception ex) {
         }
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateMessageProducerWithAnonymousProducerEnabledAndCacheSize() throws Exception {
+        doTestCreateMessageProducerWithCacheSizeOption(true, 2);
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateMessageProducerWithAnonymousProducerDisabledAndCacheSize() throws Exception {
+        doTestCreateMessageProducerWithCacheSizeOption(false, 2);
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateMessageProducerWithAnonymousProducerDisabledAndCacheSizeZero() throws Exception {
+        doTestCreateMessageProducerWithCacheSizeOption(false, 0);
+    }
+
+    private void doTestCreateMessageProducerWithCacheSizeOption(boolean useAnonymousProducers, int explicitCacheSize) throws JMSException {
+        cf.setUseAnonymousProducers(useAnonymousProducers);
+        cf.setExplicitProducerCacheSize(explicitCacheSize);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        Queue queue1 = session.createTemporaryQueue();
+        Queue queue2 = session.createTemporaryQueue();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue2);
+
+        if (useAnonymousProducers) {
+            assertSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+            assertNull(producer1.getMessageProducer().getDestination());
+            assertNull(producer2.getMessageProducer().getDestination());
+        } else if (explicitCacheSize > 0) {
+            assertNotSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+            assertNotNull(producer1.getMessageProducer().getDestination());
+            assertNotNull(producer2.getMessageProducer().getDestination());
+
+            JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createProducer(queue1);
+            JmsPoolMessageProducer producer4 = (JmsPoolMessageProducer) session.createProducer(queue2);
+
+            assertSame(producer1.getMessageProducer(), producer3.getMessageProducer());
+            assertSame(producer2.getMessageProducer(), producer4.getMessageProducer());
+        } else {
+            assertNotSame(producer1.getMessageProducer(), producer2.getMessageProducer());
+            assertNotNull(producer1.getMessageProducer().getDestination());
+            assertNotNull(producer2.getMessageProducer().getDestination());
+        }
+
+        connection.close();
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.messaginghub.pooled.jms;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -27,8 +29,8 @@ import javax.jms.TopicPublisher;
  */
 public class JmsPoolTopicPublisher extends JmsPoolMessageProducer implements TopicPublisher, AutoCloseable {
 
-    public JmsPoolTopicPublisher(JmsPoolSession session, TopicPublisher messageProducer, Destination destination, boolean shared) throws JMSException {
-        super(session, messageProducer, destination, shared);
+    public JmsPoolTopicPublisher(JmsPoolSession session, TopicPublisher messageProducer, Destination destination, AtomicInteger refCount) throws JMSException {
+        super(session, messageProducer, destination, refCount);
     }
 
     @Override

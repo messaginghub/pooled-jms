@@ -28,6 +28,7 @@ import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
+import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
@@ -91,6 +92,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     private long expiryTimeout = 0l;
     private boolean createConnectionOnStartup = true;
     private boolean useAnonymousProducers = true;
+    private int explicitProducerCacheSize = 0;
     private boolean reconnectOnException = true;
     private boolean useProviderJMSContext = false;
 
@@ -117,6 +119,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                         }
                         connection.setUseAnonymousProducers(isUseAnonymousProducers());
                         connection.setReconnectOnException(isReconnectOnException());
+                        connection.setExplicitProducerCacheSize(getExplicitProducerCacheSize());
 
                         LOG.trace("Created new connection: {}", connection);
 
@@ -502,6 +505,37 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      */
     public void setUseAnonymousProducers(boolean value) {
         this.useAnonymousProducers = value;
+    }
+
+    /**
+     * Returns the currently configured producer cache size that will be used in a pooled
+     * Session when the pooled Session is not configured to use a single anonymous producer.
+     *
+     * @return the current explicit producer cache size.
+     */
+    public int getExplicitProducerCacheSize() {
+        return this.explicitProducerCacheSize;
+    }
+
+    /**
+     * Sets whether a pooled Session uses a cache for MessageProducer instances that are
+     * created against an explicit destination instead of creating new MessageProducer on each
+     * call to {@linkplain Session#createProducer(javax.jms.Destination)}.
+     * <p>
+     * When caching explicit producers the cache will hold up to the configured number of producers
+     * and if more producers are created than the configured cache size the oldest or lest recently
+     * used producers are evicted from the cache and will be closed when all references to that
+     * producer are explicitly closed or when the pooled session instance is closed.  By default this
+     * value is set to zero and no caching is done for explicit producers created by the pooled session.
+     * <p>
+     * This caching would only be done when the {@link #setUseAnonymousProducers(boolean)} configuration
+     * option is disabled.
+     *
+     * @param cacheSize
+     * 		The number of explicit producers to cache in the pooled Session
+     */
+    public void setExplicitProducerCacheSize(int cacheSize) {
+        this.explicitProducerCacheSize = cacheSize;
     }
 
     /**

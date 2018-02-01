@@ -17,6 +17,7 @@
 package org.messaginghub.pooled.jms;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.CompletionListener;
 import javax.jms.Destination;
@@ -35,7 +36,7 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
     private final MessageProducer messageProducer;
     private final Destination destination;
 
-    private final boolean shared;
+    private final AtomicInteger refCount;
     private final boolean anonymousProducer;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -46,11 +47,11 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
     private long timeToLive;
     private long deliveryDelay;
 
-    public JmsPoolMessageProducer(JmsPoolSession session, MessageProducer messageProducer, Destination destination, boolean shared) throws JMSException {
+    public JmsPoolMessageProducer(JmsPoolSession session, MessageProducer messageProducer, Destination destination, AtomicInteger refCount) throws JMSException {
         this.session = session;
         this.messageProducer = messageProducer;
         this.destination = destination;
-        this.shared = shared;
+        this.refCount = refCount;
         this.anonymousProducer = destination == null;
 
         this.deliveryMode = messageProducer.getDeliveryMode();
@@ -68,9 +69,6 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
     public void close() throws JMSException {
         if (closed.compareAndSet(false, true)) {
             session.onMessageProducerClosed(this);
-            if (!shared) {
-                this.messageProducer.close();
-            }
         }
     }
 
@@ -173,7 +171,7 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
             // In all other cases we create an anonymous producer so we call the send with
             // destination parameter version.
             try {
-                if (!shared && !anonymousProducer) {
+                if (getDelegate().getDestination() != null) {
                     if (listener == null) {
                         messageProducer.send(message, deliveryMode, priority, timeToLive);
                     } else {
@@ -290,7 +288,15 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
 
     //----- Internal Implementation ------------------------------------------//
 
-    protected MessageProducer getDelegate() {
+    public boolean isAnonymousProducer() {
+        return this.anonymousProducer;
+    }
+
+    public AtomicInteger getRefCount() {
+        return this.refCount;
+    }
+
+    public MessageProducer getDelegate() {
         return messageProducer;
     }
 
