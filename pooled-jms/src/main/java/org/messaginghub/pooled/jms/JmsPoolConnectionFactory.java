@@ -191,10 +191,10 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
         if (factory instanceof ConnectionFactory) {
             try {
                 factory.getClass().getMethod("createContext", int.class);
-                LOG.info("Porovided ConnectionFactory is JMS 2.0+ capable.");
+                LOG.info("Provided ConnectionFactory is JMS 2.0+ capable.");
                 jmsContextSupported = true;
             } catch (NoSuchMethodException | SecurityException e) {
-                LOG.info("Porovided ConnectionFactory is not JMS 2.0+ capable.");
+                LOG.info("Provided ConnectionFactory is not JMS 2.0+ capable.");
             }
 
             this.connectionFactory = factory;

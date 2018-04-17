@@ -74,15 +74,15 @@ public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory impleme
         if (toUse instanceof XAConnectionFactory) {
             try {
                 toUse.getClass().getMethod("createContext", String.class, String.class);
-                LOG.info("Porovided ConnectionFactory is JMS 2.0+ capable.");
+                LOG.info("Provided ConnectionFactory is JMS 2.0+ capable.");
                 jmsContextSupported = true;
             } catch (NoSuchMethodException | SecurityException e) {
-                LOG.info("Porovided ConnectionFactory is not JMS 2.0+ capable.");
+                LOG.info("Provided ConnectionFactory is not JMS 2.0+ capable.");
             }
 
             connectionFactory = toUse;
         } else {
-            throw new IllegalArgumentException("connectionFactory should implement javax.xml.XAConnectionFactory");
+            throw new IllegalArgumentException("connectionFactory should implement javax.jms.XAConnectionFactory");
         }
     }
 
