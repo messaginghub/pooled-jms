@@ -197,7 +197,7 @@ public class PooledConnectionFactoryMaximumActiveTest extends ActiveMQJmsPoolTes
                 PooledConnectionFactoryMaximumActiveTest.addSession(session);
             } catch (Exception ex) {
                 TASK_LOG.error(ex.getMessage());
-                return new Boolean(false);
+                return Boolean.FALSE;
             } finally {
                 if (session != null) {
                     try {
@@ -207,7 +207,7 @@ public class PooledConnectionFactoryMaximumActiveTest extends ActiveMQJmsPoolTes
                 }
             }
 
-            return new Boolean(session != null);
+            return session != null;
         }
     }
 
@@ -229,10 +229,10 @@ public class PooledConnectionFactoryMaximumActiveTest extends ActiveMQJmsPoolTes
                 PooledConnectionFactoryMaximumActiveTest.addSession(one);
             } catch (Exception ex) {
                 TASK_LOG.error(ex.getMessage());
-                return new Boolean(false);
+                return Boolean.FALSE;
             }
 
-            return new Boolean(one != null);
+            return one != null;
         }
     }
 }
