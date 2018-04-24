@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A JMS provider which pools Connection, Session and MessageProducer instances
  * so it can be used with tools like <a href="http://camel.apache.org/activemq.html">Camel</a> and Spring's
- * <a href="http://activemq.apache.org/spring-support.html">JmsTemplate and MessagListenerContainer</a>.
+ * <a href="http://activemq.apache.org/spring-support.html">JmsTemplate and MessageListenerContainer</a>.
  * Connections, sessions and producers are returned to a pool after use so that they can be reused later
  * without having to undergo the cost of creating them again.
  *
@@ -796,7 +796,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     //----- JNDI Operations --------------------------------------------------//
 
     /**
-     * Called by any superclass that implements a JNDIReferencable or similar that needs to collect
+     * Called by any superclass that implements a JNDI Referenceable or similar that needs to collect
      * the properties of this class for storage etc.
      *
      * This method should be updated any time there is a new property added.

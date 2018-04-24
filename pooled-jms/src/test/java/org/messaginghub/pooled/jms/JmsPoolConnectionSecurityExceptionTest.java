@@ -62,7 +62,7 @@ public class JmsPoolConnectionSecurityExceptionTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testConectionCreateAuthentication() throws JMSException {
+    public void testConnectionCreateAuthentication() throws JMSException {
         try {
             cf.createConnection("admin", "admin");
         } catch (JMSSecurityException jmsse) {
@@ -84,7 +84,7 @@ public class JmsPoolConnectionSecurityExceptionTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testConectionCreateAuthenticationError() throws JMSException {
+    public void testConnectionCreateAuthenticationError() throws JMSException {
         try {
             cf.createConnection("guest", "guest");
             fail("Should not be able to create connection using bad credentials");
@@ -104,7 +104,7 @@ public class JmsPoolConnectionSecurityExceptionTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testConectionCreateWorksAfterAuthenticationError() throws JMSException {
+    public void testConnectionCreateWorksAfterAuthenticationError() throws JMSException {
         try {
             cf.createConnection("guest", "guest");
             fail("Should not be able to create connection using bad credentials");
@@ -142,7 +142,7 @@ public class JmsPoolConnectionSecurityExceptionTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testDefferedConectionAuthenticationError() throws JMSException {
+    public void testDeferredConnectionAuthenticationError() throws JMSException {
         // Don't throw on create fail on connection start
         factory.setDeferAuthenticationToConnection(true);
 
@@ -187,7 +187,7 @@ public class JmsPoolConnectionSecurityExceptionTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testDefferedConectionAuthenticationErrorWithJMSContext() throws JMSException {
+    public void testDeferredConnectionAuthenticationErrorWithJMSContext() throws JMSException {
         // Don't throw on create fail on connection start
         factory.setDeferAuthenticationToConnection(true);
 

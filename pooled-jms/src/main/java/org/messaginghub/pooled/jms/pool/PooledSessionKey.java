@@ -17,7 +17,7 @@
 package org.messaginghub.pooled.jms.pool;
 
 /**
- * A cache key for the session details used to locate PooledSession intances.
+ * A cache key for the session details used to locate PooledSession instances.
  */
 public final class PooledSessionKey {
 

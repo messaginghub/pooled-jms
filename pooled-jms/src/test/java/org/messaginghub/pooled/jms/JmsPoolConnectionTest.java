@@ -337,7 +337,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
                     TASK_LOG.error("Expected JMSException wasn't thrown.");
                     fail("seconds call to Connection.createSession() was supposed" +
                          "to raise an JMSException as internal session pool" +
-                         "is exhausted. This did not happen and indiates a problem");
+                         "is exhausted. This did not happen and indicates a problem");
                     return new Boolean(false);
                 } catch (JMSException ex) {
                     if (ex.getCause().getClass() == java.util.NoSuchElementException.class) {

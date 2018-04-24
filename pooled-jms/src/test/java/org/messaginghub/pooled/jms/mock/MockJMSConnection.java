@@ -311,7 +311,7 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
         }
     }
 
-    public void removeConnetionListener(MockJMSConnectionListener listener) throws JMSException {
+    public void removeConnectionListener(MockJMSConnectionListener listener) throws JMSException {
         checkClosedOrFailed();
         connectionListeners.remove(listener);
     }

@@ -35,7 +35,7 @@ import org.messaginghub.pooled.jms.JmsPoolConnection;
 /**
  * Tests for the JMS Pool MessageConsumer wrapper
  */
-public class JmsPoolMessageConusmerTest extends JmsPoolTestSupport {
+public class JmsPoolMessageConsumerTest extends JmsPoolTestSupport {
 
     @Test
     public void testToString() throws JMSException {

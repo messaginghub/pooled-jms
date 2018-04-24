@@ -399,7 +399,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
         session.close();
         try {
-            session.createDurableSubscriber(topic, "other-name", "color = greean", true);
+            session.createDurableSubscriber(topic, "other-name", "color = green", true);
             fail("Should not be able to createDurableSubscriber when closed");
         } catch (JMSException ex) {}
     }
@@ -429,7 +429,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
         session.close();
         try {
-            session.createSubscriber(topic, "color = greean", true);
+            session.createSubscriber(topic, "color = green", true);
             fail("Should not be able to createSubscriber when closed");
         } catch (JMSException ex) {}
     }
@@ -459,7 +459,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
         session.close();
         try {
-            session.createReceiver(queue, "color = greean");
+            session.createReceiver(queue, "color = green");
             fail("Should not be able to createReceiver when closed");
         } catch (JMSException ex) {}
     }

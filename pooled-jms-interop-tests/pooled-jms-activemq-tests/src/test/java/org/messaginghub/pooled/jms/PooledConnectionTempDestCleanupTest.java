@@ -191,7 +191,7 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         // Now confirm the first temporary destination no longer exists and the
         // second does.
         assertTrue("FAILED: temp dest from closed pooled connection is lingering", !destinationExists(tempDest));
-        assertTrue("FAILED: second PooledConnectin's temporary destination was incorrectly deleted", destinationExists(otherTempDest));
+        assertTrue("FAILED: second PooledConnection's temporary destination was incorrectly deleted", destinationExists(otherTempDest));
     }
 
     /*

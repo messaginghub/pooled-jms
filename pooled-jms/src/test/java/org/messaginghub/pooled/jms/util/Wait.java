@@ -38,11 +38,11 @@ public class Wait {
     public static boolean waitFor(final Condition condition, final long duration, final long sleepMillis) throws Exception {
 
         final long expiry = System.currentTimeMillis() + duration;
-        boolean conditionSatisified = condition.isSatisfied();
-        while (!conditionSatisified && System.currentTimeMillis() < expiry) {
+        boolean conditionSatisfied = condition.isSatisfied();
+        while (!conditionSatisfied && System.currentTimeMillis() < expiry) {
             TimeUnit.MILLISECONDS.sleep(sleepMillis);
-            conditionSatisified = condition.isSatisfied();
+            conditionSatisfied = condition.isSatisfied();
         }
-        return conditionSatisified;
+        return conditionSatisfied;
     }
 }
