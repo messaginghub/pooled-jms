@@ -221,56 +221,56 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     //----- Test for get property on matching types --------------------------//
 
     @Test
-    public void testGetStringPropetry() {
+    public void testGetStringProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(STRING_PROPERTY_NAME, STRING_PROPERTY_VALUE);
         assertEquals(STRING_PROPERTY_VALUE, producer.getStringProperty(STRING_PROPERTY_NAME));
     }
 
     @Test
-    public void testGetBytePropetry() {
+    public void testGetByteProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(BYTE_PROPERTY_NAME, BYTE_PROPERTY_VALUE);
         assertEquals(BYTE_PROPERTY_VALUE, producer.getByteProperty(BYTE_PROPERTY_NAME));
     }
 
     @Test
-    public void testGetBooleanPropetry() {
+    public void testGetBooleanProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(BOOLEAN_PROPERTY_NAME, BOOLEAN_PROPERTY_VALUE);
         assertEquals(BOOLEAN_PROPERTY_VALUE, producer.getBooleanProperty(BOOLEAN_PROPERTY_NAME));
     }
 
     @Test
-    public void testGetShortPropetry() {
+    public void testGetShortProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(SHORT_PROPERTY_NAME, SHORT_PROPERTY_VALUE);
         assertEquals(SHORT_PROPERTY_VALUE, producer.getShortProperty(SHORT_PROPERTY_NAME));
     }
 
     @Test
-    public void testGetIntegerPropetry() {
+    public void testGetIntegerProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(INTEGER_PROPERTY_NAME, INTEGER_PROPERTY_VALUE);
         assertEquals(INTEGER_PROPERTY_VALUE, producer.getIntProperty(INTEGER_PROPERTY_NAME));
     }
 
     @Test
-    public void testGetLongPropetry() {
+    public void testGetLongProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(LONG_PROPERTY_NAME, LONG_PROPERTY_VALUE);
         assertEquals(LONG_PROPERTY_VALUE, producer.getLongProperty(LONG_PROPERTY_NAME));
     }
 
     @Test
-    public void testGetDoublePropetry() {
+    public void testGetDoubleProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(DOUBLE_PROPERTY_NAME, DOUBLE_PROPERTY_VALUE);
         assertEquals(DOUBLE_PROPERTY_VALUE, producer.getDoubleProperty(DOUBLE_PROPERTY_NAME), 0.0);
     }
 
     @Test
-    public void testGetFloatPropetry() {
+    public void testGetFloatProperty() {
         JMSProducer producer = context.createProducer();
         producer.setProperty(FLOAT_PROPERTY_NAME, FLOAT_PROPERTY_VALUE);
         assertEquals(FLOAT_PROPERTY_VALUE, producer.getFloatProperty(FLOAT_PROPERTY_NAME), 0.0f);
@@ -670,7 +670,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     //----- Test for error when set called with invalid name -----------------//
 
     @Test
-    public void testSetStringPropetryWithBadPropetyName() {
+    public void testSetStringPropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -680,7 +680,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetBytePropetryWithBadPropetyName() {
+    public void testSetBytePropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -690,7 +690,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetBooleanPropetryWithBadPropetyName() {
+    public void testSetBooleanPropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -700,7 +700,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetDoublePropetryWithBadPropetyName() {
+    public void testSetDoublePropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -710,7 +710,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetFloatPropetryWithBadPropetyName() {
+    public void testSetFloatPropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -720,7 +720,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetShortPropetryWithBadPropetyName() {
+    public void testSetShortPropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -730,7 +730,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetIntPropetryWithBadPropetyName() {
+    public void testSetIntPropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -740,17 +740,17 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetLongPropetryWithBadPropetyName() {
+    public void testSetLongPropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
-            producer.setProperty(BAD_PROPERTY_NAME, 100l);
+            producer.setProperty(BAD_PROPERTY_NAME, 100L);
             fail("Should not accept invalid property name");
         } catch (IllegalArgumentException iae) {}
     }
 
     @Test
-    public void testSetObjectPropetryWithBadPropetyName() {
+    public void testSetObjectPropertyWithBadPropertyName() {
         JMSProducer producer = context.createProducer();
 
         try {
@@ -760,7 +760,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     }
 
     @Test
-    public void testSetObjectPropetryWithInvalidObject() {
+    public void testSetObjectPropertyWithInvalidObject() {
         JMSProducer producer = context.createProducer();
 
         try {

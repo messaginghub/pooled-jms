@@ -108,7 +108,7 @@ public class MockJMSUser {
             if (isCanProducerAnonymously()) {
                 return;
             } else {
-               throw new JMSSecurityException("User " + username + " not allowed for create anonymous produders.");
+               throw new JMSSecurityException("User " + username + " not allowed for create anonymous producers.");
             }
         }
 

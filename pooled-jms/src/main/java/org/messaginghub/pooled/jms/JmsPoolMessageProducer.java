@@ -123,7 +123,7 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
         }
 
         if (listener == null) {
-            throw new IllegalArgumentException("JmsCompletetionListener cannot be null");
+            throw new IllegalArgumentException("CompletionListener cannot be null");
         }
 
         sendMessage(destination, message, deliveryMode, priority, timeToLive, listener);
@@ -145,7 +145,7 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
         }
 
         if (listener == null) {
-            throw new IllegalArgumentException("JmsCompletetionListener cannot be null");
+            throw new IllegalArgumentException("CompletionListener cannot be null");
         }
 
         sendMessage(destination, message, deliveryMode, priority, timeToLive, listener);

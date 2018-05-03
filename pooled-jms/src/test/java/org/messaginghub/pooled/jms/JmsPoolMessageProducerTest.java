@@ -327,7 +327,7 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
     }
 
     private void doExplicitProducerThrowsIDEWhenNullDestinationIsProvidedOnSendTestImpl(MockJMSDestination explicitDest) throws JMSException {
-        Destination invalildNullDest = null;
+        Destination invalidNullDest = null;
         JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
         Session session = connection.createSession();
         MessageProducer producer = session.createProducer(explicitDest);
@@ -335,28 +335,28 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         Message message = session.createMessage();
 
         try {
-            producer.send(invalildNullDest, message);
+            producer.send(invalidNullDest, message);
             fail("Expected exception to be thrown");
         } catch (InvalidDestinationException ide) {
             // expected
         }
 
         try {
-            producer.send(invalildNullDest, message, completionListener);
+            producer.send(invalidNullDest, message, completionListener);
             fail("Expected exception to be thrown");
         } catch (InvalidDestinationException ide) {
             // expected
         }
 
         try {
-            producer.send(invalildNullDest, message, Message.DEFAULT_DELIVERY_MODE, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            producer.send(invalidNullDest, message, Message.DEFAULT_DELIVERY_MODE, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
             fail("Expected exception to be thrown");
         } catch (InvalidDestinationException ide) {
             // expected
         }
 
         try {
-            producer.send(invalildNullDest, message, Message.DEFAULT_DELIVERY_MODE, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE, completionListener);
+            producer.send(invalidNullDest, message, Message.DEFAULT_DELIVERY_MODE, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE, completionListener);
             fail("Expected exception to be thrown");
         } catch (InvalidDestinationException ide) {
             // expected

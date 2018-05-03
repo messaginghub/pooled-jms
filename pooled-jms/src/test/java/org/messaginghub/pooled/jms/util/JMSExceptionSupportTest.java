@@ -117,25 +117,25 @@ public class JMSExceptionSupportTest {
     }
 
     @Test
-    public void testCreateMessageFormatExceptionFillsMessageFromMCauseessageParamToString() {
+    public void testCreateMessageFormatExceptionFillsMessageFromCauseMessageParamToString() {
         JMSException result = JMSExceptionSupport.createMessageFormatException(NO_MESSAGE_CAUSE);
         assertEquals(NO_MESSAGE_CAUSE.toString(), result.getMessage());
     }
 
     @Test
-    public void testCreateMessageFormatExceptionFillsMessageFromMCauseessageParamToStringWhenMessageIsEmpty() {
+    public void testCreateMessageFormatExceptionFillsMessageFromCauseMessageParamToStringWhenMessageIsEmpty() {
         JMSException result = JMSExceptionSupport.createMessageFormatException(EMPTY_MESSAGE_CAUSE);
         assertEquals(EMPTY_MESSAGE_CAUSE.toString(), result.getMessage());
     }
 
     @Test
-    public void testCreateMessageEOFExceptionFillsMessageFromMCauseessageParamToString() {
+    public void testCreateMessageEOFExceptionFillsMessageFromCauseMessageParamToString() {
         JMSException result = JMSExceptionSupport.createMessageEOFException(NO_MESSAGE_CAUSE);
         assertEquals(NO_MESSAGE_CAUSE.toString(), result.getMessage());
     }
 
     @Test
-    public void testCreateMessageEOFExceptionFillsMessageFromMCauseessageParamToStringWhenMessageIsEmpty() {
+    public void testCreateMessageEOFExceptionFillsMessageFromCauseMessageParamToStringWhenMessageIsEmpty() {
         JMSException result = JMSExceptionSupport.createMessageEOFException(EMPTY_MESSAGE_CAUSE);
         assertEquals(EMPTY_MESSAGE_CAUSE.toString(), result.getMessage());
     }
@@ -170,7 +170,7 @@ public class JMSExceptionSupportTest {
     }
 
     @Test(expected = IllegalStateRuntimeException.class)
-    public void testConvertsIllegalStateExceptionToIlleglStateRuntimeException() {
+    public void testConvertsIllegalStateExceptionToIllegalStateRuntimeException() {
         throw JMSExceptionSupport.createRuntimeException(new IllegalStateException("error"));
     }
 

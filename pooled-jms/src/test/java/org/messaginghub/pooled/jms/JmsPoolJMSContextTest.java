@@ -353,7 +353,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
     }
 
     @Test(timeout = 30000)
-    public void testCreateConsumerWithSelectorAndNoLocl() {
+    public void testCreateConsumerWithSelectorAndNoLocal() {
         JMSContext context = cf.createContext();
         Queue queue = context.createQueue(getTestName());
         assertNotNull(context.createConsumer(queue, "color = red", false));
@@ -431,7 +431,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
     }
 
     @Test(timeout = 30000)
-    public void testCreateShareedDurableConsumerWithSelector() {
+    public void testCreateSharedDurableConsumerWithSelector() {
         JMSContext context = cf.createContext();
         Topic topic = context.createTopic(getTestName());
         assertNotNull(context.createSharedDurableConsumer(topic, "test", "color = red"));
@@ -449,7 +449,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
 
         try {
             context.createContext(9);
-            fail("Should not be able to call with invliad mode.");
+            fail("Should not be able to call with invalid mode.");
         } catch (JMSRuntimeException jmsre) {}
     }
 
@@ -461,7 +461,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
 
         try {
             context.createContext(Session.AUTO_ACKNOWLEDGE);
-            fail("Should not be able to call with invliad mode.");
+            fail("Should not be able to call with invalid mode.");
         } catch (JMSRuntimeException jmsre) {}
     }
 
