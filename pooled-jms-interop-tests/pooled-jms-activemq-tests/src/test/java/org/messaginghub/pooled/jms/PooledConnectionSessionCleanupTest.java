@@ -35,7 +35,6 @@ import org.apache.activemq.command.ActiveMQQueue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.util.Wait;
 
 public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSupport {
@@ -60,20 +59,10 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
     public void setUp() throws java.lang.Exception {
         super.setUp();
 
-        brokerService = new BrokerService();
-        brokerService.setBrokerName("PooledConnectionSessionCleanupTestBroker");
-        brokerService.setUseJmx(true);
-        brokerService.getManagementContext().setCreateConnector(false);
-        brokerService.setPersistent(false);
-        brokerService.setSchedulerSupport(false);
-        brokerService.setAdvisorySupport(false);
-        brokerService.start();
-        brokerService.waitUntilStarted();
-
         // Create the ActiveMQConnectionFactory and the JmsPoolConnectionFactory.
         // Set a long idle timeout on the pooled connections to better show the
         // problem of holding onto created resources on close.
-        directConnFact = new ActiveMQConnectionFactory(brokerService.getVmConnectorURI());
+        directConnFact = amqFactory;
         pooledConnFact = new JmsPoolConnectionFactory();
         pooledConnFact.setConnectionFactory(directConnFact);
         pooledConnFact.setIdleTimeout((int)TimeUnit.MINUTES.toMillis(60));
@@ -120,11 +109,14 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
         } catch (JMSException jms_exc) {
         }
 
+        try {
+            pooledConnFact.stop();
+        } catch (Throwable error) {}
+
         super.tearDown();
     }
 
     private void produceMessages() throws Exception {
-
         Session session = directConn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
         MessageProducer producer = session.createProducer(queue);
         for (int i = 0; i < MESSAGE_COUNT; ++i) {
@@ -135,7 +127,6 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
 
     @Test(timeout = 60000)
     public void testLingeringPooledSessionsHoldingPrefetchedMessages() throws Exception {
-
         produceMessages();
 
         Session pooledSession1 = pooledConn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -173,7 +164,6 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
 
     @Test(timeout = 60000)
     public void testNonPooledConnectionCloseNotHoldingPrefetchedMessages() throws Exception {
-
         produceMessages();
 
         Session directSession = directConn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -207,5 +197,21 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
         // Now we'd expect that the message stuck in the prefetch of the first session's
         // consumer would be rerouted to the alternate session's consumer.
         assertNotNull(consumer.receive(10000));
+    }
+
+    @Override
+	protected String createBroker() throws Exception {
+        brokerService = new BrokerService();
+        brokerService.setDeleteAllMessagesOnStartup(true);
+        brokerService.setPersistent(false);
+        brokerService.setUseJmx(true);
+        brokerService.getManagementContext().setCreateConnector(false);
+        brokerService.getManagementContext().setCreateMBeanServer(false);
+        brokerService.setAdvisorySupport(false);
+        brokerService.setSchedulerSupport(false);
+        brokerService.start();
+        brokerService.waitUntilStarted();
+
+        return brokerService.getVmConnectorURI().toString();
     }
 }
