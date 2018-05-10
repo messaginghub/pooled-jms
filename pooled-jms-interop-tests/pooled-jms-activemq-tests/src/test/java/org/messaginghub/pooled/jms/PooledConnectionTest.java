@@ -32,10 +32,7 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,9 +146,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    static class TestRunner implements Callable<Boolean> {
-
-        private static final Logger TASK_LOG = LoggerFactory.getLogger(PooledConnectionTest.class);
+    private class TestRunner implements Callable<Boolean> {
 
         /**
          * @return true if test succeeded, false otherwise
@@ -166,10 +161,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
 
             // wait at most 5 seconds for the call to createSession
             try {
-                ActiveMQConnectionFactory amq = new ActiveMQConnectionFactory(
-                    "vm://broker1?marshal=false&broker.persistent=false&broker.useJmx=false");
-                cf = new JmsPoolConnectionFactory();
-                cf.setConnectionFactory(amq);
+                cf = createPooledConnectionFactory();
                 cf.setMaxConnections(3);
                 cf.setMaximumActiveSessionPerConnection(1);
                 cf.setBlockIfSessionPoolIsFull(false);
@@ -183,7 +175,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
                     two = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
                     two.close();
 
-                    TASK_LOG.error("Expected JMSException wasn't thrown.");
+                    LOG.error("Expected JMSException wasn't thrown.");
                     fail("seconds call to Connection.createSession() was supposed" +
                          "to raise an JMSException as internal session pool" +
                          "is exhausted. This did not happen and indicates a problem");
@@ -191,9 +183,9 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
                 } catch (JMSException ex) {
                     if (ex.getCause().getClass() == java.util.NoSuchElementException.class) {
                         // expected, ignore but log
-                        TASK_LOG.info("Caught expected " + ex);
+                        LOG.info("Caught expected " + ex);
                     } else {
-                        TASK_LOG.error("Error trapped", ex);
+                        LOG.error("Error trapped", ex);
                         return Boolean.FALSE;
                     }
                 } finally {
@@ -205,7 +197,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
                     }
                 }
             } catch (Exception ex) {
-                TASK_LOG.error(ex.getMessage());
+                LOG.error(ex.getMessage());
                 return Boolean.FALSE;
             } finally {
                 if (cf != null) {
@@ -220,9 +212,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testAllSessionsAvailableOnConstrainedPool() throws Exception {
-        JmsPoolConnectionFactory cf = new JmsPoolConnectionFactory();
-        cf.setConnectionFactory(new ActiveMQConnectionFactory(
-                "vm://localhost?broker.persistent=false&broker.useJmx=false&broker.schedulerSupport=false"));
+        JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(5);
         cf.setMaximumActiveSessionPerConnection(2);
         cf.setBlockIfSessionPoolIsFull(false);
@@ -232,44 +222,51 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
 
         Connection connection = null;
 
-        for (int i = 0; i < 10; i++) {
+        try {
+            for (int i = 0; i < 10; i++) {
+                connection = cf.createConnection();
+                LOG.info("connection: " + i + ", " + ((JmsPoolConnection) connection).getConnection());
+
+                connection.start();
+                connections.add(connection);
+                sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
+            }
+
+            assertEquals(sessions.size(), 10);
+            assertEquals(connections.size(), 10);
+
+            Connection connectionToClose = connections.getLast();
+            connectionToClose.close();
+
             connection = cf.createConnection();
-            LOG.info("connection: " + i + ", " + ((JmsPoolConnection) connection).getConnection());
+            LOG.info("connection:" + ((JmsPoolConnection) connection).getConnection());
 
             connection.start();
             connections.add(connection);
-            sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
+            try {
+                sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
+            } catch (JMSException expected) {
+                connection.close();
+            }
+
+            connection = cf.createConnection();
+            LOG.info("connection:" + ((JmsPoolConnection) connection).getConnection());
+
+            connection.start();
+            connections.add(connection);
+            try {
+                sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
+            } catch (JMSException expected) {
+                connection.close();
+            }
+
+            assertEquals(sessions.size(), 10);
+            assertEquals(connections.size(), 12);
+        } finally {
+            if (cf != null) {
+                cf.stop();
+            }
         }
-
-        assertEquals(sessions.size(), 10);
-        assertEquals(connections.size(), 10);
-
-        Connection connectionToClose = connections.getLast();
-        connectionToClose.close();
-
-        connection = cf.createConnection();
-        LOG.info("connection:" + ((JmsPoolConnection) connection).getConnection());
-
-        connection.start();
-        connections.add(connection);
-        try {
-            sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
-        } catch (JMSException expected) {
-            connection.close();
-        }
-
-        connection = cf.createConnection();
-        LOG.info("connection:" + ((JmsPoolConnection) connection).getConnection());
-
-        connection.start();
-        connections.add(connection);
-        try {
-            sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
-        } catch (JMSException expected) {
-            connection.close();
-        }
-
-        assertEquals(sessions.size(), 10);
-        assertEquals(connections.size(), 12);
     }
 }
+
