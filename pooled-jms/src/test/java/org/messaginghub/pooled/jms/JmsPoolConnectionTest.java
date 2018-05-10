@@ -338,14 +338,14 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
                     fail("seconds call to Connection.createSession() was supposed" +
                          "to raise an JMSException as internal session pool" +
                          "is exhausted. This did not happen and indicates a problem");
-                    return new Boolean(false);
+                    return Boolean.FALSE;
                 } catch (JMSException ex) {
                     if (ex.getCause().getClass() == java.util.NoSuchElementException.class) {
                         // expected, ignore but log
                         TASK_LOG.info("Caught expected " + ex);
                     } else {
                         TASK_LOG.error("Error trapped", ex);
-                        return new Boolean(false);
+                        return Boolean.FALSE;
                     }
                 } finally {
                     if (one != null) {
@@ -357,7 +357,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
                 }
             } catch (Exception ex) {
                 TASK_LOG.error(ex.getMessage());
-                return new Boolean(false);
+                return Boolean.FALSE;
             } finally {
                 if (cf != null) {
                     cf.stop();
@@ -365,7 +365,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
             }
 
             // all good, test succeeded
-            return new Boolean(true);
+            return Boolean.TRUE;
         }
     }
 
