@@ -47,6 +47,6 @@ consult the README in the pooled-jms-examples module itself.
 
 There is some basic documentation in the pooled-jms-docs module.
 
-##Continuous Integration
+## Continuous Integration
 
 [![Build Status](https://travis-ci.org/messaginghub/pooled-jms.svg?branch=master)](https://travis-ci.org/messaginghub/pooled-jms)
