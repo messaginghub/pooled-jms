@@ -24,12 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.JMSException;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,63 +32,51 @@ public class PooledConnectionExpiredConnectionsUnderLoad extends ActiveMQJmsPool
 
     private static final Logger LOG = LoggerFactory.getLogger(PooledConnectionExpiredConnectionsUnderLoad.class);
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
-        brokerService = new BrokerService();
-        brokerService.setDeleteAllMessagesOnStartup(true);
-        brokerService.setPersistent(false);
-        brokerService.setUseJmx(false);
-        brokerService.setAdvisorySupport(false);
-        brokerService.setSchedulerSupport(false);
-        brokerService.start();
-        brokerService.waitUntilStarted();
-    }
-
     @Test(timeout = 120000)
     public void testExpiredConnectionsAreNotReturned() throws JMSException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean done = new AtomicBoolean(false);
-        final JmsPoolConnectionFactory pooled = new JmsPoolConnectionFactory();
-        pooled.setConnectionFactory(new ActiveMQConnectionFactory("vm://localhost?create=false"));
+        final JmsPoolConnectionFactory pooled = createPooledConnectionFactory();
 
-        pooled.setMaxConnections(2);
-        pooled.setExpiryTimeout(1L);
-        Thread[] threads = new Thread[5];
-        for (int i = 0; i < threads.length; i++) {
-            threads[i] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (!done.get() && latch.getCount() > 0) {
-                        try {
-                            final JmsPoolConnection pooledConnection = (JmsPoolConnection) pooled.createConnection();
-                            if (pooledConnection.getConnection() == null) {
-                                LOG.info("Found broken connection.");
-                                latch.countDown();
+        try {
+            pooled.setMaxConnections(2);
+            pooled.setExpiryTimeout(1L);
+            Thread[] threads = new Thread[5];
+            for (int i = 0; i < threads.length; i++) {
+                threads[i] = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (!done.get() && latch.getCount() > 0) {
+                            try {
+                                final JmsPoolConnection pooledConnection = (JmsPoolConnection) pooled.createConnection();
+                                if (pooledConnection.getConnection() == null) {
+                                    LOG.info("Found broken connection.");
+                                    latch.countDown();
+                                }
+                                pooledConnection.close();
+                            } catch (JMSException e) {
+                                LOG.warn("Caught Exception", e);
                             }
-                            pooledConnection.close();
-                        } catch (JMSException e) {
-                            LOG.warn("Caught Exception", e);
                         }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        for (Thread thread : threads) {
-            thread.start();
-        }
+            for (Thread thread : threads) {
+                thread.start();
+            }
 
-        if (latch.await(3, TimeUnit.SECONDS)) {
-            fail("A thread obtained broken connection");
-        }
+            if (latch.await(3, TimeUnit.SECONDS)) {
+                fail("A thread obtained broken connection");
+            }
 
-        done.set(true);
+            done.set(true);
 
-        for (Thread thread : threads) {
-            thread.join();
+            for (Thread thread : threads) {
+                thread.join();
+            }
+        } finally {
+            pooled.stop();
         }
     }
 }
