@@ -32,10 +32,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.slf4j.Logger;
@@ -56,7 +53,6 @@ public class JmsPoolReconnectOnFailureTest extends JmsPoolTestSupport {
         cf.setReconnectOnException(true);
     }
 
-    @Ignore("Fails for unknown reason")
     @Test(timeout = 60000)
     public void testConnectionCanBeCreatedAfterFailure() throws Exception {
 

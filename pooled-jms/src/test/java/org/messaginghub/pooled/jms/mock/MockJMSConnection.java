@@ -128,6 +128,10 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
         }
     }
 
+    protected void shutdown(Exception error) throws JMSException {
+        // TODO Shutdown of connection resources with flag for failed cause
+    }
+
     //----- Create Session ---------------------------------------------------//
 
     @Override
@@ -322,7 +326,7 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
 
     //----- Mock Connection behavioral control -------------------------------//
 
-    public void injectConnectionFailure(Exception error) throws JMSException {
+    public void injectConnectionFailure(final Exception error) throws JMSException {
         connectionFailed(error);
 
         injectConnectionError(error);
@@ -331,12 +335,11 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    // TODO - Close down all connection resources.
-                //                    try {
-                //                        shutdown(ex);
-                //                    } catch (JMSException e) {
-                //                        LOG.warn("Exception during connection cleanup, " + e, e);
-                //                    }
+                    try {
+                        shutdown(error);
+                    } catch (JMSException e) {
+                        LOG.trace("Exception during connection cleanup, " + e, e);
+                    }
 
                     // Don't accept any more connection work but allow all pending work
                     // to complete in order to ensure notifications are sent to any blocked
@@ -423,7 +426,7 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
     }
 
     protected void connectionFailed(Exception cause) {
-        failureCause .compareAndSet(null, cause);
+        failureCause.compareAndSet(null, cause);
     }
 
     MockJMSConnection initialize() throws JMSException {
@@ -554,22 +557,27 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
     //----- Event points for MockJMS resources -------------------------------//
 
     void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+        checkClosedOrFailed();
         signalMessageSend(session, message);
     }
 
     void onMessageConsumerCreate(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {
+        checkClosedOrFailed();
         signalCreateMessageConsumer(session, consumer);
     }
 
     void onMessageConsumerClose(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {
+        checkClosedOrFailed();
         signalCloseMessageConsumer(session, consumer);
     }
 
     void onMessageProducerCreate(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+        checkClosedOrFailed();
         signalCreateMessageProducer(session, producer);
     }
 
     void onMessageProducerClose(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+        checkClosedOrFailed();
         signalCloseMessageProducer(session, producer);
     }
 }
