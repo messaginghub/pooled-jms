@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -34,12 +35,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +48,7 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
     private static final String QUEUE = "FOO";
     private static final int NUM_MESSAGES = 500;
 
-    private ActiveMQConnectionFactory factory;
     private JmsPoolConnectionFactory pooledFactory;
-    private String connectionUri;
     private int numReceived = 0;
     private final List<Exception> exceptionList = new ArrayList<Exception>();
 
@@ -61,17 +57,7 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
     public void setUp() throws Exception {
         super.setUp();
 
-        brokerService = new BrokerService();
-        brokerService.setPersistent(false);
-        brokerService.setUseJmx(false);
-        brokerService.setAdvisorySupport(false);
-        brokerService.setSchedulerSupport(false);
-        TransportConnector connector = brokerService.addConnector("tcp://localhost:0");
-        brokerService.start();
-        connectionUri = connector.getPublishableConnectString();
-        factory = new ActiveMQConnectionFactory(connectionUri);
-        pooledFactory = new JmsPoolConnectionFactory();
-        pooledFactory.setConnectionFactory(factory);
+        pooledFactory = createPooledConnectionFactory();
         pooledFactory.setMaxConnections(1);
         pooledFactory.setBlockIfSessionPoolIsFull(false);
         pooledFactory.setMaximumActiveSessionPerConnection(1);
@@ -130,9 +116,10 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                Connection connection = null;
                 try {
-                    ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(connectionUri);
-                    Connection connection = connectionFactory.createConnection();
+                    ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(connectionURI);
+                    connection = connectionFactory.createConnection();
                     connection.start();
 
                     Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -151,6 +138,12 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
+                } finally {
+                    if (connection != null) {
+                        try {
+                            connection.close();
+                        } catch (JMSException ex) {}
+                    }
                 }
             }
         });

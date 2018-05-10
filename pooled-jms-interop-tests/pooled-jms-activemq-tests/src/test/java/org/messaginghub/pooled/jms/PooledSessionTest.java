@@ -30,42 +30,22 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSession;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
-import org.messaginghub.pooled.jms.JmsPoolMessageProducer;
-import org.messaginghub.pooled.jms.JmsPoolQueueSender;
-import org.messaginghub.pooled.jms.JmsPoolTopicPublisher;
 
 public class PooledSessionTest extends ActiveMQJmsPoolTestSupport {
 
-    private ActiveMQConnectionFactory factory;
     private JmsPoolConnectionFactory pooledFactory;
-    private String connectionUri;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
-        brokerService = new BrokerService();
-        brokerService.setPersistent(false);
-        brokerService.setUseJmx(true);
-        brokerService.getManagementContext().setCreateConnector(false);
-        brokerService.setAdvisorySupport(false);
-        brokerService.setSchedulerSupport(false);
-        TransportConnector connector = brokerService.addConnector("tcp://localhost:0");
-        brokerService.start();
-
-        connectionUri = connector.getPublishableConnectString();
-        factory = new ActiveMQConnectionFactory(connectionUri);
-        pooledFactory = new JmsPoolConnectionFactory();
-        pooledFactory.setConnectionFactory(factory);
+        pooledFactory = createPooledConnectionFactory();
         pooledFactory.setMaxConnections(1);
         pooledFactory.setBlockIfSessionPoolIsFull(false);
     }
@@ -194,5 +174,21 @@ public class PooledSessionTest extends ActiveMQJmsPoolTestSupport {
 
         connection.close();
         pooledFactory.clear();
+    }
+
+    @Override
+    protected String createBroker() throws Exception {
+        brokerService = new BrokerService();
+        brokerService.setBrokerName("PooledConnectionSessionCleanupTestBroker");
+        brokerService.setUseJmx(true);
+        brokerService.getManagementContext().setCreateConnector(false);
+        brokerService.setPersistent(false);
+        brokerService.setSchedulerSupport(false);
+        brokerService.setAdvisorySupport(false);
+        TransportConnector connector = brokerService.addConnector("tcp://0.0.0.0:61626");
+        brokerService.start();
+        brokerService.waitUntilStarted();
+
+        return connector.getPublishableConnectString();
     }
 }

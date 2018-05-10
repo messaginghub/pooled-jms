@@ -25,18 +25,12 @@ import java.util.concurrent.TimeUnit;
 import javax.jms.Connection;
 import javax.jms.Session;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 
 public class PooledConnectionExpiryEvictsFromPoolTest extends ActiveMQJmsPoolTestSupport {
 
-    private ActiveMQConnectionFactory factory;
     private JmsPoolConnectionFactory pooledFactory;
 
     @Override
@@ -44,16 +38,7 @@ public class PooledConnectionExpiryEvictsFromPoolTest extends ActiveMQJmsPoolTes
     public void setUp() throws Exception {
         super.setUp();
 
-        brokerService = new BrokerService();
-        brokerService.setUseJmx(false);
-        brokerService.setPersistent(false);
-        brokerService.setSchedulerSupport(false);
-        brokerService.setAdvisorySupport(false);
-        TransportConnector connector = brokerService.addConnector("tcp://localhost:0");
-        brokerService.start();
-        factory = new ActiveMQConnectionFactory("mock:" + connector.getConnectUri());
-        pooledFactory = new JmsPoolConnectionFactory();
-        pooledFactory.setConnectionFactory(factory);
+        pooledFactory = createPooledConnectionFactory();
         pooledFactory.setMaxConnections(1);
     }
 

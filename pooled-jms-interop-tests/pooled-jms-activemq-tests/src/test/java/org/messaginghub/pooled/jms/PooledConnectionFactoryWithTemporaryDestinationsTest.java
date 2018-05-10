@@ -23,13 +23,9 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
 import org.apache.activemq.broker.region.RegionBroker;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +33,6 @@ public class PooledConnectionFactoryWithTemporaryDestinationsTest extends Active
 
     private static final Logger LOG = LoggerFactory.getLogger(PooledConnectionFactoryWithTemporaryDestinationsTest.class);
 
-    private ActiveMQConnectionFactory factory;
     private JmsPoolConnectionFactory pooledFactory;
 
     @Override
@@ -45,16 +40,7 @@ public class PooledConnectionFactoryWithTemporaryDestinationsTest extends Active
     public void setUp() throws Exception {
         super.setUp();
 
-        brokerService = new BrokerService();
-        brokerService.setUseJmx(false);
-        brokerService.setPersistent(false);
-        brokerService.setSchedulerSupport(false);
-        brokerService.setAdvisorySupport(false);
-        TransportConnector connector = brokerService.addConnector("tcp://localhost:0");
-        brokerService.start();
-        factory = new ActiveMQConnectionFactory("mock:" + connector.getConnectUri() + "?closeAsync=false");
-        pooledFactory = new JmsPoolConnectionFactory();
-        pooledFactory.setConnectionFactory(factory);
+        pooledFactory = createPooledConnectionFactory();
     }
 
     @Test(timeout = 60000)
