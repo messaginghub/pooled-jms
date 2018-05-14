@@ -18,17 +18,12 @@ package org.messaginghub.pooled.jms;
 
 import static org.junit.Assert.assertTrue;
 
-import java.net.URI;
-
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
 import org.apache.activemq.broker.region.RegionBroker;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +42,6 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
     @Rule
     public TestName testName = new TestName();
 
-    protected ActiveMQConnectionFactory directConnFact;
     protected Connection directConn1;
     protected Connection directConn2;
 
@@ -67,15 +61,13 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
     public void setUp() throws java.lang.Exception {
         super.setUp();
 
-        // Create the ActiveMQConnectionFactory and the JmsPoolConnectionFactory.
-        directConnFact = new ActiveMQConnectionFactory(connectionURI);
-        pooledConnFact = new JmsPoolConnectionFactory();
-        pooledConnFact.setConnectionFactory(directConnFact);
+        // Create the JmsPoolConnectionFactory.
+        pooledConnFact = createPooledConnectionFactory();
 
         // Prepare the connections
-        directConn1 = directConnFact.createConnection();
+        directConn1 = amqFactory.createConnection();
         directConn1.start();
-        directConn2 = directConnFact.createConnection();
+        directConn2 = amqFactory.createConnection();
         directConn2.start();
 
         pooledConn1 = pooledConnFact.createConnection();
@@ -96,29 +88,15 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         } catch (JMSException jms_exc) {
         }
         try {
-            directConn1.stop();
+            directConn1.close();
         } catch (JMSException jms_exc) {
         }
         try {
-            directConn2.stop();
+            directConn2.close();
         } catch (JMSException jms_exc) {
         }
 
         super.tearDown();
-    }
-
-    protected void configureBroker(BrokerService brokerService) throws Exception {
-        brokerService.setBrokerName("testbroker1");
-        brokerService.setUseJmx(false);
-        brokerService.setPersistent(false);
-        brokerService.setAdvisorySupport(false);
-        brokerService.setSchedulerSupport(false);
-
-        TransportConnector connector = new TransportConnector();
-        connector.setUri(new URI("tcp://localhost:0"));
-        connector.setName(testName.getMethodName());
-
-        brokerService.addConnector(connector);
     }
 
     /*
