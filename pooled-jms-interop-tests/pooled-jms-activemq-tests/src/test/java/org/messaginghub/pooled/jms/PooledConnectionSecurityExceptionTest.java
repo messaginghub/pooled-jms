@@ -28,6 +28,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.messaginghub.pooled.jms.util.Wait;
@@ -42,6 +43,27 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
     protected static final Logger LOG = LoggerFactory.getLogger(PooledConnectionSecurityExceptionTest.class);
 
     protected JmsPoolConnectionFactory pooledConnFact;
+
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+
+        pooledConnFact = createPooledConnectionFactory();
+        pooledConnFact.setMaxConnections(1);
+        pooledConnFact.setReconnectOnException(true);
+    }
+
+    @Override
+    @After
+    public void tearDown() throws Exception {
+        try {
+            pooledConnFact.stop();
+            pooledConnFact = null;
+        } catch (Exception ex) {}
+
+        super.tearDown();
+    }
 
     @Test
     public void testFailedConnectThenSucceeds() throws JMSException {
@@ -202,7 +224,7 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
             @Override
             public boolean isSatisfied() throws Exception {
                 return connection1.getConnection() !=
-                          ((JmsPoolConnection) pooledConnFact.createConnection("invalid", "credentials")).getConnection();
+                      ((JmsPoolConnection) pooledConnFact.createConnection("invalid", "credentials")).getConnection();
             }
         }));
 
@@ -243,15 +265,5 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
         producer.close();
 
         connection.close();
-    }
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
-        pooledConnFact = createPooledConnectionFactory();
-        pooledConnFact.setMaxConnections(1);
-        pooledConnFact.setReconnectOnException(true);
     }
 }
