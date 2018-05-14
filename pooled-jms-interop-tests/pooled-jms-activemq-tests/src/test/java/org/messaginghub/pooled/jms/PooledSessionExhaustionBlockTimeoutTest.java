@@ -101,16 +101,19 @@ public class PooledSessionExhaustionBlockTimeoutTest extends ActiveMQJmsPoolTest
     public void sendMessages(ConnectionFactory connectionFactory) throws Exception {
         for (int i = 0; i < NUM_MESSAGES; i++) {
             Connection connection = connectionFactory.createConnection();
-            connection.start();
+            try {
+                connection.start();
 
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            Destination destination = session.createQueue(QUEUE);
-            MessageProducer producer = session.createProducer(destination);
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                Destination destination = session.createQueue(QUEUE);
+                MessageProducer producer = session.createProducer(destination);
 
-            String msgTo = "hello";
-            TextMessage message = session.createTextMessage(msgTo);
-            producer.send(message);
-            connection.close();
+                String msgTo = "hello";
+                TextMessage message = session.createTextMessage(msgTo);
+                producer.send(message);
+            } finally {
+                connection.close();
+            }
             LOG.debug("sent " + i + " messages using " + connectionFactory.getClass());
         }
     }

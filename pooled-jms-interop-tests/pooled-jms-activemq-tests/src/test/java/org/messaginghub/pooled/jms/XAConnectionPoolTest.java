@@ -54,8 +54,6 @@ import org.apache.activemq.ActiveMQXAConnectionFactory;
 import org.apache.activemq.ActiveMQXASession;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolSession;
-import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
 
 public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
@@ -64,8 +62,8 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
     public void testAfterCompletionCanClose() throws Exception {
         final Vector<Synchronization> syncs = new Vector<Synchronization>();
         ActiveMQTopic topic = new ActiveMQTopic("test");
-        JmsPoolXAConnectionFactory pcf = new JmsPoolXAConnectionFactory();
-        pcf.setConnectionFactory(new XAConnectionFactoryOnly(new ActiveMQXAConnectionFactory("vm://test?broker.persistent=false")));
+        JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
+
         // simple TM that is in a tx and will track syncs
         pcf.setTransactionManager(new TransactionManager(){
             @Override
@@ -116,7 +114,6 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
                     public void setRollbackOnly() throws IllegalStateException, SystemException {
                     }
                 };
-
             }
 
             @Override
@@ -167,9 +164,10 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
     public void testAckModeOfPoolNonXAWithTM() throws Exception {
         final Vector<Synchronization> syncs = new Vector<Synchronization>();
         ActiveMQTopic topic = new ActiveMQTopic("test");
-        JmsPoolXAConnectionFactory pcf = new JmsPoolXAConnectionFactory();
-        pcf.setConnectionFactory(new XAConnectionFactoryOnly(new ActiveMQXAConnectionFactory(
-            "vm://test?broker.persistent=false&broker.useJmx=false&jms.xaAckMode=" + Session.CLIENT_ACKNOWLEDGE)));
+
+        JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
+        ((ActiveMQXAConnectionFactory) pcf.getConnectionFactory()).setXaAckMode(Session.CLIENT_ACKNOWLEDGE);
+        pcf.setConnectionFactory(new XAConnectionFactoryOnly((XAConnectionFactory) pcf.getConnectionFactory()));
 
         // simple TM that is in a tx and will track syncs
         pcf.setTransactionManager(new TransactionManager(){
@@ -266,7 +264,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testInstanceOf() throws  Exception {
-        JmsPoolXAConnectionFactory pcf = new JmsPoolXAConnectionFactory();
+        JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
         assertTrue(pcf instanceof QueueConnectionFactory);
         assertTrue(pcf instanceof TopicConnectionFactory);
         pcf.stop();
@@ -274,7 +272,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testBindable() throws Exception {
-        JmsPoolXAConnectionFactory pcf = new JmsPoolXAConnectionFactory();
+        JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
         assertTrue(pcf instanceof ObjectFactory);
         assertTrue(((ObjectFactory)pcf).getObjectInstance(null, null, null, null) instanceof JmsPoolXAConnectionFactory);
         assertTrue(pcf.isTmFromJndi());
@@ -283,7 +281,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testBindableEnvOverrides() throws Exception {
-        JmsPoolXAConnectionFactory pcf = new JmsPoolXAConnectionFactory();
+        JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
         assertTrue(pcf instanceof ObjectFactory);
         Hashtable<String, String> environment = new Hashtable<String, String>();
         environment.put("tmFromJndi", String.valueOf(Boolean.FALSE));
@@ -294,9 +292,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testSenderAndPublisherDest() throws Exception {
-        JmsPoolXAConnectionFactory pcf = new JmsPoolXAConnectionFactory();
-        pcf.setConnectionFactory(new ActiveMQXAConnectionFactory(
-            "vm://test?broker.persistent=false&broker.useJmx=false"));
+        JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
 
         QueueConnection connection = pcf.createQueueConnection();
         QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -316,9 +312,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testSessionArgsIgnoredWithTm() throws Exception {
-        JmsPoolXAConnectionFactory pcf = new JmsPoolXAConnectionFactory();
-        pcf.setConnectionFactory(new ActiveMQXAConnectionFactory(
-            "vm://test?broker.persistent=false&broker.useJmx=false"));
+        JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
 
         // simple TM that with no tx
         pcf.setTransactionManager(new TransactionManager() {

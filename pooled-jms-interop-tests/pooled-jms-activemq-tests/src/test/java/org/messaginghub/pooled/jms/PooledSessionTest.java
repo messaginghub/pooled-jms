@@ -30,8 +30,6 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSession;
 
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -174,21 +172,5 @@ public class PooledSessionTest extends ActiveMQJmsPoolTestSupport {
 
         connection.close();
         pooledFactory.clear();
-    }
-
-    @Override
-    protected String createBroker() throws Exception {
-        brokerService = new BrokerService();
-        brokerService.setBrokerName("PooledConnectionSessionCleanupTestBroker");
-        brokerService.setUseJmx(true);
-        brokerService.getManagementContext().setCreateConnector(false);
-        brokerService.setPersistent(false);
-        brokerService.setSchedulerSupport(false);
-        brokerService.setAdvisorySupport(false);
-        TransportConnector connector = brokerService.addConnector("tcp://0.0.0.0:61626");
-        brokerService.start();
-        brokerService.waitUntilStarted();
-
-        return connector.getPublishableConnectString();
     }
 }

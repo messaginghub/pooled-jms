@@ -16,6 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import javax.jms.JMSException;
@@ -23,15 +24,24 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.ActiveMQXAConnectionFactory;
+import org.apache.activemq.advisory.AdvisorySupport;
+import org.apache.activemq.broker.Broker;
+import org.apache.activemq.broker.BrokerFilter;
+import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
+import org.apache.activemq.broker.ConnectionContext;
 import org.apache.activemq.broker.jmx.BrokerViewMBean;
 import org.apache.activemq.broker.jmx.ConnectorViewMBean;
 import org.apache.activemq.broker.jmx.QueueViewMBean;
+import org.apache.activemq.broker.region.Subscription;
+import org.apache.activemq.command.ActiveMQDestination;
+import org.apache.activemq.command.ConnectionInfo;
+import org.apache.activemq.command.ConsumerInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +54,8 @@ public class ActiveMQJmsPoolTestSupport {
     protected BrokerService brokerService;
     protected String connectionURI;
     protected ActiveMQConnectionFactory amqFactory;
+    protected ActiveMQXAConnectionFactory amqXAFactory;
+    protected ActiveMQConnectionFactory amqFailoverFactory;
 
     @Before
     public void setUp() throws Exception {
@@ -51,6 +63,8 @@ public class ActiveMQJmsPoolTestSupport {
 
         connectionURI = createBroker();
         amqFactory = new ActiveMQConnectionFactory(connectionURI);
+        amqXAFactory = new ActiveMQXAConnectionFactory(connectionURI);
+        amqFailoverFactory = new ActiveMQConnectionFactory("failover:" + connectionURI);
     }
 
     @After
@@ -76,13 +90,55 @@ public class ActiveMQJmsPoolTestSupport {
         brokerService = new BrokerService();
         brokerService.setDeleteAllMessagesOnStartup(true);
         brokerService.setPersistent(false);
-        brokerService.setUseJmx(false);
+        brokerService.setUseJmx(true);
+        brokerService.getManagementContext().setCreateConnector(false);
+        brokerService.getManagementContext().setCreateMBeanServer(false);
         brokerService.setAdvisorySupport(false);
         brokerService.setSchedulerSupport(false);
+        brokerService.addConnector("tcp://localhost:0").setName("test");
+
+        ArrayList<BrokerPlugin> plugins = new ArrayList<BrokerPlugin>();
+
+        plugins.add(new BrokerPlugin() {
+
+            @Override
+            public Broker installPlugin(Broker broker) throws Exception {
+                return new BrokerFilter(broker) {
+
+                    @Override
+                    public void addConnection(ConnectionContext context, ConnectionInfo info) throws Exception {
+                        if ("invalid".equals(info.getUserName())) {
+                            throw new SecurityException("Username or password was invalid");
+                        }
+
+                        super.addConnection(context, info);
+                    }
+
+                    @Override
+                    public Subscription addConsumer(ConnectionContext context, ConsumerInfo info) throws Exception {
+                        ActiveMQDestination destination = info.getDestination();
+
+                        if (!AdvisorySupport.isAdvisoryTopic(destination) &&
+                            !destination.getPhysicalName().startsWith("GUESTS")) {
+
+                            if ("guest".equals(context.getUserName())) {
+                                throw new SecurityException("User guest not authorized to read");
+                            }
+                        }
+
+                        return super.addConsumer(context, info);
+                    }
+                };
+            }
+        });
+
+        BrokerPlugin[] array = new BrokerPlugin[plugins.size()];
+
+        brokerService.setPlugins(plugins.toArray(array));
         brokerService.start();
         brokerService.waitUntilStarted();
 
-        return brokerService.getVmConnectorURI().toString();
+        return brokerService.getTransportConnectorByName("test").getPublishableConnectString();
     }
 
     protected JmsPoolConnectionFactory createPooledConnectionFactory() {
@@ -90,6 +146,22 @@ public class ActiveMQJmsPoolTestSupport {
         cf.setConnectionFactory(amqFactory);
         cf.setMaxConnections(1);
         LOG.debug("ConnectionFactory initialized.");
+        return cf;
+    }
+
+    protected JmsPoolConnectionFactory createFailoverPooledConnectionFactory() {
+        JmsPoolConnectionFactory cf = new JmsPoolConnectionFactory();
+        cf.setConnectionFactory(amqFailoverFactory);
+        cf.setMaxConnections(1);
+        LOG.debug("Failover ConnectionFactory initialized.");
+        return cf;
+    }
+
+    protected JmsPoolXAConnectionFactory createXAPooledConnectionFactory() {
+        JmsPoolXAConnectionFactory cf = new JmsPoolXAConnectionFactory();
+        cf.setConnectionFactory(amqXAFactory);
+        cf.setMaxConnections(1);
+        LOG.debug("Failover ConnectionFactory initialized.");
         return cf;
     }
 

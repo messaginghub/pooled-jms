@@ -47,15 +47,20 @@ public class PooledConnectionExpiredConnectionsUnderLoad extends ActiveMQJmsPool
                     @Override
                     public void run() {
                         while (!done.get() && latch.getCount() > 0) {
+                            JmsPoolConnection pooledConnection = null;
                             try {
-                                final JmsPoolConnection pooledConnection = (JmsPoolConnection) pooled.createConnection();
+                                pooledConnection = (JmsPoolConnection) pooled.createConnection();
                                 if (pooledConnection.getConnection() == null) {
                                     LOG.info("Found broken connection.");
                                     latch.countDown();
                                 }
-                                pooledConnection.close();
                             } catch (JMSException e) {
                                 LOG.warn("Caught Exception", e);
+                            } finally {
+                                try {
+                                    pooledConnection.close();
+                                } catch (JMSException e) {
+                                }
                             }
                         }
                     }

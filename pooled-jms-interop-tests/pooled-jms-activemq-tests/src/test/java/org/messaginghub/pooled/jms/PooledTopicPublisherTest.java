@@ -25,11 +25,9 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.junit.After;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 
 public class PooledTopicPublisherTest extends ActiveMQJmsPoolTestSupport {
 
@@ -58,9 +56,7 @@ public class PooledTopicPublisherTest extends ActiveMQJmsPoolTestSupport {
     @Test(timeout = 60000)
     public void testJmsPoolConnectionFactory() throws Exception {
         ActiveMQTopic topic = new ActiveMQTopic("test");
-        pcf = new JmsPoolConnectionFactory();
-        pcf.setConnectionFactory(new ActiveMQConnectionFactory(
-            "vm://test?broker.persistent=false&broker.useJmx=false"));
+        pcf = createPooledConnectionFactory();
 
         connection = (TopicConnection) pcf.createConnection();
         TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -70,9 +66,7 @@ public class PooledTopicPublisherTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testSetGetExceptionListener() throws Exception {
-        pcf = new JmsPoolConnectionFactory();
-        pcf.setConnectionFactory(new ActiveMQConnectionFactory(
-            "vm://test?broker.persistent=false&broker.useJmx=false"));
+        pcf = createPooledConnectionFactory();
 
         connection = (TopicConnection) pcf.createConnection();
         ExceptionListener listener = new ExceptionListener() {

@@ -30,9 +30,7 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,78 +42,83 @@ public class PooledConnectionTempQueueTest extends ActiveMQJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testTempQueueIssue() throws JMSException, InterruptedException {
-        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
-            "vm://localhost?broker.persistent=false&broker.useJmx=false");
-        final JmsPoolConnectionFactory cf = new JmsPoolConnectionFactory();
-        cf.setConnectionFactory(factory);
+        final JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 
-        Connection connection = cf.createConnection();
-        assertNotNull(connection);
-        connection.start();
-        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        try {
+            Connection connection = cf.createConnection();
+            assertNotNull(connection);
+            connection.start();
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-        LOG.info("First connection was {}", connection);
+            LOG.info("First connection was {}", connection);
 
-        // This order seems to matter to reproduce the issue
-        connection.close();
-        session.close();
+            // This order seems to matter to reproduce the issue
+            connection.close();
+            session.close();
 
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    receiveAndRespondWithMessageIdAsCorrelationId(cf, SERVICE_QUEUE);
-                } catch (JMSException e) {
-                    e.printStackTrace();
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        receiveAndRespondWithMessageIdAsCorrelationId(cf, SERVICE_QUEUE);
+                    } catch (JMSException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
 
-        sendWithReplyToTemp(cf, SERVICE_QUEUE);
-
-        cf.stop();
+            sendWithReplyToTemp(cf, SERVICE_QUEUE);
+        } finally {
+            cf.stop();
+        }
     }
 
     private void sendWithReplyToTemp(ConnectionFactory cf, String serviceQueue) throws JMSException, InterruptedException {
         Connection connection = cf.createConnection();
-        connection.start();
-        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        TemporaryQueue tempQueue = session.createTemporaryQueue();
-        TextMessage msg = session.createTextMessage("Request");
-        msg.setJMSReplyTo(tempQueue);
-        MessageProducer producer = session.createProducer(session.createQueue(serviceQueue));
-        producer.send(msg);
+        try {
+            connection.start();
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            TemporaryQueue tempQueue = session.createTemporaryQueue();
+            TextMessage msg = session.createTextMessage("Request");
+            msg.setJMSReplyTo(tempQueue);
+            MessageProducer producer = session.createProducer(session.createQueue(serviceQueue));
+            producer.send(msg);
 
-        MessageConsumer consumer = session.createConsumer(tempQueue);
-        Message replyMsg = consumer.receive();
-        assertNotNull(replyMsg);
+            MessageConsumer consumer = session.createConsumer(tempQueue);
+            Message replyMsg = consumer.receive();
+            assertNotNull(replyMsg);
 
-        LOG.debug("Reply message: {}", replyMsg);
+            LOG.debug("Reply message: {}", replyMsg);
 
-        consumer.close();
+            consumer.close();
 
-        producer.close();
-        session.close();
-        connection.close();
+            producer.close();
+            session.close();
+        } finally {
+            connection.close();
+        }
     }
 
     public void receiveAndRespondWithMessageIdAsCorrelationId(ConnectionFactory connectionFactory, String queueName) throws JMSException {
         Connection connection = connectionFactory.createConnection();
-        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        MessageConsumer consumer = session.createConsumer(session.createQueue(queueName));
-        final javax.jms.Message inMessage = consumer.receive();
+        try {
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageConsumer consumer = session.createConsumer(session.createQueue(queueName));
+            final javax.jms.Message inMessage = consumer.receive();
 
-        String requestMessageId = inMessage.getJMSMessageID();
-        LOG.debug("Received message " + requestMessageId);
-        final TextMessage replyMessage = session.createTextMessage("Result");
-        replyMessage.setJMSCorrelationID(inMessage.getJMSMessageID());
-        final MessageProducer producer = session.createProducer(inMessage.getJMSReplyTo());
-        LOG.debug("Sending reply to " + inMessage.getJMSReplyTo());
-        producer.send(replyMessage);
+            String requestMessageId = inMessage.getJMSMessageID();
+            LOG.debug("Received message " + requestMessageId);
+            final TextMessage replyMessage = session.createTextMessage("Result");
+            replyMessage.setJMSCorrelationID(inMessage.getJMSMessageID());
+            final MessageProducer producer = session.createProducer(inMessage.getJMSReplyTo());
+            LOG.debug("Sending reply to " + inMessage.getJMSReplyTo());
+            producer.send(replyMessage);
 
-        producer.close();
-        consumer.close();
-        session.close();
-        connection.close();
+            producer.close();
+            consumer.close();
+            session.close();
+        } finally {
+            connection.close();
+        }
     }
 }

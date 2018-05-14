@@ -84,7 +84,6 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
         } catch (IllegalStateException ise) {
             LOG.debug("Correctly received " + ise);
         } finally {
-            conn.close();
             cf.stop();
         }
 
@@ -107,7 +106,6 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
         } catch (IllegalStateException ise) {
             LOG.debug("Correctly received " + ise);
         } finally {
-            conn.close();
             cf.stop();
         }
 
