@@ -35,7 +35,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.IllegalStateException;
+import javax.jms.IllegalStateRuntimeException;
 import javax.jms.JMSException;
+import javax.jms.JMSRuntimeException;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnection;
@@ -43,8 +45,6 @@ import javax.jms.TopicConnectionFactory;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.messaginghub.pooled.jms.util.Wait;
@@ -449,5 +449,57 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
 
         connections.clear();
         cf.stop();
+    }
+
+    @Test
+    public void testPooledBaseHandlesSubclassesInjectingInvalidFactoriesForConnection() throws Exception {
+        cf = new BadFactoryJmsPoolConnectionFactory();
+        cf.setConnectionFactory(UUID.randomUUID());
+
+        try {
+            cf.createConnection();
+            fail("Should throw IllegalStateException when factory is an invalid type");
+        } catch (IllegalStateException ise) {}
+    }
+
+    @Test
+    public void testPooledBaseHandlesSubclassesInjectingInvalidFactoriesForContext() throws Exception {
+        cf = new BadFactoryJmsPoolConnectionFactory();
+        cf.setConnectionFactory(UUID.randomUUID());
+
+        try {
+            cf.createContext();
+            fail("Should throw IllegalStateRuntimeException when factory is an invalid type");
+        } catch (IllegalStateRuntimeException isre) {}
+    }
+
+    private class BadFactoryJmsPoolConnectionFactory extends JmsPoolConnectionFactory {
+
+        @Override
+        public void setConnectionFactory(Object factory) {
+            // Simulate bad Pooled factory subclass to ensure we validate what it gave us.
+            this.connectionFactory = factory;
+            this.jmsContextSupported = true;
+        }
+    }
+
+    @Test
+    public void testPooledCreateContextFailsWhenJMS20NotSupported() throws Exception {
+        cf = new JMS20NotAllowedJmsPoolConnectionFactory();
+        cf.setConnectionFactory(new MockJMSConnectionFactory());
+
+        try {
+            cf.createContext();
+            fail("Should throw JMSRuntimeException when told JMS 2.0 isn't available");
+        } catch (JMSRuntimeException jmsre) {}
+    }
+
+    private class JMS20NotAllowedJmsPoolConnectionFactory extends JmsPoolConnectionFactory {
+
+        @Override
+        public void setConnectionFactory(Object factory) {
+            super.setConnectionFactory(factory);
+            this.jmsContextSupported = false;
+        }
     }
 }
