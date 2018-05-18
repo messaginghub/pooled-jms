@@ -16,25 +16,33 @@
  */
 package org.messaginghub.pooled.jms;
 
+import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.junit.EmbeddedJMSResource;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ArtemisJmsPoolTestSupport {
 
     @Rule public TestName name = new TestName();
-    @Rule public EmbeddedJMSResource server = new EmbeddedJMSResource(false);
+    @ClassRule public static EmbeddedJMSResource server = new EmbeddedJMSResource(true);
 
     protected static final Logger LOG = LoggerFactory.getLogger(ArtemisJmsPoolTestSupport.class);
 
     protected ActiveMQConnectionFactory artemisJmsConnectionFactory;
     protected JmsPoolConnectionFactory cf;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        Configuration configuration = server.getJmsServer().getActiveMQServer().getConfiguration();
+        configuration.addAcceptorConfiguration("amqp", "tcp://0.0.0.0:5672?tcpSendBufferSize=1048576;tcpReceiveBufferSize=1048576;protocols=AMQP;useEpoll=true;amqpCredits=1000;amqpMinCredits=300;multicastPrefix=topic://");
+    }
 
     @Before
     public void setUp() throws Exception {

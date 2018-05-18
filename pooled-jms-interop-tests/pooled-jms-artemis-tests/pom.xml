@@ -15,7 +15,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.messaginghub</groupId>
@@ -39,10 +40,28 @@
     <!-- Adding the JMS 1.1 API jar for these tests explicitly, first,
          since its whats implemented by ActiveMQ, and also helps to
          verify the pool works when both APIs are on the classpath -->
+    <!--<dependency>-->
+    <!--<groupId>org.apache.geronimo.specs</groupId>-->
+    <!--<artifactId>geronimo-jms_1.1_spec</artifactId>-->
+    <!--</dependency>-->
+    <!--let's get 2.0, Artemis implements that, and to have autocloseable resources-->
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <artifactId>geronimo-jms_2.0_spec</artifactId>
     </dependency>
+    <!--so I can try more clients-->
+    <dependency>
+      <groupId>org.apache.qpid</groupId>
+      <artifactId>qpid-jms-client</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-amqp-protocol</artifactId>
+      <version>${artemis-version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.geronimo.components</groupId>
       <artifactId>geronimo-transaction</artifactId>
