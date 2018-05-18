@@ -387,6 +387,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * once the maximum number of sessions has been borrowed from the the Session Pool.
      *
      * @return true if the pooled Connection createSession method will block when the limit is hit.
+     *
      * @see #setBlockIfSessionPoolIsFull(boolean)
      */
     public boolean isBlockIfSessionPoolIsFull() {
@@ -579,15 +580,16 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     }
 
     /**
-     * Controls the behavior of the internal session pool. By default the call to
-     * Connection.getSession() will block if the session pool is full.  This setting
+     * Controls the behavior of the internal {@link Session} pool. By default the call to
+     * Connection.getSession() will block if the {@link Session} pool is full.  This setting
      * will affect how long it blocks and throws an exception after the timeout.
      * <p>
-     * The size of the session pool is controlled by the @see #maximumActive
-     * property.
+     * The size of the session pool is controlled by the {@link #setMaximumActiveSessionPerConnection(int)}
+     * value that has been configured.  Whether or not the call to create session blocks is controlled
+     * by the {@link #setBlockIfSessionPoolIsFull(boolean)} property.
      * <p>
-     * Whether or not the call to create session blocks is controlled by the
-     * @see #blockIfSessionPoolIsFull property
+     * By default the timeout defaults to -1 and a blocked call to create a Session will
+     * wait indefinitely for a new {@link Session}
      *
      * @param blockIfSessionPoolIsFullTimeout
      * 		if blockIfSessionPoolIsFullTimeout is true then use this setting
@@ -605,7 +607,20 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     }
 
     /**
-     * Controls weather the underlying connection should be reset (and renewed) on JMSException
+     * Controls weather the underlying connection should be reset (and renewed) on JMSException, this
+     * value is true by default.
+     * <p>
+     * When true and a JMSException is detected by the pool for a given JMS Connection the connection
+     * is closed and evicted from the pool.  The next call to create a new Connection would then produce
+     * a new Connection or a different Connection from the remaining set of pooled Connections.  Client
+     * code must always be prepared to handle exceptions from the Connections they are using and the
+     * proper response in the case the the Connection or its resources start throwing JMS Exceptions
+     * from the API would be to close the current connection and request a new one from the pool.
+     * <p>
+     * When false the Connections that are loaned out would not be evicted from the pool on a Connection
+     * error and future calls to create a Connection could result in the broken Connection being returned.
+     * Depending on the size of the pool the implies that eventually all Connections could become invalid
+     * and the pool no longer usable.
      *
      * @param reconnectOnException
      *          Boolean value that configures whether reconnect on exception should happen
@@ -624,10 +639,11 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     /**
      * Controls the behavior of the {@link JmsPoolConnectionFactory#createContext} methods.
      * <p>
-     * By default this value is set to false and the JMS Pool will use an pooled version of
+     * By default this value is set to false and the JMS Pool will use n pooled version of
      * a JMSContext to wrap Connections from the pool.  These pooled JMSContext's have certain
      * limitations which may not be desirable in some cases.  To use the JMSContext implementation
-     * from the underlying JMS provider this option can be set to true.
+     * from the underlying JMS provider this option can be set to true however in that case no
+     * pooling will be applied to the JMSContext's create or their underlying connections.
      *
      * @param useProviderJMSContext
      * 		Boolean value indicating whether the pool should include JMSContext in the pooling.
