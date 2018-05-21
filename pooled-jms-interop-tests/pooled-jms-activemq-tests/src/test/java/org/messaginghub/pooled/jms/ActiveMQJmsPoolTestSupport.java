@@ -17,6 +17,7 @@
 package org.messaginghub.pooled.jms;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.jms.JMSException;
@@ -25,19 +26,18 @@ import javax.management.ObjectName;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQXAConnectionFactory;
-import org.apache.activemq.advisory.AdvisorySupport;
-import org.apache.activemq.broker.Broker;
-import org.apache.activemq.broker.BrokerFilter;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.ConnectionContext;
 import org.apache.activemq.broker.jmx.BrokerViewMBean;
 import org.apache.activemq.broker.jmx.ConnectorViewMBean;
 import org.apache.activemq.broker.jmx.QueueViewMBean;
-import org.apache.activemq.broker.region.Subscription;
-import org.apache.activemq.command.ActiveMQDestination;
-import org.apache.activemq.command.ConnectionInfo;
-import org.apache.activemq.command.ConsumerInfo;
+import org.apache.activemq.filter.DestinationMapEntry;
+import org.apache.activemq.security.AuthenticationUser;
+import org.apache.activemq.security.AuthorizationEntry;
+import org.apache.activemq.security.AuthorizationPlugin;
+import org.apache.activemq.security.DefaultAuthorizationMap;
+import org.apache.activemq.security.SimpleAuthenticationPlugin;
+import org.apache.activemq.security.TempDestinationAuthorizationEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +50,11 @@ public class ActiveMQJmsPoolTestSupport {
     @Rule public TestName name = new TestName();
 
     protected static final Logger LOG = LoggerFactory.getLogger(ActiveMQJmsPoolTestSupport.class);
+
+    private static final String ADMIN = "admin";
+    private static final String USER = "user";
+    private static final String GUEST = "guest";
+    private static final String USER_PASSWORD = "password";
 
     protected BrokerService brokerService;
     protected String connectionURI;
@@ -99,42 +104,19 @@ public class ActiveMQJmsPoolTestSupport {
 
         ArrayList<BrokerPlugin> plugins = new ArrayList<BrokerPlugin>();
 
-        plugins.add(new BrokerPlugin() {
+        List<AuthenticationUser> users = new ArrayList<AuthenticationUser>();
+        users.add(new AuthenticationUser(USER, USER_PASSWORD, "users"));
+        users.add(new AuthenticationUser(GUEST, USER_PASSWORD, "guests"));
+        users.add(new AuthenticationUser(ADMIN, ADMIN, "admins"));
 
-            @Override
-            public Broker installPlugin(Broker broker) throws Exception {
-                return new BrokerFilter(broker) {
+        SimpleAuthenticationPlugin authenticationPlugin = new SimpleAuthenticationPlugin(users);
+        authenticationPlugin.setAnonymousAccessAllowed(true);
 
-                    @Override
-                    public void addConnection(ConnectionContext context, ConnectionInfo info) throws Exception {
-                        if ("invalid".equals(info.getUserName())) {
-                            throw new SecurityException("Username or password was invalid");
-                        }
+        plugins.add(authenticationPlugin);
+        plugins.add(configureAuthorization());
 
-                        super.addConnection(context, info);
-                    }
+        brokerService.setPlugins(plugins.toArray(new BrokerPlugin[2]));
 
-                    @Override
-                    public Subscription addConsumer(ConnectionContext context, ConsumerInfo info) throws Exception {
-                        ActiveMQDestination destination = info.getDestination();
-
-                        if (!AdvisorySupport.isAdvisoryTopic(destination) &&
-                            !destination.getPhysicalName().startsWith("GUESTS")) {
-
-                            if ("guest".equals(context.getUserName())) {
-                                throw new SecurityException("User guest not authorized to read");
-                            }
-                        }
-
-                        return super.addConsumer(context, info);
-                    }
-                };
-            }
-        });
-
-        BrokerPlugin[] array = new BrokerPlugin[plugins.size()];
-
-        brokerService.setPlugins(plugins.toArray(array));
         brokerService.start();
         brokerService.waitUntilStarted();
 
@@ -200,5 +182,65 @@ public class ActiveMQJmsPoolTestSupport {
         QueueViewMBean proxy = (QueueViewMBean) brokerService.getManagementContext()
                 .newProxyInstance(queueViewMBeanName, QueueViewMBean.class, true);
         return proxy;
+    }
+
+    protected BrokerPlugin configureAuthorization() throws Exception {
+
+        @SuppressWarnings("rawtypes")
+        List<DestinationMapEntry> authorizationEntries = new ArrayList<DestinationMapEntry>();
+
+        AuthorizationEntry entry = new AuthorizationEntry();
+        entry.setQueue(">");
+        entry.setRead("admins,anonymous");
+        entry.setWrite("admins,anonymous");
+        entry.setAdmin("admins,anonymous");
+        authorizationEntries.add(entry);
+        entry = new AuthorizationEntry();
+        entry.setQueue("USERS.>");
+        entry.setRead("users");
+        entry.setWrite("users");
+        entry.setAdmin("users");
+        authorizationEntries.add(entry);
+        entry = new AuthorizationEntry();
+        entry.setQueue("GUEST.>");
+        entry.setRead("guests");
+        entry.setWrite("guests,users");
+        entry.setAdmin("guests,users");
+        authorizationEntries.add(entry);
+        entry = new AuthorizationEntry();
+        entry.setTopic(">");
+        entry.setRead("admins,anonymous");
+        entry.setWrite("admins,anonymous");
+        entry.setAdmin("admins,anonymous");
+        authorizationEntries.add(entry);
+        entry = new AuthorizationEntry();
+        entry.setTopic("USERS.>");
+        entry.setRead("users");
+        entry.setWrite("users");
+        entry.setAdmin("users");
+        authorizationEntries.add(entry);
+        entry = new AuthorizationEntry();
+        entry.setTopic("GUEST.>");
+        entry.setRead("guests");
+        entry.setWrite("guests,users");
+        entry.setAdmin("guests,users");
+        authorizationEntries.add(entry);
+        entry = new AuthorizationEntry();
+        entry.setTopic("ActiveMQ.Advisory.>");
+        entry.setRead("guests,users,anonymous");
+        entry.setWrite("guests,users,anonymous");
+        entry.setAdmin("guests,users,anonymous");
+        authorizationEntries.add(entry);
+
+        TempDestinationAuthorizationEntry tempEntry = new TempDestinationAuthorizationEntry();
+        tempEntry.setRead("admins,anonymous");
+        tempEntry.setWrite("admins,anonymous");
+        tempEntry.setAdmin("admins,anonymous");
+
+        DefaultAuthorizationMap authorizationMap = new DefaultAuthorizationMap(authorizationEntries);
+        authorizationMap.setTempDestinationAuthorizationEntry(tempEntry);
+        AuthorizationPlugin authorizationPlugin = new AuthorizationPlugin(authorizationMap);
+
+        return authorizationPlugin;
     }
 }

@@ -74,13 +74,9 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
             fail("Should fail to connect");
         } catch (JMSSecurityException ex) {
             LOG.info("Caught expected security error");
-        } catch (JMSException ex) {
-            System.out.println("Error caught was: " + ex);
-            LOG.warn("Caught unexpected exception: ", ex);
-            throw ex;
         }
 
-        connection = pooledConnFact.createConnection("system", "manager");
+        connection = pooledConnFact.createConnection("admin", "admin");
         connection.start();
 
         LOG.info("Successfully create new connection.");
@@ -106,7 +102,7 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
             LOG.info("Caught expected security error");
         }
 
-        connection = pooledConnFact.createConnection("system", "manager");
+        connection = pooledConnFact.createConnection("admin", "admin");
         connection.start();
 
         LOG.info("Successfully create new connection.");
@@ -199,7 +195,7 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
             LOG.info("Caught expected security error");
         }
 
-        connection = pooledConnFact.createConnection("system", "manager");
+        connection = pooledConnFact.createConnection("admin", "admin");
         connection.start();
 
         LOG.info("Successfully create new connection.");
@@ -240,7 +236,6 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
             fail("Should fail to connect");
         } catch (JMSSecurityException ex) {
             LOG.info("Caught expected security error");
-            connection2.close();
         } finally {
             connection2.close();
         }
