@@ -322,7 +322,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * Clears all connections from the pool.  Each connection that is currently in the pool is
      * closed and removed from the pool.  A new connection will be created on the next call to
      * {@link #createConnection} if the pool has not been stopped.  Care should be taken when
-     * using this method as Connections that are in use be client's will be closed.
+     * using this method as Connections that are in use by the client will be closed.
      */
     public void clear() {
         if (stopped.get()) {
@@ -396,7 +396,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     /**
      * Returns the maximum number to pooled Connections that this factory will allow before it
-     * begins to return connections from the pool on calls to ({@link #createConnection}.
+     * begins to return existing connections from the pool on calls to ({@link #createConnection}.
      *
      * @return the maxConnections that will be created for this pool.
      */
@@ -406,7 +406,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     /**
      * Sets the maximum number of pooled Connections (defaults to one).  Each call to
-     * {@link #createConnection} will result in a new Connection being create up to the max
+     * {@link #createConnection} will result in a new Connection being created up to the max
      * connections value, once the maximum Connections have been created Connections are served
      * in a last in first out ordering.
      *
@@ -640,7 +640,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * Controls the behavior of the {@link JmsPoolConnectionFactory#createContext} methods.
      * <p>
      * By default this value is set to false and the JMS Pool will use n pooled version of
-     * a JMSContext to wrap Connections from the pool.  These pooled JMSContext's have certain
+     * a JMSContext to wrap Connections from the pool.  These pooled JMSContext objects have certain
      * limitations which may not be desirable in some cases.  To use the JMSContext implementation
      * from the underlying JMS provider this option can be set to true however in that case no
      * pooling will be applied to the JMSContext's create or their underlying connections.
