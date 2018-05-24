@@ -51,7 +51,6 @@ public class PooledConnectionSecurityExceptionTest extends ActiveMQJmsPoolTestSu
 
         pooledConnFact = createPooledConnectionFactory();
         pooledConnFact.setMaxConnections(1);
-        pooledConnFact.setReconnectOnException(true);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class JmsPoolSessionExhaustionTest extends JmsPoolTestSupport {
         cf.setConnectionFactory(factory);
         cf.setMaxConnections(1);
         cf.setBlockIfSessionPoolIsFull(false);
-        cf.setMaximumActiveSessionPerConnection(1);
+        cf.setMaxSessionsPerConnection(1);
     }
 
     @Test(timeout = 60000)

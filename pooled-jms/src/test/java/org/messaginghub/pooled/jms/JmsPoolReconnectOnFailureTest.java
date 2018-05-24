@@ -50,7 +50,6 @@ public class JmsPoolReconnectOnFailureTest extends JmsPoolTestSupport {
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);
         cf.setMaxConnections(1);
-        cf.setReconnectOnException(true);
     }
 
     @Test(timeout = 60000)

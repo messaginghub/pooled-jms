@@ -17,7 +17,6 @@
 package org.messaginghub.pooled.jms;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -65,19 +64,11 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
     }
 
     @Test(timeout = 60000)
-    public void testSetReconnectOnException() throws  Exception {
-        cf = new JmsPoolConnectionFactory();
-        assertTrue(cf.isReconnectOnException());
-        cf.setReconnectOnException(false);
-        assertFalse(cf.isReconnectOnException());
-    }
-
-    @Test(timeout = 60000)
     public void testSetTimeBetweenExpirationCheckMillis() throws  Exception {
         cf = new JmsPoolConnectionFactory();
-        assertEquals(-1, cf.getTimeBetweenExpirationCheckMillis());
-        cf.setTimeBetweenExpirationCheckMillis(5000);
-        assertEquals(5000, cf.getTimeBetweenExpirationCheckMillis());
+        assertEquals(-1, cf.getConnectionCheckInterval());
+        cf.setConnectionCheckInterval(5000);
+        assertEquals(5000, cf.getConnectionCheckInterval());
     }
 
     @Test(timeout = 60000)
@@ -421,7 +412,6 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(mock);
         cf.setMaxConnections(numConnections);
-        cf.setCreateConnectionOnStartup(createOnStart);
         cf.start();
 
         final ConcurrentMap<UUID, Connection> connections = new ConcurrentHashMap<>();

@@ -161,7 +161,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
             try {
                 cf = createPooledConnectionFactory();
                 cf.setMaxConnections(3);
-                cf.setMaximumActiveSessionPerConnection(1);
+                cf.setMaxSessionsPerConnection(1);
                 cf.setBlockIfSessionPoolIsFull(false);
 
                 conn = cf.createConnection();
@@ -212,7 +212,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
     public void testAllSessionsAvailableOnConstrainedPool() throws Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(5);
-        cf.setMaximumActiveSessionPerConnection(2);
+        cf.setMaxSessionsPerConnection(2);
         cf.setBlockIfSessionPoolIsFull(false);
 
         LinkedList<Connection> connections = new LinkedList<>();

@@ -274,7 +274,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testPooledSessionStatsOneSessionWithSessionLimit() throws Exception {
-        cf.setMaximumActiveSessionPerConnection(1);
+        cf.setMaxSessionsPerConnection(1);
         cf.setBlockIfSessionPoolIsFull(false);
 
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();

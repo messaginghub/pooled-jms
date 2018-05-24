@@ -286,23 +286,13 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
     }
 
     @Test(timeout = 60000)
-    public void testConcurrentCreateGetsUniqueConnectionCreateOnDemand() throws Exception {
-        doTestConcurrentCreateGetsUniqueConnection(false);
-    }
-
-    @Test(timeout = 60000)
-    public void testConcurrentCreateGetsUniqueConnectionCreateOnStart() throws Exception {
-        doTestConcurrentCreateGetsUniqueConnection(true);
-    }
-
-    private void doTestConcurrentCreateGetsUniqueConnection(boolean createOnStart) throws Exception {
+    public void testConcurrentCreateGetsUniqueConnection() throws Exception {
         final JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 
         try {
             final int numConnections = 2;
 
             cf.setMaxConnections(numConnections);
-            cf.setCreateConnectionOnStartup(createOnStart);
             cf.start();
 
             final ConcurrentMap<ConnectionId, Connection> connections = new ConcurrentHashMap<ConnectionId, Connection>();

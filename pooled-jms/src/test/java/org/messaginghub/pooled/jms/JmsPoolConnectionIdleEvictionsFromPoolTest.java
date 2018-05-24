@@ -25,39 +25,14 @@ import java.util.concurrent.TimeUnit;
 import javax.jms.Connection;
 import javax.jms.Session;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-public class PooledConnectionExpiryEvictsFromPoolTest extends ActiveMQJmsPoolTestSupport {
-
-    private JmsPoolConnectionFactory pooledFactory;
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-
-        pooledFactory = createPooledConnectionFactory();
-        pooledFactory.setMaxConnections(1);
-    }
-
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        try {
-            pooledFactory.stop();
-        } catch (Exception ex) {
-            // ignored
-        }
-
-        super.tearDown();
-    }
+public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testEvictionOfIdle() throws Exception {
-        pooledFactory.setIdleTimeout(10);
-        JmsPoolConnection connection = (JmsPoolConnection) pooledFactory.createConnection();
+        cf.setConnectionIdleTimeout(10);
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Connection amq1 = connection.getConnection();
 
         connection.close();
@@ -65,30 +40,15 @@ public class PooledConnectionExpiryEvictsFromPoolTest extends ActiveMQJmsPoolTes
         // let it idle timeout
         TimeUnit.MILLISECONDS.sleep(20);
 
-        JmsPoolConnection connection2 = (JmsPoolConnection) pooledFactory.createConnection();
+        JmsPoolConnection connection2 = (JmsPoolConnection) cf.createConnection();
         Connection amq2 = connection2.getConnection();
         assertTrue("not equal", !amq1.equals(amq2));
     }
 
     @Test(timeout = 60000)
-    public void testEvictionOfExpired() throws Exception {
-        pooledFactory.setExpiryTimeout(10);
-        Connection connection = pooledFactory.createConnection();
-        Connection amq1 = ((JmsPoolConnection) connection).getConnection();
-
-        // let it expire while in use
-        TimeUnit.MILLISECONDS.sleep(20);
-        connection.close();
-
-        Connection connection2 = pooledFactory.createConnection();
-        Connection amq2 = ((JmsPoolConnection) connection2).getConnection();
-        assertTrue("not equal", !amq1.equals(amq2));
-    }
-
-    @Test(timeout = 60000)
     public void testNotIdledWhenInUse() throws Exception {
-        pooledFactory.setIdleTimeout(10);
-        JmsPoolConnection connection = (JmsPoolConnection) pooledFactory.createConnection();
+        cf.setConnectionIdleTimeout(10);
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
         // let connection to get idle
@@ -96,7 +56,7 @@ public class PooledConnectionExpiryEvictsFromPoolTest extends ActiveMQJmsPoolTes
 
         // get a connection from pool again, it should be the same underlying connection
         // as before and should not be idled out since an open session exists.
-        JmsPoolConnection connection2 = (JmsPoolConnection) pooledFactory.createConnection();
+        JmsPoolConnection connection2 = (JmsPoolConnection) cf.createConnection();
         assertSame(connection.getConnection(), connection2.getConnection());
 
         // now the session is closed even when it should not be
@@ -117,7 +77,7 @@ public class PooledConnectionExpiryEvictsFromPoolTest extends ActiveMQJmsPoolTes
 
         // get a connection from pool again, it should be a new Connection instance as the
         // old one should have been inactive and idled out.
-        JmsPoolConnection connection3 = (JmsPoolConnection) pooledFactory.createConnection();
+        JmsPoolConnection connection3 = (JmsPoolConnection) cf.createConnection();
         assertNotSame(original, connection3.getConnection());
     }
 }

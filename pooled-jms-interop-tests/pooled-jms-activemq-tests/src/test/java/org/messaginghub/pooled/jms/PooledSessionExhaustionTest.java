@@ -60,7 +60,7 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
         pooledFactory = createPooledConnectionFactory();
         pooledFactory.setMaxConnections(1);
         pooledFactory.setBlockIfSessionPoolIsFull(false);
-        pooledFactory.setMaximumActiveSessionPerConnection(1);
+        pooledFactory.setMaxSessionsPerConnection(1);
     }
 
     @Override

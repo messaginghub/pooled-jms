@@ -61,7 +61,7 @@ public class PooledSessionExhaustionBlockTimeoutTest extends ActiveMQJmsPoolTest
         pooledFactory.setMaxConnections(1);
         pooledFactory.setBlockIfSessionPoolIsFull(true);
         pooledFactory.setBlockIfSessionPoolIsFullTimeout(500);
-        pooledFactory.setMaximumActiveSessionPerConnection(1);
+        pooledFactory.setMaxSessionsPerConnection(1);
     }
 
     @Override

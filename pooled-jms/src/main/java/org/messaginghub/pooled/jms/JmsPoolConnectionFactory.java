@@ -65,12 +65,12 @@ import org.slf4j.LoggerFactory;
  * http://activemq.apache.org/i-do-not-receive-messages-in-my-second-consumer.html
  *
  * Optionally, one may configure the pool to examine and possibly evict objects as they sit idle in the
- * pool. This is performed by an "idle object eviction" thread, which runs asynchronously. Caution should
- * be used when configuring this optional feature. Eviction runs contend with client threads for access
- * to objects in the pool, so if they run too frequently performance issues may result. The idle object
- * eviction thread may be configured using the {@link org.messaginghub.pooled.jms.JmsPoolConnectionFactory#setTimeBetweenExpirationCheckMillis} method.  By
- * default the value is -1 which means no eviction thread will be run.  Set to a non-negative value to
- * configure the idle eviction thread to run.
+ * pool. This is performed by an "connection check" thread, which runs asynchronously. Caution should
+ * be used when configuring this optional feature. Connection check runs contend with client threads for
+ * access to resources in the pool, so if they run too frequently performance issues may result. The
+ * connection check thread may be configured using the {@link JmsPoolConnectionFactory#setConnectionCheckInterval(long)}
+ * method.  By default the value is -1 which means no connection check thread will be run.  Set to a
+ * non-negative value to configure the connection check thread to run.
  */
 public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory {
 
@@ -85,15 +85,12 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     protected Object connectionFactory;
     protected boolean jmsContextSupported;
 
-    private int maximumActiveSessionPerConnection = 500;
-    private int idleTimeout = 30 * 1000;
+    private int maxSessionsPerConnection = 500;
+    private int connectionIdleTimeout = 30 * 1000;
     private boolean blockIfSessionPoolIsFull = true;
     private long blockIfSessionPoolIsFullTimeout = -1L;
-    private long expiryTimeout = 0l;
-    private boolean createConnectionOnStartup = true;
     private boolean useAnonymousProducers = true;
     private int explicitProducerCacheSize = 0;
-    private boolean reconnectOnException = true;
     private boolean useProviderJMSContext = false;
 
     // Temporary value used to always fetch the result of makeObject.
@@ -110,15 +107,13 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                         Connection delegate = createProviderConnection(connectionKey);
 
                         PooledConnection connection = createPooledConnection(delegate);
-                        connection.setIdleTimeout(getIdleTimeout());
-                        connection.setExpiryTimeout(getExpiryTimeout());
-                        connection.setMaximumActiveSessionPerConnection(getMaximumActiveSessionPerConnection());
+                        connection.setIdleTimeout(getConnectionIdleTimeout());
+                        connection.setMaxSessionsPerConnection(getMaxSessionsPerConnection());
                         connection.setBlockIfSessionPoolIsFull(isBlockIfSessionPoolIsFull());
                         if (isBlockIfSessionPoolIsFull() && getBlockIfSessionPoolIsFullTimeout() > 0) {
                             connection.setBlockIfSessionPoolIsFullTimeout(getBlockIfSessionPoolIsFullTimeout());
                         }
                         connection.setUseAnonymousProducers(isUseAnonymousProducers());
-                        connection.setReconnectOnException(isReconnectOnException());
                         connection.setExplicitProducerCacheSize(getExplicitProducerCacheSize());
 
                         LOG.trace("Created new connection: {}", connection);
@@ -284,16 +279,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * provider {@link ConnectionFactory}.
      */
     public void start() {
-        LOG.debug("Staring the PooledConnectionFactory: create on start = {}", isCreateConnectionOnStartup());
+        LOG.debug("Staring the JmsPoolConnectionFactory.");
         stopped.set(false);
-        if (isCreateConnectionOnStartup()) {
-            try {
-                // warm the pool by creating a connection during startup
-                createConnection().close();
-            } catch (JMSException e) {
-                LOG.warn("Create pooled connection during start failed. This exception will be ignored.", e);
-            }
-        }
     }
 
     /**
@@ -305,7 +292,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      */
     public void stop() {
         if (stopped.compareAndSet(false, true)) {
-            LOG.debug("Stopping the PooledConnectionFactory, number of connections in cache: {}",
+            LOG.debug("Stopping the JmsPoolConnectionFactory, number of connections in cache: {}",
                       connectionsPool != null ? connectionsPool.getNumActive() : 0);
             try {
                 if (connectionsPool != null) {
@@ -341,12 +328,12 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      *
      * @return the number of session instances that can be taken from a pooled connection.
      */
-    public int getMaximumActiveSessionPerConnection() {
-        return maximumActiveSessionPerConnection;
+    public int getMaxSessionsPerConnection() {
+        return maxSessionsPerConnection;
     }
 
     /**
-     * Sets the maximum number of active sessions per connection
+     * Sets the maximum number of pooled sessions per connection in the pool.
      * <p>
      * A Connection that is created from this JMS Connection pool can limit the number
      * of Sessions that are created and loaned out.  When a limit is in place the client
@@ -358,25 +345,25 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * pool a Connection may not have any available Session instances to loan out if a limit
      * is configured.
      *
-     * @param maximumActiveSessionPerConnection
-     *      The maximum number of active session per connection in the pool.
+     * @param maxSessionsPerConnection
+     *      The maximum number of pooled sessions per connection in the pool.
      */
-    public void setMaximumActiveSessionPerConnection(int maximumActiveSessionPerConnection) {
-        this.maximumActiveSessionPerConnection = maximumActiveSessionPerConnection;
+    public void setMaxSessionsPerConnection(int maxSessionsPerConnection) {
+        this.maxSessionsPerConnection = maxSessionsPerConnection;
     }
 
     /**
      * Controls the behavior of the internal session pool. By default the call to
-     * Connection.getSession() will block if the session pool is full.  If the
-     * argument false is given, it will change the default behavior and instead the
-     * call to getSession() will throw a JMSException.
+     * {@link Connection#createSession()} will block if the session pool is full.  If the
+     * block options is set to false, it will change the default behavior and instead the
+     * call to create a {@link Session} will throw a JMSException.
      * <p>
-     * The size of the session pool is controlled by the {@link #getMaximumActiveSessionPerConnection()}
+     * The size of the session pool is controlled by the {@link #getMaxSessionsPerConnection()}
      * configuration property.
      *
      * @param block
-     * 		if true, the call to getSession() blocks if the pool is full until a session
-     *      object is available.  defaults to true.
+     * 		if true, the call to {@link Connection#createSession()} blocks if the session pool is full
+     *      until a session is available.  defaults to true.
      */
     public void setBlockIfSessionPoolIsFull(boolean block) {
         this.blockIfSessionPoolIsFull = block;
@@ -419,67 +406,32 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     }
 
     /**
-     * Gets the Idle timeout value applied to new Connection's that are created by this pool.
-     * <p>
-     * The idle timeout is used determine if a Connection instance has sat to long in the pool unused
-     * and if so is closed and removed from the pool.  The default value is 30 seconds.
+     * Gets the idle timeout value applied to Connection's that are created by this pool but are
+     * not currently in use.
      *
-     * @return idle timeout value (milliseconds)
+     * @return the connection idle timeout value in (milliseconds).
      */
-    public int getIdleTimeout() {
-        return idleTimeout;
+    public int getConnectionIdleTimeout() {
+        return connectionIdleTimeout;
     }
 
     /**
-     * Sets the idle timeout  value for Connection's that are created by this pool in Milliseconds,
-     * defaults to 30 seconds.
+     * Sets the idle timeout value for Connection's that are created by this pool but not in use in
+     * Milliseconds (defaults to 30 seconds).
      * <p>
      * For a Connection that is in the pool but has no current users the idle timeout determines how
      * long the Connection can live before it is eligible for removal from the pool.  Normally the
      * connections are tested when an attempt to check one out occurs so a Connection instance can sit
-     * in the pool much longer than its idle timeout if connections are used infrequently.
+     * in the pool much longer than its idle timeout if connections are used infrequently.  To evict idle
+     * connections in a more timely manner the {@link #setConnectionCheckInterval(long)} can be configured
+     * to a non-zero value and the pool will actively check for idle connections that have exceeded their
+     * idle timeout value.
      *
-     * @param idleTimeout
+     * @param connectionIdleTimeout
      *      The maximum time a pooled Connection can sit unused before it is eligible for removal.
      */
-    public void setIdleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
-    }
-
-    /**
-     * allow connections to expire, irrespective of load or idle time. This is useful with failover
-     * to force a reconnect from the pool, to reestablish load balancing or use of the master post recovery
-     *
-     * @param expiryTimeout non zero in milliseconds
-     */
-    public void setExpiryTimeout(long expiryTimeout) {
-        this.expiryTimeout = expiryTimeout;
-    }
-
-    /**
-     * @return the configured expiration timeout for connections in the pool.
-     */
-    public long getExpiryTimeout() {
-        return expiryTimeout;
-    }
-
-    /**
-     * @return true if a Connection is created immediately on a call to {@link Connection#start}.
-     */
-    public boolean isCreateConnectionOnStartup() {
-        return createConnectionOnStartup;
-    }
-
-    /**
-     * Whether to create a connection on starting this {@link JmsPoolConnectionFactory}.
-     * <p>
-     * This can be used to warm-up the pool on startup. Notice that any kind of exception
-     * happens during startup is logged at WARN level and ignored.
-     *
-     * @param createConnectionOnStartup <tt>true</tt> to create a connection on startup
-     */
-    public void setCreateConnectionOnStartup(boolean createConnectionOnStartup) {
-        this.createConnectionOnStartup = createConnectionOnStartup;
+    public void setConnectionIdleTimeout(int connectionIdleTimeout) {
+        this.connectionIdleTimeout = connectionIdleTimeout;
     }
 
     /**
@@ -540,24 +492,24 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     }
 
     /**
-     * Sets the number of milliseconds to sleep between runs of the idle Connection eviction thread.
-     * When non-positive, no idle object eviction thread will be run, and Connections will only be
-     * checked on borrow to determine if they have sat idle for too long or have failed for some
-     * other reason.
+     * Sets the number of milliseconds to sleep between runs of the Connection check thread.
+     * When non-positive, no connection check thread will be run, and Connections will only be
+     * checked on borrow to determine if they are still valid and can continue to be used or should
+     * be closed and or evicted from the pool.
      * <p>
-     * By default this value is set to -1 and no expiration thread ever runs.
+     * By default this value is set to -1 and a connection check thread is not started.
      *
-     * @param timeBetweenExpirationCheckMillis
-     *      The time to wait between runs of the idle Connection eviction thread.
+     * @param connectionCheckInterval
+     *      The time to wait between runs of the Connection check thread.
      */
-    public void setTimeBetweenExpirationCheckMillis(long timeBetweenExpirationCheckMillis) {
-        getConnectionsPool().setTimeBetweenEvictionRunsMillis(timeBetweenExpirationCheckMillis);
+    public void setConnectionCheckInterval(long connectionCheckInterval) {
+        getConnectionsPool().setTimeBetweenEvictionRunsMillis(connectionCheckInterval);
     }
 
     /**
-     * @return the number of milliseconds to sleep between runs of the idle connection eviction thread.
+     * @return the number of milliseconds to sleep between runs of the connection check thread.
      */
-    public long getTimeBetweenExpirationCheckMillis() {
+    public long getConnectionCheckInterval() {
         return getConnectionsPool().getTimeBetweenEvictionRunsMillis();
     }
 
@@ -584,7 +536,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * Connection.getSession() will block if the {@link Session} pool is full.  This setting
      * will affect how long it blocks and throws an exception after the timeout.
      * <p>
-     * The size of the session pool is controlled by the {@link #setMaximumActiveSessionPerConnection(int)}
+     * The size of the session pool is controlled by the {@link #setMaxSessionsPerConnection(int)}
      * value that has been configured.  Whether or not the call to create session blocks is controlled
      * by the {@link #setBlockIfSessionPoolIsFull(boolean)} property.
      * <p>
@@ -597,36 +549,6 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      */
     public void setBlockIfSessionPoolIsFullTimeout(long blockIfSessionPoolIsFullTimeout) {
         this.blockIfSessionPoolIsFullTimeout = blockIfSessionPoolIsFullTimeout;
-    }
-
-    /**
-     * @return true if the underlying connection will be renewed on JMSException, false otherwise
-     */
-    public boolean isReconnectOnException() {
-        return reconnectOnException;
-    }
-
-    /**
-     * Controls weather the underlying connection should be reset (and renewed) on JMSException, this
-     * value is true by default.
-     * <p>
-     * When true and a JMSException is detected by the pool for a given JMS Connection the connection
-     * is closed and evicted from the pool.  The next call to create a new Connection would then produce
-     * a new Connection or a different Connection from the remaining set of pooled Connections.  Client
-     * code must always be prepared to handle exceptions from the Connections they are using and the
-     * proper response in the case the the Connection or its resources start throwing JMS Exceptions
-     * from the API would be to close the current connection and request a new one from the pool.
-     * <p>
-     * When false the Connections that are loaned out would not be evicted from the pool on a Connection
-     * error and future calls to create a Connection could result in the broken Connection being returned.
-     * Depending on the size of the pool the implies that eventually all Connections could become invalid
-     * and the pool no longer usable.
-     *
-     * @param reconnectOnException
-     *          Boolean value that configures whether reconnect on exception should happen
-     */
-    public void setReconnectOnException(boolean reconnectOnException) {
-        this.reconnectOnException = reconnectOnException;
     }
 
     /**
@@ -696,6 +618,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      *
      * @param connection
      * 		The {@link JmsPoolConnection} to use in the JMSContext wrapper.
+     * @param sessionMode
+     * 		The JMS Session acknowledgement mode to use in the {@link JMSContext}
      *
      * @return a new {@link JmsPoolJMSContext} that wraps the given {@link JmsPoolConnection}
      */
@@ -731,7 +655,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      *
      * @param username
      * 		The user name to use when creating the context.
-     * @param username
+     * @param password
      * 		The password to use when creating the context.
      * @param sessionMode
      * 		The session mode to use when creating the context.
@@ -821,16 +745,13 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      *        a properties object that should be filled in with this objects property values.
      */
     protected void populateProperties(Properties props) {
-        props.setProperty("maximumActiveSessionPerConnection", Integer.toString(getMaximumActiveSessionPerConnection()));
+        props.setProperty("maxSessionsPerConnection", Integer.toString(getMaxSessionsPerConnection()));
         props.setProperty("maxConnections", Integer.toString(getMaxConnections()));
-        props.setProperty("idleTimeout", Integer.toString(getIdleTimeout()));
-        props.setProperty("expiryTimeout", Long.toString(getExpiryTimeout()));
-        props.setProperty("timeBetweenExpirationCheckMillis", Long.toString(getTimeBetweenExpirationCheckMillis()));
-        props.setProperty("createConnectionOnStartup", Boolean.toString(isCreateConnectionOnStartup()));
+        props.setProperty("connectionIdleTimeout", Integer.toString(getConnectionIdleTimeout()));
+        props.setProperty("connectionCheckInterval", Long.toString(getConnectionCheckInterval()));
         props.setProperty("useAnonymousProducers", Boolean.toString(isUseAnonymousProducers()));
         props.setProperty("blockIfSessionPoolIsFull", Boolean.toString(isBlockIfSessionPoolIsFull()));
         props.setProperty("blockIfSessionPoolIsFullTimeout", Long.toString(getBlockIfSessionPoolIsFullTimeout()));
-        props.setProperty("reconnectOnException", Boolean.toString(isReconnectOnException()));
         props.setProperty("useProviderJMSContext", Boolean.toString(isUseProviderJMSContext()));
     }
 }

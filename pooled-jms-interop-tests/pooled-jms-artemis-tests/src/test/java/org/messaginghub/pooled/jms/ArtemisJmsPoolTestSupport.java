@@ -22,7 +22,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +44,6 @@ public class ArtemisJmsPoolTestSupport {
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(artemisJmsConnectionFactory);
         cf.setMaxConnections(1);
-        cf.setCreateConnectionOnStartup(false);
     }
 
     @After

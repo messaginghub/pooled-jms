@@ -31,7 +31,6 @@ import javax.jms.Session;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.messaginghub.pooled.jms.mock.MockJMSUser;
 import org.slf4j.Logger;
@@ -57,7 +56,6 @@ public class JmsPoolConnectionSecurityExceptionTest extends JmsPoolTestSupport {
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);
         cf.setMaxConnections(1);
-        cf.setCreateConnectionOnStartup(false);
         cf.start();
     }
 

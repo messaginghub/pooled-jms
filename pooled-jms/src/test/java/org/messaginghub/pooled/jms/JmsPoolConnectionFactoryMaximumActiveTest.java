@@ -66,7 +66,7 @@ public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSuppor
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);
         cf.setMaxConnections(3);
-        cf.setMaximumActiveSessionPerConnection(1);
+        cf.setMaxSessionsPerConnection(1);
         cf.setBlockIfSessionPoolIsFull(true);
 
         connection = cf.createConnection();
@@ -116,7 +116,7 @@ public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSuppor
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);
         cf.setMaxConnections(3);
-        cf.setMaximumActiveSessionPerConnection(1);
+        cf.setMaxSessionsPerConnection(1);
         cf.setBlockIfSessionPoolIsFull(true);
 
         connection = cf.createConnection();

@@ -36,7 +36,6 @@ import org.apache.activemq.broker.TransportConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 
 public class PooledConnectionFailoverTest extends ActiveMQJmsPoolTestSupport {
 
@@ -53,7 +52,6 @@ public class PooledConnectionFailoverTest extends ActiveMQJmsPoolTestSupport {
         pooledConnFact = new JmsPoolConnectionFactory();
         pooledConnFact.setConnectionFactory(directConnFact);
         pooledConnFact.setMaxConnections(1);
-        pooledConnFact.setReconnectOnException(true);
     }
 
     @Override

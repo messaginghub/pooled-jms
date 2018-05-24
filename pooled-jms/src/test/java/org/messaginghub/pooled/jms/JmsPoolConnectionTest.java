@@ -322,7 +322,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
                 cf = new JmsPoolConnectionFactory();
                 cf.setConnectionFactory(mock);
                 cf.setMaxConnections(3);
-                cf.setMaximumActiveSessionPerConnection(1);
+                cf.setMaxSessionsPerConnection(1);
                 cf.setBlockIfSessionPoolIsFull(false);
 
                 conn = cf.createConnection();
