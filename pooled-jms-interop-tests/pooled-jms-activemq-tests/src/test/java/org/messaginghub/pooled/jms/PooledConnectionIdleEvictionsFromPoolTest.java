@@ -29,7 +29,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PooledConnectionIdledEvicionssFromPoolTest extends ActiveMQJmsPoolTestSupport {
+public class PooledConnectionIdleEvictionsFromPoolTest extends ActiveMQJmsPoolTestSupport {
 
     private JmsPoolConnectionFactory pooledFactory;
 

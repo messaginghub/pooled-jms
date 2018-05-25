@@ -46,10 +46,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A JMS provider which pools Connection, Session and MessageProducer instances
- * so it can be used with tools like <a href="http://camel.apache.org/activemq.html">Camel</a> and Spring's
- * <a href="http://activemq.apache.org/spring-support.html">JmsTemplate and MessageListenerContainer</a>.
- * Connections, sessions and producers are returned to a pool after use so that they can be reused later
- * without having to undergo the cost of creating them again.
+ * so it can be used with tools like <a href="http://camel.apache.org/">Camel</a> or any other project
+ * that is configured using JMS ConnectionFactory resources, connections, sessions and producers are
+ * returned to a pool after use so that they can be reused later without having to undergo the cost
+ * of creating them again.
  *
  * <b>NOTE:</b> while this implementation does allow the creation of a collection of active consumers,
  * it does not 'pool' consumers. Pooling makes sense for connections, sessions and producers, which
@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * http://activemq.apache.org/i-do-not-receive-messages-in-my-second-consumer.html
  *
  * Optionally, one may configure the pool to examine and possibly evict objects as they sit idle in the
- * pool. This is performed by an "connection check" thread, which runs asynchronously. Caution should
+ * pool. This is performed by a "connection check" thread, which runs asynchronously. Caution should
  * be used when configuring this optional feature. Connection check runs contend with client threads for
  * access to resources in the pool, so if they run too frequently performance issues may result. The
  * connection check thread may be configured using the {@link JmsPoolConnectionFactory#setConnectionCheckInterval(long)}
@@ -279,7 +279,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * provider {@link ConnectionFactory}.
      */
     public void start() {
-        LOG.debug("Staring the JmsPoolConnectionFactory.");
+        LOG.debug("Starting the JmsPoolConnectionFactory.");
         stopped.set(false);
     }
 
@@ -300,7 +300,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                     connectionsPool = null;
                 }
             } catch (Exception ignored) {
-                LOG.trace("Caught exception on close of connectionPool: ", ignored);
+                LOG.trace("Caught exception on close of the Connection pool: ", ignored);
             }
         }
     }
