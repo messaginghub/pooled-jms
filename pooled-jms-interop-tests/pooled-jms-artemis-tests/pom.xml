@@ -36,12 +36,12 @@
     <!-- Required Dependencies               -->
     <!-- =================================== -->
 
-    <!-- Adding the JMS 1.1 API jar for these tests explicitly, first,
-         since its whats implemented by ActiveMQ, and also helps to
+    <!-- Adding the JMS 2.0 API jar for these tests explicitly, first,
+         since its what's implemented by Qpid JMS, and also helps to
          verify the pool works when both APIs are on the classpath -->
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <artifactId>geronimo-jms_2.0_spec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.components</groupId>

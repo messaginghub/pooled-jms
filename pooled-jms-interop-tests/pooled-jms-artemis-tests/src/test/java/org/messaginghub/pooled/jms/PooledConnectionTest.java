@@ -16,10 +16,16 @@
  */
 package org.messaginghub.pooled.jms;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import javax.jms.Connection;
 import javax.jms.IllegalStateException;
+import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -36,13 +42,13 @@ public class PooledConnectionTest extends ArtemisJmsPoolTestSupport {
     public void testSetClientIDTwiceWithSameID() throws Exception {
         // test: call setClientID("newID") twice
         // this should be tolerated and not result in an exception
-        Connection conn = cf.createConnection();
-        conn.setClientID("newID");
+        Connection connection = cf.createConnection();
+        connection.setClientID("newID");
 
         try {
-            conn.setClientID("newID");
-            conn.start();
-            conn.close();
+            connection.setClientID("newID");
+            connection.start();
+            connection.close();
         } catch (IllegalStateException ise) {
             LOG.error("Repeated calls to newID2.setClientID(\"newID\") caused " + ise.getMessage());
             fail("Repeated calls to newID2.setClientID(\"newID\") caused " + ise.getMessage());
@@ -55,18 +61,18 @@ public class PooledConnectionTest extends ArtemisJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testSetClientIDTwiceWithDifferentID() throws Exception {
-        Connection conn = cf.createConnection();
+        Connection connection = cf.createConnection();
 
         // test: call setClientID() twice with different IDs
         // this should result in an IllegalStateException
-        conn.setClientID("newID1");
+        connection.setClientID("newID1");
         try {
-            conn.setClientID("newID2");
+            connection.setClientID("newID2");
             fail("calling Connection.setClientID() twice with different clientID must raise an IllegalStateException");
         } catch (IllegalStateException ise) {
             LOG.debug("Correctly received " + ise);
         } finally {
-            conn.close();
+            connection.close();
             cf.stop();
         }
 
@@ -75,21 +81,40 @@ public class PooledConnectionTest extends ArtemisJmsPoolTestSupport {
 
     @Test(timeout = 60000)
     public void testSetClientIDAfterConnectionStart() throws Exception {
-        Connection conn = cf.createConnection();
+        Connection connection = cf.createConnection();
 
         // test: try to call setClientID() after start()
         // should result in an exception
         try {
-            conn.start();
-            conn.setClientID("newID3");
+            connection.start();
+            connection.setClientID("newID3");
             fail("Calling setClientID() after start() mut raise a JMSException.");
         } catch (IllegalStateException ise) {
             LOG.debug("Correctly received " + ise);
         } finally {
-            conn.close();
+            connection.close();
             cf.stop();
         }
 
         LOG.debug("Test finished.");
+    }
+
+    @Test(timeout = 60000)
+    public void testTopicMessageSend() throws Exception {
+        cf.setMaxConnections(1);
+
+        TopicConnection connection = cf.createTopicConnection();
+
+        try {
+            TopicSession topicSession = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+            Topic topic = topicSession.createTopic(getTestName());
+
+            TopicPublisher topicPublisher = topicSession.createPublisher(topic);
+            topicPublisher.send(topicSession.createMessage());
+            assertEquals(1, cf.getNumConnections());
+        } finally {
+            connection.close();
+            cf.stop();
+        }
     }
 }
