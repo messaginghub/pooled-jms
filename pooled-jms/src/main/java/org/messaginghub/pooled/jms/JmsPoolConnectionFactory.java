@@ -184,12 +184,16 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      */
     public void setConnectionFactory(final Object factory) {
         if (factory instanceof ConnectionFactory) {
+            String logMessage = "JMS ConnectionFactory on classpath is not a JMS 2.0+ version.";
             try {
+                ConnectionFactory.class.getMethod("createContext", int.class);
+                logMessage = "Provided ConnectionFactory implementation is not JMS 2.0+ capable.";
                 factory.getClass().getMethod("createContext", int.class);
-                LOG.info("Provided ConnectionFactory is JMS 2.0+ capable.");
+                logMessage = "Provided ConnectionFactory implementation is JMS 2.0+ capable.";
                 jmsContextSupported = true;
             } catch (NoSuchMethodException | SecurityException e) {
-                LOG.info("Provided ConnectionFactory is not JMS 2.0+ capable.");
+            } finally {
+                LOG.info(logMessage);
             }
 
             this.connectionFactory = factory;

@@ -76,11 +76,21 @@ public class PooledConnection implements ExceptionListener {
             LOG.warn("Could not set exception listener on create of ConnectionPool");
         }
 
-        // Determine now if this is a JMS 2+ client
+        // Check if JMS API on the classpath supports JMS 2+
         try {
-            jmsMajorVersion = connection.getMetaData().getJMSMajorVersion();
-            jmsMinorVersion = connection.getMetaData().getJMSMajorVersion();
-        } catch (JMSException ex) {}
+            Connection.class.getMethod("createSession", int.class);
+            // Determine the version range of this JMS 2+ client
+            try {
+                jmsMajorVersion = connection.getMetaData().getJMSMajorVersion();
+                jmsMinorVersion = connection.getMetaData().getJMSMajorVersion();
+            } catch (JMSException ex) {
+                LOG.debug("Error while fetching JMS API version from provider, defaulting to v1.1");
+                jmsMajorVersion = 1;
+                jmsMinorVersion = 1;
+            }
+        } catch (NoSuchMethodException nsme) {
+            LOG.trace("JMS API on the classpath is not JMS 2.0+ defaulting to v1.1 internally");
+        }
 
         // Create our internal Pool of session instances.
         this.sessionPool = new GenericKeyedObjectPool<PooledSessionKey, PooledSessionHolder>(
