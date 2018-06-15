@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -47,7 +48,7 @@ public class PooledSessionExhaustionBlockTimeoutTest extends ActiveMQJmsPoolTest
     private final Logger LOG = LoggerFactory.getLogger(PooledSessionExhaustionBlockTimeoutTest.class);
 
     private static final String QUEUE = "FOO";
-    private static final int NUM_MESSAGES = 500;
+    private static final int NUM_MESSAGES = 250;
 
     private JmsPoolConnectionFactory pooledFactory;
     private int numReceived = 0;
@@ -60,7 +61,7 @@ public class PooledSessionExhaustionBlockTimeoutTest extends ActiveMQJmsPoolTest
         pooledFactory = createPooledConnectionFactory();
         pooledFactory.setMaxConnections(1);
         pooledFactory.setBlockIfSessionPoolIsFull(true);
-        pooledFactory.setBlockIfSessionPoolIsFullTimeout(500);
+        pooledFactory.setBlockIfSessionPoolIsFullTimeout(2000);
         pooledFactory.setMaxSessionsPerConnection(1);
     }
 
@@ -107,6 +108,7 @@ public class PooledSessionExhaustionBlockTimeoutTest extends ActiveMQJmsPoolTest
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
                 Destination destination = session.createQueue(QUEUE);
                 MessageProducer producer = session.createProducer(destination);
+                producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
                 String msgTo = "hello";
                 TextMessage message = session.createTextMessage(msgTo);
