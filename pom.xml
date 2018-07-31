@@ -50,12 +50,12 @@
   </developers>
 
   <properties>
-    <qpid-jms-version>0.34.0</qpid-jms-version>
+    <qpid-jms-version>0.35.0</qpid-jms-version>
     <activemq-version>5.15.4</activemq-version>
     <artemis-version>2.6.2</artemis-version>
     <commons-pool2-version>2.6.0</commons-pool2-version>
     <slf4j-version>1.7.25</slf4j-version>
-    <mockito-version>2.19.0</mockito-version>
+    <mockito-version>2.21.0</mockito-version>
     <junit-version>4.12</junit-version>
     <geronimo.jms.2.spec.version>1.0-alpha-2</geronimo.jms.2.spec.version>
     <geronimo.jms.1.1.spec.version>1.1.1</geronimo.jms.1.1.spec.version>
@@ -71,13 +71,13 @@
     <maven-gpg-plugin-version>1.6</maven-gpg-plugin-version>
     <maven-eclipse-plugin-version>2.10</maven-eclipse-plugin-version>
     <maven-idea-plugin-version>2.2.1</maven-idea-plugin-version>
-    <maven-surefire-plugin-version>2.21.0</maven-surefire-plugin-version>
+    <maven-surefire-plugin-version>2.22.0</maven-surefire-plugin-version>
     <maven-release-plugin-version>2.5.3</maven-release-plugin-version>
     <nexus-staging-maven-plugin-version>1.6.8</nexus-staging-maven-plugin-version>
-    <maven-bundle-plugin-version>3.5.0</maven-bundle-plugin-version>
+    <maven-bundle-plugin-version>3.5.1</maven-bundle-plugin-version>
     <maven-compiler-plugin-version>3.7.0</maven-compiler-plugin-version>
     <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
-    <maven-javadoc-plugin-version>3.0.0</maven-javadoc-plugin-version>
+    <maven-javadoc-plugin-version>3.0.1</maven-javadoc-plugin-version>
     <maven-deploy-plugin-version>2.8.2</maven-deploy-plugin-version>
     <findbugs-maven-plugin-version>3.0.2</findbugs-maven-plugin-version>
     <jacoco-plugin-version>0.8.1</jacoco-plugin-version>
