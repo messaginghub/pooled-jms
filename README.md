@@ -2,6 +2,8 @@
 
 JMS Connection pool for messaging applications that provides pooling for JMS Connections, Sessions and MessageProducers.
 
+This project was forked from the ActiveMQ JMS Pool and enhanced to provide JMS 2.0 functionality.
+
 Below are some quick pointers you might find useful.
 
 ## Using the PooledJMS library
