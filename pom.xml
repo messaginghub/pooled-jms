@@ -50,7 +50,7 @@
   </developers>
 
   <properties>
-    <qpid-jms-version>0.35.0</qpid-jms-version>
+    <qpid-jms-version>0.36.0</qpid-jms-version>
     <activemq-version>5.15.5</activemq-version>
     <artemis-version>2.6.2</artemis-version>
     <commons-pool2-version>2.6.0</commons-pool2-version>
