@@ -98,7 +98,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     public void initConnectionsPool() {
         if (this.connectionsPool == null) {
-            final GenericKeyedObjectPoolConfig poolConfig = new GenericKeyedObjectPoolConfig();
+            final GenericKeyedObjectPoolConfig<PooledConnection> poolConfig = new GenericKeyedObjectPoolConfig<>();
             poolConfig.setJmxEnabled(false);
             this.connectionsPool = new GenericKeyedObjectPool<PooledConnectionKey, PooledConnection>(
                 new KeyedPooledObjectFactory<PooledConnectionKey, PooledConnection>() {

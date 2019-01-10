@@ -67,7 +67,7 @@ public class PooledConnection implements ExceptionListener {
     private ExceptionListener parentExceptionListener;
 
     public PooledConnection(Connection connection) {
-        final GenericKeyedObjectPoolConfig poolConfig = new GenericKeyedObjectPoolConfig();
+        final GenericKeyedObjectPoolConfig<PooledSessionHolder> poolConfig = new GenericKeyedObjectPoolConfig<>();
         poolConfig.setJmxEnabled(false);
         this.connection = wrap(connection);
         try {
