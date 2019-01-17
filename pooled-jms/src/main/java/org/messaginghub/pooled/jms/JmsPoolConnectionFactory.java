@@ -158,6 +158,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
             // Set max idle (not max active) since our connections always idle in the pool.
             this.connectionsPool.setMaxIdlePerKey(DEFAULT_MAX_CONNECTIONS);
             this.connectionsPool.setLifo(false);
+            this.connectionsPool.setMinIdlePerKey(1);
+            this.connectionsPool.setBlockWhenExhausted(false);
 
             // We always want our validate method to control when idle objects are evicted.
             this.connectionsPool.setTestOnBorrow(true);
@@ -690,6 +692,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
             throw new IllegalStateException("No ConnectionFactory instance has been configured");
         }
 
+        final int exhaustionRecoverAttemptLimit = 10;
+
         PooledConnection connection = null;
         PooledConnectionKey key = new PooledConnectionKey(userName, password);
 
@@ -705,13 +709,25 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
             }
         } else {
             try {
+                int exhaustedPoolRecoveryAttempts = 0;
+
                 // We can race against other threads returning the connection when there is an
                 // expiration or idle timeout.  We keep pulling out ConnectionPool instances until
                 // we win and get a non-closed instance and then increment the reference count
                 // under lock to prevent another thread from triggering an expiration check and
                 // pulling the rug out from under us.
                 while (connection == null) {
-                    connection = connectionsPool.borrowObject(key);
+                    try {
+                        connection = connectionsPool.borrowObject(key);
+                    } catch (NoSuchMethodException nse) {
+                        if (exhaustedPoolRecoveryAttempts++ < exhaustionRecoverAttemptLimit) {
+                            LOG.trace("Recover attempt {} from exhausted pool by refilling pool key and creating new Connection", exhaustedPoolRecoveryAttempts);
+                            connectionsPool.addObject(key);
+                            continue;
+                        } else {
+                            throw nse;
+                        }
+                    }
                     synchronized (connection) {
                         if (connection.getConnection() != null) {
                             connection.incrementReferenceCount();
