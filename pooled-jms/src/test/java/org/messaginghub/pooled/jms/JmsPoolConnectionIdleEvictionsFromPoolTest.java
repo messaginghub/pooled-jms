@@ -73,7 +73,7 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
         connection2.close();
 
         // let connection to get idle
-        TimeUnit.MILLISECONDS.sleep(20);
+        TimeUnit.MILLISECONDS.sleep(40);
 
         // get a connection from pool again, it should be a new Connection instance as the
         // old one should have been inactive and idled out.
