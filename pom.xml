@@ -50,12 +50,12 @@
   </developers>
 
   <properties>
-    <qpid-jms-version>0.42.0</qpid-jms-version>
+    <qpid-jms-version>0.43.0</qpid-jms-version>
     <activemq-version>5.15.9</activemq-version>
-    <artemis-version>2.8.1</artemis-version>
+    <artemis-version>2.9.0</artemis-version>
     <commons-pool2-version>2.6.2</commons-pool2-version>
     <slf4j-version>1.7.25</slf4j-version>
-    <mockito-version>2.27.0</mockito-version>
+    <mockito-version>2.28.2</mockito-version>
     <junit-version>4.12</junit-version>
     <geronimo.jms.2.spec.version>1.0-alpha-2</geronimo.jms.2.spec.version>
     <geronimo.jms.1.1.spec.version>1.1.1</geronimo.jms.1.1.spec.version>
