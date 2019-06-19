@@ -120,11 +120,11 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
 
         tempDest = session1.createTemporaryQueue();
 
-        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(tempDest));
+        assertTrue("The expected temporary destination does not exist: " + tempDest, destinationExists(tempDest));
 
         pooledConn1.close();
 
-        assertTrue("FAILED: temp dest from closed pooled connection is lingering", !destinationExists(tempDest));
+        assertTrue("Temporary destination from closed pooled connection is lingering: " + tempDest, !destinationExists(tempDest));
 
         session2.close();
     }
@@ -170,15 +170,15 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         tempDest = session1.createTemporaryQueue();
         otherTempDest = session2.createTemporaryQueue();
 
-        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(tempDest));
-        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(otherTempDest));
+        assertTrue("The expected temporary destination does not exist: " + tempDest, destinationExists(tempDest));
+        assertTrue("The expected temporary destination does not exist: " + otherTempDest, destinationExists(otherTempDest));
 
         pooledConn1.close();
 
         // Now confirm the first temporary destination no longer exists and the
         // second does.
-        assertTrue("FAILED: temp dest from closed pooled connection is lingering", !destinationExists(tempDest));
-        assertTrue("FAILED: second PooledConnection's temporary destination was incorrectly deleted", destinationExists(otherTempDest));
+        assertTrue("Temporary destination from closed pooled connection is lingering: " + tempDest, !destinationExists(tempDest));
+        assertTrue("Second PooledConnection's temporary destination was incorrectly deleted", destinationExists(otherTempDest));
     }
 
     /*
@@ -204,12 +204,12 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
 
         tempDest = session1.createTemporaryQueue();
 
-        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(tempDest));
+        assertTrue("The expected temporary destination does not exist: " + tempDest, destinationExists(tempDest));
 
         directConn1.close();
 
         // Now confirm the temporary destination no longer exists.
-        assertTrue("CONTROL TEST FAILURE - TEST METHOD IS SUSPECT", (!destinationExists(tempDest)));
+        assertTrue("Temporary destination from closed pooled connection is lingering: " + tempDest, !destinationExists(tempDest));
 
         session2.close();
     }
