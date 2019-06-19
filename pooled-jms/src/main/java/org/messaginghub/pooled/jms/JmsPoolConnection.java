@@ -77,8 +77,8 @@ public class JmsPoolConnection implements TopicConnection, QueueConnection, JmsP
     @Override
     public void close() throws JMSException {
         if (closed.compareAndSet(false, true)) {
-            this.cleanupConnectionTemporaryDestinations();
             this.cleanupAllLoanedSessions();
+            this.cleanupConnectionTemporaryDestinations();
             if (this.connection != null) {
                 this.connection.decrementReferenceCount();
                 this.connection = null;

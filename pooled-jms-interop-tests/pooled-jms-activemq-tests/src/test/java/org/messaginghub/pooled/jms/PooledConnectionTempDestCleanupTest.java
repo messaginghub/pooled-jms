@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
@@ -128,6 +129,24 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         session2.close();
     }
 
+    @Test(timeout = 60000)
+    public void testPooledTempDestsWithConsumer() throws java.lang.Exception {
+        Session session1;
+
+        session1 = pooledConn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        tempDest = session1.createTemporaryQueue();
+
+        MessageConsumer messageConsumer = session1.createConsumer(tempDest);
+        messageConsumer.receiveNoWait();
+
+        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(tempDest));
+
+        pooledConn1.close();
+
+        assertTrue("FAILED: temp dest from closed pooled connection is lingering", !destinationExists(tempDest));
+    }
+
     /*
      * Test that closing one PooledConnection does not delete the temporary
      * destinations of another.
@@ -193,6 +212,25 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         assertTrue("CONTROL TEST FAILURE - TEST METHOD IS SUSPECT", (!destinationExists(tempDest)));
 
         session2.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testDirectLingeringTempDestsWithConsumer() throws java.lang.Exception {
+        Session session1;
+
+        session1 = directConn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        tempDest = session1.createTemporaryQueue();
+
+        MessageConsumer messageConsumer = session1.createConsumer(tempDest);
+        messageConsumer.receiveNoWait();
+
+        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(tempDest));
+
+        directConn1.close();
+
+        // Now confirm the temporary destination no longer exists.
+        assertTrue("CONTROL TEST FAILURE - TEST METHOD IS SUSPECT", (!destinationExists(tempDest)));
     }
 
     private boolean destinationExists(Destination dest) throws Exception {
