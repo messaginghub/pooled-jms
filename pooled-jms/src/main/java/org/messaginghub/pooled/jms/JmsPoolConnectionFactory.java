@@ -16,6 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -719,7 +720,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                 while (connection == null) {
                     try {
                         connection = connectionsPool.borrowObject(key);
-                    } catch (NoSuchMethodException nse) {
+                    } catch (NoSuchElementException nse) {
                         if (exhaustedPoolRecoveryAttempts++ < exhaustionRecoverAttemptLimit) {
                             LOG.trace("Recover attempt {} from exhausted pool by refilling pool key and creating new Connection", exhaustedPoolRecoveryAttempts);
                             connectionsPool.addObject(key);
