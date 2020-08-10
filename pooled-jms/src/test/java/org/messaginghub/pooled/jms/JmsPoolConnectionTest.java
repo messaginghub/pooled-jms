@@ -80,6 +80,29 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
     }
 
     @Test(timeout = 60000)
+    public void testExceptionListenerPreservedFromOriginalConnectionFactory() throws Exception {
+        final CountDownLatch signal = new CountDownLatch(1);
+
+        factory.setExceptionListener(new ExceptionListener() {
+
+            @Override
+            public void onException(JMSException exception) {
+                LOG.info("ExceptionListener called with error: {}", exception.getMessage());
+                signal.countDown();
+            }
+        });
+
+        Connection connection = cf.createConnection();
+
+        assertNotNull(connection.getExceptionListener());
+
+        MockJMSConnection mockJMSConnection = (MockJMSConnection) ((JmsPoolConnection) connection).getConnection();
+        mockJMSConnection.injectConnectionError(new JMSException("Some non-fatal error"));
+
+        assertTrue(signal.await(10, TimeUnit.SECONDS));
+    }
+
+    @Test(timeout = 60000)
     public void testGetConnectionMetaData() throws Exception {
         Connection connection = cf.createConnection();
         assertNotNull(connection.getMetaData());

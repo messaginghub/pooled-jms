@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.ExceptionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
@@ -42,6 +43,7 @@ public class MockJMSConnectionFactory implements ConnectionFactory, QueueConnect
 
     private String clientID;
     private boolean deferAuthenticationToConnection;
+    private ExceptionListener exceptionListener;
 
     @Override
     public TopicConnection createTopicConnection() throws JMSException {
@@ -87,6 +89,8 @@ public class MockJMSConnectionFactory implements ConnectionFactory, QueueConnect
         } else {
             connection.setClientID(UUID.randomUUID().toString(), false);
         }
+
+        connection.setExceptionListener(exceptionListener);
 
         try {
             connection.initialize();
@@ -140,6 +144,14 @@ public class MockJMSConnectionFactory implements ConnectionFactory, QueueConnect
 
     public void setClientID(String clientID) {
         this.clientID = clientID;
+    }
+
+    public ExceptionListener getExceptionListener() {
+        return exceptionListener;
+    }
+
+    public void setExceptionListener(ExceptionListener exceptionListener) {
+        this.exceptionListener = exceptionListener;
     }
 
     /**

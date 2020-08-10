@@ -70,7 +70,13 @@ public class PooledConnection implements ExceptionListener {
         final GenericKeyedObjectPoolConfig<PooledSessionHolder> poolConfig = new GenericKeyedObjectPoolConfig<>();
         poolConfig.setJmxEnabled(false);
         this.connection = wrap(connection);
+
         try {
+            // Check if wrapped connection already had an exception listener and preserve it
+            setParentExceptionListener(connection.getExceptionListener());
+
+            // Replace wrapped connection exception listener to allow pooled wrapper to deal
+            // with exceptions first before sending them onto any set external listener.
             this.connection.setExceptionListener(this);
         } catch (JMSException ex) {
             LOG.warn("Could not set exception listener on create of ConnectionPool");
