@@ -48,12 +48,15 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import org.apache.activemq.ActiveMQXAConnectionFactory;
 import org.apache.activemq.ActiveMQXASession;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
@@ -93,6 +96,17 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
                     @Override
                     public boolean enlistResource(XAResource xaRes) throws IllegalStateException, RollbackException, SystemException {
+                        try {
+                            final Xid mockXid = Mockito.mock(Xid.class);
+
+                            Mockito.when(mockXid.getBranchQualifier()).thenReturn(new byte[] {0});
+                            Mockito.when(mockXid.getGlobalTransactionId()).thenReturn(new byte[] {1});
+                            Mockito.when(mockXid.getFormatId()).thenReturn(2);
+
+                            xaRes.start(mockXid, 0);
+                        } catch (XAException e) {
+                            e.printStackTrace();
+                        }
                         return false;
                     }
 
