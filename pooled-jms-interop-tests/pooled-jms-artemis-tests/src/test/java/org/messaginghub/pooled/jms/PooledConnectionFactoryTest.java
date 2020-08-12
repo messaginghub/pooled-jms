@@ -27,8 +27,6 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnectionFactory;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

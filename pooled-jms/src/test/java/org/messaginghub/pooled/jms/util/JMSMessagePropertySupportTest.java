@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 import javax.jms.MessageFormatException;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.util.JMSMessagePropertySupport;
 
 /**
  * Test for the JMS Message Property support class

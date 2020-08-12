@@ -34,7 +34,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSDestination;
 import org.messaginghub.pooled.jms.mock.MockJMSQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSTopic;

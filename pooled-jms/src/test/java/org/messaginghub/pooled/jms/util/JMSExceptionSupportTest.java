@@ -47,7 +47,6 @@ import javax.jms.TransactionRolledBackException;
 import javax.jms.TransactionRolledBackRuntimeException;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
 
 /**
  * Tests for various utility methods in the Exception support class.

@@ -926,7 +926,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 assertEquals(JMS_CORRELATION_ID, message.getJMSCorrelationID());
                 assertTrue(Arrays.equals(JMS_CORRELATION_ID.getBytes(), message.getJMSCorrelationIDAsBytes()));
                 assertEquals(JMS_REPLY_TO, message.getJMSReplyTo());
@@ -981,7 +981,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 if (!persistentMessage.get()) {
                     assertEquals(DeliveryMode.PERSISTENT, message.getJMSDeliveryMode());
                     persistentMessage.set(true);
@@ -1037,7 +1037,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 if (!lowPriority.get()) {
                     assertEquals(0, message.getJMSPriority());
                     lowPriority.set(true);
@@ -1093,7 +1093,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 if (!nonDefaultTTL.get()) {
                     assertTrue(message.getJMSExpiration() > 0);
                     nonDefaultTTL.set(true);
@@ -1125,7 +1125,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 assertEquals(bodyValue, message.getBody(String.class));
                 bodyValidated.set(true);
             }
@@ -1150,7 +1150,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 assertEquals(bodyValue, message.getBody(Map.class));
                 bodyValidated.set(true);
             }
@@ -1171,7 +1171,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 byte[] payload = message.getBody(byte[].class);
                 assertNotNull(payload);
                 assertEquals(bodyValue.length, payload.length);
@@ -1199,7 +1199,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 assertEquals(bodyValue, message.getBody(UUID.class));
                 bodyValidated.set(true);
             }
@@ -1219,7 +1219,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 throw new IllegalStateException("Send Failed");
             }
         });
@@ -1238,7 +1238,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 throw new IllegalStateException("Send Failed");
             }
         });
@@ -1257,7 +1257,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 throw new IllegalStateException("Send Failed");
             }
         });
@@ -1276,7 +1276,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 throw new IllegalStateException("Send Failed");
             }
         });
@@ -1295,7 +1295,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 throw new IllegalStateException("Send Failed");
             }
         });
@@ -1314,7 +1314,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 throw new IllegalStateException("Send Failed");
             }
         });

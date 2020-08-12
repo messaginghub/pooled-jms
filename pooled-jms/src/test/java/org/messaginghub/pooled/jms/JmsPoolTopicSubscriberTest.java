@@ -29,8 +29,6 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolTopicSubscriber;
 import org.messaginghub.pooled.jms.mock.MockJMSTopicSubscriber;
 
 /**

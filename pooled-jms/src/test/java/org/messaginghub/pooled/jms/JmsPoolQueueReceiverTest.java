@@ -29,8 +29,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolQueueReceiver;
 import org.messaginghub.pooled.jms.mock.MockJMSQueueReceiver;
 
 /**

@@ -30,7 +30,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
 
 /**
  * Tests for the JMS Pool MessageConsumer wrapper

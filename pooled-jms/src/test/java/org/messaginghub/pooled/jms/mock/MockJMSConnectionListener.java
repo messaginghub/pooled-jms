@@ -36,7 +36,7 @@ public interface MockJMSConnectionListener {
 
     void onCloseSession(MockJMSSession session) throws JMSException;
 
-    void onMessageSend(MockJMSSession session, Message message) throws JMSException;
+    void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException;
 
     void onCreateMessageConsumer(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException;
 

@@ -28,7 +28,6 @@ import javax.jms.Session;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,7 @@ public class JmsPoolSessionExhaustionTest extends JmsPoolTestSupport {
     public final static Logger LOG = LoggerFactory.getLogger(JmsPoolSessionExhaustionTest.class);
 
     @Override
-	@Before
+    @Before
     public void setUp() throws Exception {
         factory = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();

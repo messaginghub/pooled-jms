@@ -28,8 +28,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnection;
-import org.messaginghub.pooled.jms.JmsPoolQueueBrowser;
 
 /**
  * Tests for the JMS Pool QueueBrowser wrapper

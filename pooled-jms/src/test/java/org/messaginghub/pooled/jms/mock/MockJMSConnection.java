@@ -504,9 +504,9 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
         }
     }
 
-    private void signalMessageSend(MockJMSSession session, Message message) throws JMSException {
+    private void signalMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
         for (MockJMSConnectionListener listener : connectionListeners) {
-            listener.onMessageSend(session, message);
+            listener.onMessageSend(session, producer, message);
         }
     }
 
@@ -556,9 +556,9 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
 
     //----- Event points for MockJMS resources -------------------------------//
 
-    void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+    void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
         checkClosedOrFailed();
-        signalMessageSend(session, message);
+        signalMessageSend(session, producer, message);
     }
 
     void onMessageConsumerCreate(MockJMSSession session, MockJMSMessageConsumer consumer) throws JMSException {

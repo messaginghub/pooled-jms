@@ -462,7 +462,7 @@ public class MockJMSSession implements Session, QueueSession, TopicSession, Auto
             message.setJMSMessageID(messageId);
 
             try {
-                connection.onMessageSend(this, message);
+                connection.onMessageSend(this, producer, message);
             } catch (JMSException jmsEx) {
                 // If the synchronous portion of the send fails the completion be
                 // notified but might depending on the circumstances of the failures,

@@ -23,7 +23,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.IllegalStateException;
 
 import org.junit.Test;
-import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

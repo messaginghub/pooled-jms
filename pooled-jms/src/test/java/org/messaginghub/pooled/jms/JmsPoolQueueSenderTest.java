@@ -37,6 +37,7 @@ import javax.jms.TextMessage;
 import org.junit.Test;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
 import org.messaginghub.pooled.jms.mock.MockJMSQueueSender;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 
@@ -103,7 +104,7 @@ public class JmsPoolQueueSenderTest extends JmsPoolTestSupport {
         mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 assertTrue(message instanceof TextMessage);
                 sent.set(true);
             }
@@ -126,7 +127,7 @@ public class JmsPoolQueueSenderTest extends JmsPoolTestSupport {
         mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
 
             @Override
-            public void onMessageSend(MockJMSSession session, Message message) throws JMSException {
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
                 assertEquals(DeliveryMode.PERSISTENT, message.getJMSDeliveryMode());
                 assertEquals(9, message.getJMSPriority());
                 assertTrue(message.getJMSExpiration() != 0);
