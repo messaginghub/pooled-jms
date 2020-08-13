@@ -143,6 +143,16 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                             return false;
                         }
 
+                        // Sanity check the Connection and if it throws IllegalStateException we assume
+                        // that it is closed or has failed due to some IO error.
+                        try {
+                            connection.getConnection().getExceptionListener();
+                        } catch (IllegalStateException jmsISE) {
+                            return false;
+                        } catch (Exception ambiguous) {
+                            // Unsure if connection is still valid so continue as if it still is.
+                        }
+
                         return true;
                     }
 

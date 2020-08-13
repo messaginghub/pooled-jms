@@ -67,9 +67,7 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
 
     @Override
     public void close() throws JMSException {
-        if (closed.compareAndSet(false, true)) {
-            session.onMessageProducerClosed(this);
-        }
+        doClose(false);
     }
 
     //----- JMS 1.0 Send Methods ---------------------------------------------//
@@ -137,7 +135,6 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
     @Override
     public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive, CompletionListener listener) throws JMSException {
         checkClosed();
-
         checkDestinationNotInvalid(destination);
 
         if (!anonymousProducer) {
@@ -161,7 +158,22 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
             long oldDelayValue = 0;
             if (deliveryDelay != 0 && session.isJMSVersionSupported(2, 0)) {
                 oldDelayValue = messageProducer.getDeliveryDelay();
-                messageProducer.setDeliveryDelay(deliveryDelay);
+                try {
+                    messageProducer.setDeliveryDelay(deliveryDelay);
+                } catch (IllegalStateException jmsISE) {
+                    // The JMS MessageProducer that backs this wrapper has indicated that it is
+                    // likely closed either individually or by the full connection having gone
+                    // away.  We will force close it in case only the producer was closed so that
+                    // future uses of the producer will result in a new one being opened if the
+                    // connection is still live.
+                    try {
+                        doClose(true);
+                    } catch (Exception ex) {
+                        // Ignore and throw original failure cause
+                    }
+
+                    throw jmsISE;
+                }
             }
 
             // For the non-shared MessageProducer that is also not an anonymous producer we
@@ -184,9 +196,32 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
                         messageProducer.send(destination, message, deliveryMode, priority, timeToLive, listener);
                     }
                 }
+            } catch (IllegalStateException jmsISE) {
+                // The JMS MessageProducer that backs this wrapper has indicated that it is
+                // likely closed either individually or by the full connection having gone
+                // away.  We will force close it in case only the producer was closed so that
+                // future uses of the producer will result in a new one being opened if the
+                // connection is still live.
+                try {
+                    doClose(true);
+                } catch (Exception ex) {
+                    // Ignore and throw original failure cause
+                }
+
+                throw jmsISE;
             } finally {
-                if (deliveryDelay != 0 && session.isJMSVersionSupported(2, 0)) {
-                    messageProducer.setDeliveryDelay(oldDelayValue);
+                if (!closed.get() && deliveryDelay != 0 && session.isJMSVersionSupported(2, 0)) {
+                    try {
+                        messageProducer.setDeliveryDelay(oldDelayValue);
+                    } catch (IllegalStateException jmsISE) {
+                        try {
+                            doClose(true);
+                        } catch (Exception ex) {
+                            // Ignore and throw original failure cause
+                        }
+
+                        throw jmsISE;
+                    }
                 }
             }
         }
@@ -288,16 +323,38 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
 
     //----- Internal Implementation ------------------------------------------//
 
+    /**
+     * @return is this {@link MessageProducer} wrapper an anonymous variant.
+     */
     public boolean isAnonymousProducer() {
         return this.anonymousProducer;
     }
 
+    /**
+     * @return the reference counter used to manage this wrapper's lifetime.
+     */
     public AtomicInteger getRefCount() {
         return this.refCount;
     }
 
+    /**
+     * @return the underlying {@link MessageProducer} that this wrapper object is a proxy to.
+     */
     public MessageProducer getDelegate() {
         return messageProducer;
+    }
+
+    /**
+     * @return the underlying Destination that this wrapper object applies to the delegate {@link MessageProducer}.
+     */
+    public Destination getDelegateDestination() {
+        return destination;
+    }
+
+    private void doClose(boolean force) throws JMSException {
+        if (closed.compareAndSet(false, true)) {
+            session.onMessageProducerClosed(this, force);
+        }
     }
 
     protected void checkClosed() throws IllegalStateException {

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jms.Destination;
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -99,15 +100,56 @@ public final class PooledSessionHolder {
         return session;
     }
 
-    public void onJmsPoolProducerClosed(JmsPoolMessageProducer producer) throws JMSException {
+    public void onJmsPoolProducerClosed(JmsPoolMessageProducer producer, boolean force) throws JMSException {
         synchronized (this) {
+
             // We cache anonymous producers regardless of the useAnonymousProducer
-            // setting so in either of those cases the pooled producer is not closed.
-            if (isUseAnonymousProducer() || producer.isAnonymousProducer()) {
-                return;
-            } else if (producer.getRefCount().decrementAndGet() <= 0) {
-                producer.getDelegate().close();
+            // setting so in either of those cases the pooled producer is not closed
+            // unless the wrapper indicates a forced closure is being requested.
+            if (!force) {
+                try {
+                    producer.getDelegate().getDestination();
+
+                    if (isUseAnonymousProducer() || producer.isAnonymousProducer()) {
+                        return;
+                    } else if (producer.getRefCount().decrementAndGet() > 0) {
+                        return;
+                    }
+                } catch (IllegalStateException jmsISE) {
+                    // Delegated producer appears to be closed so remove it from pooling.
+                    producer.getRefCount().decrementAndGet();
+                    force = true;
+                } catch (Exception ambiguous) {
+                    // Not clear that the resource is closed so we don't assume it is.
+                    return;
+                }
             }
+
+            final MessageProducer delegate = producer.getDelegate();
+
+            // Ensure that the anonymous reference are cleared of a closed producer resource or the
+            // cache is updated if enabled to remove the closed named producer.
+            if (delegate == anonymousProducer) {
+                anonymousProducer = null;
+            } else if (delegate == anonymousPublisher) {
+                anonymousPublisher = null;
+            } else if (delegate == anonymousSender) {
+                anonymousSender = null;
+            }
+
+            if (!producer.isAnonymousProducer()) {
+                if (cachedProducers != null) {
+                    cachedProducers.remove(producer.getDelegateDestination());
+                }
+                if (cachedPublishers != null) {
+                    cachedPublishers.remove(producer.getDelegateDestination());
+                }
+                if (cachedSenders != null) {
+                    cachedSenders.remove(producer.getDelegateDestination());
+                }
+            }
+
+            delegate.close();
         }
     }
 
@@ -120,6 +162,7 @@ public final class PooledSessionHolder {
                 delegate = anonymousProducer;
                 if (delegate == null) {
                     delegate = anonymousProducer = session.createProducer(null);
+                    refCount = new AtomicInteger(0);
                 }
             } else if (explicitProducerCacheSize > 0) {
                 JmsPoolMessageProducer cached = cachedProducers.get(destination);
@@ -153,6 +196,7 @@ public final class PooledSessionHolder {
                 delegate = anonymousPublisher;
                 if (delegate == null) {
                     delegate = anonymousPublisher = ((TopicSession) session).createPublisher(null);
+                    refCount = new AtomicInteger(0);
                 }
             } else if (explicitProducerCacheSize > 0) {
                 JmsPoolTopicPublisher cached = cachedPublishers.get(topic);
@@ -186,6 +230,7 @@ public final class PooledSessionHolder {
                 delegate = anonymousSender;
                 if (delegate == null) {
                     delegate = anonymousSender = ((QueueSession) session).createSender(null);
+                    refCount = new AtomicInteger(0);
                 }
             } else if (explicitProducerCacheSize > 0) {
                 JmsPoolQueueSender cached = cachedSenders.get(queue);

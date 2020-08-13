@@ -499,9 +499,9 @@ public class MockJMSSession implements Session, QueueSession, TopicSession, Auto
         }
     }
 
-    private void checkClosed() throws JMSException {
+    private void checkClosed() throws IllegalStateException {
         if (closed.get()) {
-            throw new JMSException("Session is closed");
+            throw new IllegalStateException("Session is closed");
         }
     }
 

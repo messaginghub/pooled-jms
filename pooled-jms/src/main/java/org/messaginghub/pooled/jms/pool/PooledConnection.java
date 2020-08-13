@@ -69,6 +69,8 @@ public class PooledConnection implements ExceptionListener {
     public PooledConnection(Connection connection) {
         final GenericKeyedObjectPoolConfig<PooledSessionHolder> poolConfig = new GenericKeyedObjectPoolConfig<>();
         poolConfig.setJmxEnabled(false);
+        poolConfig.setTestOnBorrow(true);
+
         this.connection = wrap(connection);
 
         try {
@@ -101,6 +103,7 @@ public class PooledConnection implements ExceptionListener {
         // Create our internal Pool of session instances.
         this.sessionPool = new GenericKeyedObjectPool<PooledSessionKey, PooledSessionHolder>(
             new KeyedPooledObjectFactory<PooledSessionKey, PooledSessionHolder>() {
+
                 @Override
                 public PooledObject<PooledSessionHolder> makeObject(PooledSessionKey sessionKey) throws Exception {
                     return new DefaultPooledObject<PooledSessionHolder>(
@@ -114,6 +117,16 @@ public class PooledConnection implements ExceptionListener {
 
                 @Override
                 public boolean validateObject(PooledSessionKey sessionKey, PooledObject<PooledSessionHolder> pooledObject) {
+                    PooledSessionHolder sessionHolder = pooledObject.getObject();
+
+                    try {
+                        sessionHolder.getSession().getTransacted();
+                    } catch (IllegalStateException jmsISE) {
+                        return false;
+                    } catch (Exception ambiguous) {
+                        // Unsure if session is still valid so continue as if it still is.
+                    }
+
                     return true;
                 }
 
@@ -124,6 +137,7 @@ public class PooledConnection implements ExceptionListener {
                 @Override
                 public void passivateObject(PooledSessionKey sessionKey, PooledObject<PooledSessionHolder> pooledObject) throws Exception {
                 }
+
             }, poolConfig
         );
     }

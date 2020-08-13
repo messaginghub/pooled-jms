@@ -327,9 +327,15 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
     //----- Mock Connection behavioral control -------------------------------//
 
     public void injectConnectionFailure(final Exception error) throws JMSException {
+        injectConnectionFailure(error, true);
+    }
+
+    public void injectConnectionFailure(final Exception error, boolean signalExceptionListener) throws JMSException {
         connectionFailed(error);
 
-        injectConnectionError(error);
+        if (signalExceptionListener) {
+            injectConnectionError(error);
+        }
 
         if (!closed.get()) {
             executor.execute(new Runnable() {

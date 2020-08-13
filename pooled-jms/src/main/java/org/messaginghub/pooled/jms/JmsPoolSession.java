@@ -512,12 +512,14 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
      *
      * @param producer
      * 		the producer which is being closed.
+     * @param force
+     * 		should the producer be closed regardless of other configuration
      *
      * @throws JMSException if an error occurs while closing the provider MessageProducer.
      */
-    protected void onMessageProducerClosed(JmsPoolMessageProducer producer) throws JMSException {
+    protected void onMessageProducerClosed(JmsPoolMessageProducer producer, boolean force) throws JMSException {
         producers.remove(producer);
-        safeGetSessionHolder().onJmsPoolProducerClosed(producer);
+        safeGetSessionHolder().onJmsPoolProducerClosed(producer, force);
     }
 
     //----- Internal support methods -----------------------------------------//

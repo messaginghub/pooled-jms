@@ -16,20 +16,32 @@
  */
 package org.messaginghub.pooled.jms;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 
 import org.junit.Test;
+import org.messaginghub.pooled.jms.mock.MockJMSConnection;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
+import org.messaginghub.pooled.jms.mock.MockJMSSession;
 
 public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
 
@@ -60,6 +72,31 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         } else {
             assertNotSame(producer1.getMessageProducer(), producer2.getMessageProducer());
         }
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateAnonymousMessageProducerWithAnonymousProducerEnabled() throws Exception {
+        doTestCreateAnonymousMessageProducer(true);
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateAnonymousMessageProducerWithAnonymousProducerDisabled() throws Exception {
+        doTestCreateAnonymousMessageProducer(false);
+    }
+
+    private void doTestCreateAnonymousMessageProducer(boolean useAnonymousProducers) throws JMSException {
+        cf.setUseAnonymousProducers(useAnonymousProducers);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(null);
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(null);
+
+        // Both cases should result in a single anonymous cached producer instance.
+        assertSame(producer1.getMessageProducer(), producer2.getMessageProducer());
 
         connection.close();
     }
@@ -96,6 +133,31 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
     }
 
     @Test(timeout = 60000)
+    public void testCreateAnonymousTopicPublisherWithAnonymousProducerEnabled() throws Exception {
+        doTestCreateAnonymousTopicPublisher(true);
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateAnonymousTopicPublisherWithAnonymousProducerDisabled() throws Exception {
+        doTestCreateAnonymousTopicPublisher(false);
+    }
+
+    private void doTestCreateAnonymousTopicPublisher(boolean useAnonymousProducers) throws JMSException {
+        cf.setUseAnonymousProducers(useAnonymousProducers);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        JmsPoolTopicPublisher publisher1 = (JmsPoolTopicPublisher) session.createPublisher(null);
+        JmsPoolTopicPublisher publisher2 = (JmsPoolTopicPublisher) session.createPublisher(null);
+
+        // Both cases should result in a single anonymous cached producer instance.
+        assertSame(publisher1.getMessageProducer(), publisher2.getMessageProducer());
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
     public void testCreateQueueSenderWithAnonymousProducerEnabled() throws Exception {
         doTestCreateQueueSender(true);
     }
@@ -122,6 +184,31 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         } else {
             assertNotSame(sender1.getMessageProducer(), sender2.getMessageProducer());
         }
+
+        connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateAnonymousQueueSenderWithAnonymousProducerEnabled() throws Exception {
+        doTestAnonymousCreateQueueSender(true);
+    }
+
+    @Test(timeout = 60000)
+    public void testCreateAnonymousQueueSenderWithAnonymousProducerDisabled() throws Exception {
+        doTestAnonymousCreateQueueSender(false);
+    }
+
+    private void doTestAnonymousCreateQueueSender(boolean useAnonymousProducers) throws JMSException {
+        cf.setUseAnonymousProducers(useAnonymousProducers);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        JmsPoolQueueSender sender1 = (JmsPoolQueueSender) session.createSender(null);
+        JmsPoolQueueSender sender2 = (JmsPoolQueueSender) session.createSender(null);
+
+        // Both cases should result in a single anonymous cached producer instance.
+        assertSame(sender1.getMessageProducer(), sender2.getMessageProducer());
 
         connection.close();
     }
@@ -198,5 +285,418 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         }
 
         connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testRemoteCloseOfPooledAnonymousMessageProducerCanRecover() throws Exception {
+        final AtomicInteger produersCreated = new AtomicInteger();
+        final AtomicInteger producersClosed = new AtomicInteger();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                produersCreated.incrementAndGet();
+            }
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                if (produersCreated.get() == 1) {
+                    throw new IllegalStateException("Producer is closed");
+                }
+            }
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                producersClosed.incrementAndGet();
+            }
+        });
+
+        Session session = connection.createSession();
+        Queue queue = session.createTemporaryQueue();
+        MessageProducer producer1 = session.createProducer(queue);
+
+        assertEquals(1, produersCreated.get());
+
+        try {
+            producer1.send(session.createTextMessage("test"));
+            fail("Should have failed on send with IllegalStateException indicating the producer is closed.");
+        } catch (IllegalStateException jmsISE) {
+            assertEquals(1, producersClosed.get());
+        }
+
+        MessageProducer producer2 = session.createProducer(queue);
+
+        assertEquals(2, produersCreated.get());
+
+        producer1.close();
+        producer2.close();
+
+        assertEquals(1, producersClosed.get());
+    }
+
+    @Test(timeout = 60000)
+    public void testRemoteCloseAfterSendOfPooledAnonymousMessageProducerCanRecover() throws Exception {
+        final AtomicInteger produersCreated = new AtomicInteger();
+        final AtomicInteger producersClosed = new AtomicInteger();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                produersCreated.incrementAndGet();
+            }
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                if (produersCreated.get() == 1) {
+                    producer.close();
+                }
+            }
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                producersClosed.incrementAndGet();
+            }
+        });
+
+        Session session = connection.createSession();
+        Queue queue = session.createTemporaryQueue();
+        MessageProducer producer1 = session.createProducer(queue);
+
+        // After send with delivery delay we reset the old value which can through if
+        // the producer was to close in between.
+        producer1.setDeliveryDelay(5000);
+
+        assertEquals(1, produersCreated.get());
+
+        try {
+            producer1.send(session.createTextMessage("test"));
+            fail("Should have failed on send with IllegalStateException indicating the producer is closed.");
+        } catch (IllegalStateException jmsISE) {
+            assertEquals(1, producersClosed.get());
+        }
+
+        MessageProducer producer2 = session.createProducer(queue);
+
+        assertEquals(2, produersCreated.get());
+
+        producer1.close();
+        producer2.close();
+
+        assertEquals(1, producersClosed.get());
+    }
+
+    @Test(timeout = 60000)
+    public void testRemoteCloseAfterSendOfPooledAnonymousTopicPublisherCanRecover() throws Exception {
+        final AtomicInteger produersCreated = new AtomicInteger();
+        final AtomicInteger producersClosed = new AtomicInteger();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                produersCreated.incrementAndGet();
+            }
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                if (produersCreated.get() == 1) {
+                    producer.close();
+                }
+            }
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                producersClosed.incrementAndGet();
+            }
+        });
+
+        TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+        Topic topic = session.createTemporaryTopic();
+        TopicPublisher producer1 = session.createPublisher(topic);
+
+        // After send with delivery delay we reset the old value which can through if
+        // the producer was to close in between.
+        producer1.setDeliveryDelay(5000);
+
+        assertEquals(1, produersCreated.get());
+
+        try {
+            producer1.send(session.createTextMessage("test"));
+            fail("Should have failed on send with IllegalStateException indicating the producer is closed.");
+        } catch (IllegalStateException jmsISE) {
+            assertEquals(1, producersClosed.get());
+        }
+
+        TopicPublisher producer2 = session.createPublisher(topic);
+
+        assertEquals(2, produersCreated.get());
+
+        producer1.close();
+        producer2.close();
+
+        assertEquals(1, producersClosed.get());
+    }
+
+    @Test(timeout = 60000)
+    public void testRemoteCloseAfterSendOfPooledAnonymousQueueSenderCanRecover() throws Exception {
+        final AtomicInteger produersCreated = new AtomicInteger();
+        final AtomicInteger producersClosed = new AtomicInteger();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                produersCreated.incrementAndGet();
+            }
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                if (produersCreated.get() == 1) {
+                    producer.close();
+                }
+            }
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                producersClosed.incrementAndGet();
+            }
+        });
+
+        QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = session.createTemporaryQueue();
+        QueueSender producer1 = session.createSender(queue);
+
+        // After send with delivery delay we reset the old value which can through if
+        // the producer was to close in between.
+        producer1.setDeliveryDelay(5000);
+
+        assertEquals(1, produersCreated.get());
+
+        try {
+            producer1.send(session.createTextMessage("test"));
+            fail("Should have failed on send with IllegalStateException indicating the producer is closed.");
+        } catch (IllegalStateException jmsISE) {
+            assertEquals(1, producersClosed.get());
+        }
+
+        QueueSender producer2 = session.createSender(queue);
+
+        assertEquals(2, produersCreated.get());
+
+        producer1.close();
+        producer2.close();
+
+        assertEquals(1, producersClosed.get());
+    }
+
+    @Test(timeout = 60000)
+    public void testCachedProducersAreClosedWhenSendTriggersIllegalStateException() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(10);
+
+        final AtomicInteger produersCreated = new AtomicInteger();
+        final AtomicInteger producersClosed = new AtomicInteger();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                produersCreated.incrementAndGet();
+            }
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                if (produersCreated.get() == 1) {
+                    throw new IllegalStateException("Producer is closed");
+                }
+            }
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                producersClosed.incrementAndGet();
+            }
+        });
+
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue1 = session.createTemporaryQueue();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        MessageProducer delegate1 = producer1.getDelegate();
+
+        // Should return a wrapper whose underlying MessageProducer matches what we got from
+        // the first create call as they underlying session will be the same.
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        MessageProducer delegate2 = producer2.getDelegate();
+
+        assertSame(delegate1, delegate2);
+
+        assertEquals(1, produersCreated.get());
+
+        try {
+            producer1.send(session.createTextMessage("test"));
+            fail("Should have failed on send with IllegalStateException indicating the producer is closed.");
+        } catch (IllegalStateException jmsISE) {
+            assertEquals(1, producersClosed.get());
+        }
+
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createProducer(queue1);
+        MessageProducer delegate3 = producer3.getDelegate();
+
+        assertEquals(2, produersCreated.get());
+
+        assertNotSame(delegate1, delegate3);
+        assertNotSame(delegate2, delegate3);
+
+        producer1.close();
+        producer2.close();
+        producer3.close();
+
+        assertEquals(1, producersClosed.get());
+    }
+
+    @Test(timeout = 60000)
+    public void testCachedPublishersAreClosedWhenSendTriggersIllegalStateException() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(10);
+
+        final AtomicInteger produersCreated = new AtomicInteger();
+        final AtomicInteger producersClosed = new AtomicInteger();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                produersCreated.incrementAndGet();
+            }
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                if (produersCreated.get() == 1) {
+                    throw new IllegalStateException("Producer is closed");
+                }
+            }
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                producersClosed.incrementAndGet();
+            }
+        });
+
+        TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+        Topic topic1 = session.createTemporaryTopic();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createPublisher(topic1);
+        MessageProducer delegate1 = producer1.getDelegate();
+
+        // Should return a wrapper whose underlying MessageProducer matches what we got from
+        // the first create call as they underlying session will be the same.
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createPublisher(topic1);
+        MessageProducer delegate2 = producer2.getDelegate();
+
+        assertSame(delegate1, delegate2);
+
+        assertEquals(1, produersCreated.get());
+
+        try {
+            producer1.send(session.createTextMessage("test"));
+            fail("Should have failed on send with IllegalStateException indicating the producer is closed.");
+        } catch (IllegalStateException jmsISE) {
+            assertEquals(1, producersClosed.get());
+        }
+
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createPublisher(topic1);
+        MessageProducer delegate3 = producer3.getDelegate();
+
+        assertEquals(2, produersCreated.get());
+
+        assertNotSame(delegate1, delegate3);
+        assertNotSame(delegate2, delegate3);
+
+        producer1.close();
+        producer2.close();
+        producer3.close();
+
+        assertEquals(1, producersClosed.get());
+    }
+
+    @Test(timeout = 60000)
+    public void testCachedSenderAreClosedWhenSendTriggersIllegalStateException() throws Exception {
+        cf.setUseAnonymousProducers(false);
+        cf.setExplicitProducerCacheSize(10);
+
+        final AtomicInteger produersCreated = new AtomicInteger();
+        final AtomicInteger producersClosed = new AtomicInteger();
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+        MockJMSConnection mockConnection = (MockJMSConnection) connection.getConnection();
+        mockConnection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onCreateMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                produersCreated.incrementAndGet();
+            }
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                if (produersCreated.get() == 1) {
+                    throw new IllegalStateException("Producer is closed");
+                }
+            }
+
+            @Override
+            public void onCloseMessageProducer(MockJMSSession session, MockJMSMessageProducer producer) throws JMSException {
+                producersClosed.incrementAndGet();
+            }
+        });
+
+        QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue1 = session.createTemporaryQueue();
+
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createSender(queue1);
+        MessageProducer delegate1 = producer1.getDelegate();
+
+        // Should return a wrapper whose underlying MessageProducer matches what we got from
+        // the first create call as they underlying session will be the same.
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createSender(queue1);
+        MessageProducer delegate2 = producer2.getDelegate();
+
+        assertSame(delegate1, delegate2);
+
+        assertEquals(1, produersCreated.get());
+
+        try {
+            producer1.send(session.createTextMessage("test"));
+            fail("Should have failed on send with IllegalStateException indicating the producer is closed.");
+        } catch (IllegalStateException jmsISE) {
+            assertEquals(1, producersClosed.get());
+        }
+
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createSender(queue1);
+        MessageProducer delegate3 = producer3.getDelegate();
+
+        assertEquals(2, produersCreated.get());
+
+        assertNotSame(delegate1, delegate3);
+        assertNotSame(delegate2, delegate3);
+
+        producer1.close();
+        producer2.close();
+        producer3.close();
+
+        assertEquals(1, producersClosed.get());
     }
 }

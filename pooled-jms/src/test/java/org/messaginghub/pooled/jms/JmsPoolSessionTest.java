@@ -722,4 +722,28 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
         connection.close();
     }
+
+    @Test(timeout = 60000)
+    public void testEvictionOfSeeminglyClosedSession() throws Exception {
+        cf.setConnectionIdleTimeout(10);
+        cf.setMaxSessionsPerConnection(2);
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+
+        JmsPoolSession session1 = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MockJMSSession mockSession1 = (MockJMSSession) session1.getInternalSession();
+
+        JmsPoolSession session2 = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MockJMSSession mockSession2 = (MockJMSSession) session2.getInternalSession();
+
+        assertNotSame(mockSession1, mockSession2);
+
+        session1.close();
+        mockSession1.close();
+
+        JmsPoolSession session3 = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MockJMSSession mockSession3 = (MockJMSSession) session3.getInternalSession();
+
+        assertNotSame(mockSession1, mockSession3);
+        assertNotSame(mockSession2, mockSession3);
+    }
 }

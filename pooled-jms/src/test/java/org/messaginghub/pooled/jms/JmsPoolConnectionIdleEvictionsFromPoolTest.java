@@ -23,9 +23,11 @@ import static org.junit.Assert.assertTrue;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
+import javax.jms.IllegalStateException;
 import javax.jms.Session;
 
 import org.junit.Test;
+import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 
 public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSupport {
 
@@ -46,6 +48,22 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
     }
 
     @Test(timeout = 60000)
+    public void testEvictionOfSeeminglyClosedConnection() throws Exception {
+        cf.setConnectionIdleTimeout(10);
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        MockJMSConnection mockConnection1 = (MockJMSConnection) connection.getConnection();
+
+        connection.close();
+
+        mockConnection1.close();
+
+        JmsPoolConnection connection2 = (JmsPoolConnection) cf.createConnection();
+        Connection mockConnection2 = connection2.getConnection();
+
+        assertNotSame(mockConnection1, mockConnection2);
+    }
+
+    @Test(timeout = 60000)
     public void testNotIdledWhenInUse() throws Exception {
         cf.setConnectionIdleTimeout(10);
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
@@ -63,7 +81,7 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
         try {
             // any operation on session first checks whether session is closed
             s.getTransacted();
-        } catch (javax.jms.IllegalStateException e) {
+        } catch (IllegalStateException e) {
             assertTrue("Session should be fine, instead: " + e.getMessage(), false);
         }
 
