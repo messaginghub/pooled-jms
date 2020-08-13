@@ -18,6 +18,7 @@ package org.messaginghub.pooled.jms.mock;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;

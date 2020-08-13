@@ -17,6 +17,7 @@
 package org.messaginghub.pooled.jms.mock;
 
 import javax.jms.Destination;
+import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
