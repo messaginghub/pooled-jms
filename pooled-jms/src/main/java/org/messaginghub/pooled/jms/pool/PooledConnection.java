@@ -242,20 +242,20 @@ public class PooledConnection implements ExceptionListener {
 
             unWrap(getConnection());
 
-            expiredCheck();
+            idleTimeoutCheck();
         }
     }
 
     /**
      * Determines if this Connection has expired.
      * <p>
-     * A ConnectionPool is considered expired when all references to it are released AND either
-     * the configured idleTimeout has elapsed OR the configured expiryTimeout has elapsed.
-     * Once a ConnectionPool is determined to have expired its underlying Connection is closed.
+     * A PooledConnection is considered expired when all references to it are released AND the
+     * configured idleTimeout has elapsed.  Once a PooledConnection is determined to have expired
+     * its underlying Connection is closed.
      *
-     * @return true if this connection has expired.
+     * @return true if this connection has expired and can be closed.
      */
-    public synchronized boolean expiredCheck() {
+    public synchronized boolean idleTimeoutCheck() {
 
         boolean expired = false;
 

@@ -138,7 +138,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                     @Override
                     public boolean validateObject(PooledConnectionKey connectionKey, PooledObject<PooledConnection> pooledObject) {
                         PooledConnection connection = pooledObject.getObject();
-                        if (connection != null && connection.expiredCheck()) {
+                        if (connection != null && connection.idleTimeoutCheck()) {
                             LOG.trace("Connection has expired: {} and will be destroyed", connection);
                             return false;
                         }
