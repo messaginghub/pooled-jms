@@ -37,6 +37,8 @@ import javax.jms.Connection;
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
@@ -504,5 +506,44 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         assertNotNull(tempTopic);
 
         connection.close();
+    }
+
+    @Test(timeout = 60000)
+    public void testConnectionFailures() throws Exception {
+        final CountDownLatch failed = new CountDownLatch(1);
+
+        Connection connection = cf.createConnection();
+        LOG.info("Fetched new connection from the pool: {}", connection);
+        connection.setExceptionListener(new ExceptionListener() {
+
+            @Override
+            public void onException(JMSException exception) {
+                LOG.info("Pooled Connection failed");
+                failed.countDown();
+            }
+        });
+
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = session.createQueue(getTestName());
+        MessageProducer producer = session.createProducer(queue);
+
+        MockJMSConnection mockJMSConnection = (MockJMSConnection) ((JmsPoolConnection) connection).getConnection();
+        mockJMSConnection.injectConnectionError(new JMSException("Some non-fatal error"));
+
+        assertTrue(failed.await(15, TimeUnit.SECONDS));
+
+        try {
+            producer.send(session.createMessage());
+            fail("Should be disconnected");
+        } catch (JMSException ex) {
+            LOG.info("Producer failed as expected: {}", ex.getMessage());
+        }
+
+        Connection connection2 = cf.createConnection();
+        assertNotSame(connection, connection2);
+        LOG.info("Fetched new connection from the pool: {}", connection2);
+        session = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        connection2.close();
     }
 }
