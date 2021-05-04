@@ -298,6 +298,7 @@
             <exclude>etc/org.eclipse.*</exclude>
             <exclude>**/target/</exclude>
             <exclude>**/data/</exclude>
+            <exclude>**/.github/</exclude>
             <exclude>**/*.lock</exclude>
             <exclude>**/META-INF/services/*</exclude>
             <exclude>**/*.iml</exclude>
