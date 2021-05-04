@@ -138,8 +138,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                     @Override
                     public boolean validateObject(PooledConnectionKey connectionKey, PooledObject<PooledConnection> pooledObject) {
                         PooledConnection connection = pooledObject.getObject();
-                        if (connection != null && connection.idleTimeoutCheck()) {
-                            LOG.trace("Connection has expired: {} and will be destroyed", connection);
+                        if (connection == null || connection.idleTimeoutCheck() || connection.isClosed()) {
+                            LOG.trace("Connection has expired or was closed: {} and will be destroyed", connection);
                             return false;
                         }
 
@@ -740,14 +740,13 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                         }
                     }
                     synchronized (connection) {
-                        if (connection.getConnection() != null) {
+                        if (connection.isClosed()) {
+                            // Return the bad one to the pool and let if get destroyed as normal.
+                            connectionsPool.returnObject(key, connection);
+                            connection = null;
+                        } else {
                             connection.incrementReferenceCount();
-                            break;
                         }
-
-                        // Return the bad one to the pool and let if get destroyed as normal.
-                        connectionsPool.returnObject(key, connection);
-                        connection = null;
                     }
                 }
             } catch (Exception e) {

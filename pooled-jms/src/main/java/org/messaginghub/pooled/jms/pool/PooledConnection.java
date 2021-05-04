@@ -219,6 +219,10 @@ public class PooledConnection implements ExceptionListener {
         }
     }
 
+    public boolean isClosed() {
+        return connection == null;
+    }
+
     public synchronized void incrementReferenceCount() {
         referenceCount++;
         lastUsed = System.currentTimeMillis();
@@ -256,7 +260,6 @@ public class PooledConnection implements ExceptionListener {
      * @return true if this connection has expired and can be closed.
      */
     public synchronized boolean idleTimeoutCheck() {
-
         boolean expired = false;
 
         if (connection == null) {
