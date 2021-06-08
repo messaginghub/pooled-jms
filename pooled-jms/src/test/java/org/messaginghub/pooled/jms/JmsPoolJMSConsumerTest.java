@@ -16,10 +16,10 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.IllegalStateException;
 import javax.jms.IllegalStateRuntimeException;
@@ -29,31 +29,31 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSMessageConsumer;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 
-/**
- *
- */
+@Timeout(60)
 public class JmsPoolJMSConsumerTest extends JmsPoolTestSupport {
 
     private JmsPoolJMSContext context;
 
     @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        super.setUp(info);
 
         context = (JmsPoolJMSContext) cf.createContext();
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         try {
             context.close();
@@ -64,7 +64,7 @@ public class JmsPoolJMSConsumerTest extends JmsPoolTestSupport {
 
     //----- Test basic functionality -----------------------------------------//
 
-    @Test(timeout = 30000)
+    @Test
     public void testToString() throws JMSException {
         JMSConsumer consumer = context.createConsumer(context.createTemporaryQueue());
         assertNotNull(consumer.toString());

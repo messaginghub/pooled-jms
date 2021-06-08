@@ -16,9 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
@@ -27,11 +27,13 @@ import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Tests for the JMS Pool QueueBrowser wrapper
  */
+@Timeout(60)
 public class JmsQueueBrowserTest extends JmsPoolTestSupport {
 
     @Test

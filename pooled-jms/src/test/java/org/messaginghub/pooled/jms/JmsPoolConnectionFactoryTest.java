@@ -16,13 +16,14 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,8 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
 import org.apache.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.messaginghub.pooled.jms.util.Wait;
@@ -51,11 +53,12 @@ import org.messaginghub.pooled.jms.util.Wait;
 /**
  * Performs basic tests on the JmsPoolConnectionFactory implementation.
  */
+@Timeout(60)
 public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
 
     public final static Logger LOG = Logger.getLogger(JmsPoolConnectionFactoryTest.class);
 
-    @Test(timeout = 60000)
+    @Test
     public void testInstanceOf() throws  Exception {
         cf = new JmsPoolConnectionFactory();
         assertTrue(cf instanceof QueueConnectionFactory);
@@ -63,7 +66,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetTimeBetweenExpirationCheckMillis() throws  Exception {
         cf = new JmsPoolConnectionFactory();
         assertEquals(-1, cf.getConnectionCheckInterval());
@@ -71,27 +74,28 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         assertEquals(5000, cf.getConnectionCheckInterval());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testGetConnectionFactory() throws  Exception {
         cf = new JmsPoolConnectionFactory();
-        assertNull("Should not have any factory set yet", cf.getConnectionFactory());
+        assertNull(cf.getConnectionFactory(), "Should not have any factory set yet");
         cf.setConnectionFactory(factory);
-        assertNotNull("Should have a factory set yet", cf.getConnectionFactory());
+        assertNotNull(cf.getConnectionFactory(), "Should have a factory set yet");
         assertSame(factory, cf.getConnectionFactory());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFactoryRejectsNonConnectionFactorySet() throws  Exception {
-        cf.setConnectionFactory("");
+        assertThrows(IllegalArgumentException.class, () -> cf.setConnectionFactory(""));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCreateConnectionWithNoFactorySet() throws  Exception {
         cf = new JmsPoolConnectionFactory();
-        cf.createConnection();
+
+        assertThrows(IllegalStateException.class, () -> cf.createConnection());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateConnection() throws Exception {
         Connection connection = cf.createConnection();
 
@@ -103,7 +107,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         assertEquals(1, cf.getNumConnections());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateConnectionWithCredentials() throws Exception {
         Connection connection = cf.createConnection("user", "pass");
 
@@ -115,7 +119,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         assertEquals(1, cf.getNumConnections());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testQueueCreateConnection() throws Exception {
         QueueConnection connection = cf.createQueueConnection();
 
@@ -127,7 +131,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         assertEquals(1, cf.getNumConnections());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testQueueCreateConnectionWithCredentials() throws Exception {
         QueueConnection connection = cf.createQueueConnection("user", "pass");
 
@@ -139,7 +143,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         assertEquals(1, cf.getNumConnections());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testTopicCreateConnection() throws Exception {
         TopicConnection connection = cf.createTopicConnection();
 
@@ -151,7 +155,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         assertEquals(1, cf.getNumConnections());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testTopicCreateConnectionWithCredentials() throws Exception {
         TopicConnection connection = cf.createTopicConnection("user", "pass");
 
@@ -163,7 +167,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         assertEquals(1, cf.getNumConnections());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testClearAllConnections() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -195,7 +199,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testClearDoesNotFailOnStoppedConnectionFactory() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -223,7 +227,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testMaxConnectionsAreCreated() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -243,7 +247,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCannotCreateConnectionOnStoppedFactory() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -263,7 +267,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCannotCreateContextOnStoppedFactory() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -283,7 +287,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testFactoryStopStart() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -307,7 +311,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsAreRotated() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -330,7 +334,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsArePooled() throws Exception {
         MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
@@ -350,7 +354,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsArePooledAsyncCreate() throws Exception {
         final MockJMSConnectionFactory mock = new MockJMSConnectionFactory();
 
@@ -377,12 +381,12 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
             });
         }
 
-        assertTrue("All connections should have been created.", Wait.waitFor(new Wait.Condition() {
+        assertTrue(Wait.waitFor(new Wait.Condition() {
             @Override
             public boolean isSatisfied() throws Exception {
                 return connections.size() == numConnections;
             }
-        }, TimeUnit.SECONDS.toMillis(10), TimeUnit.MILLISECONDS.toMillis(50)));
+        }, TimeUnit.SECONDS.toMillis(10), TimeUnit.MILLISECONDS.toMillis(50)), "All connections should have been created.");
 
         executor.shutdown();
         assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS));
@@ -395,12 +399,12 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConcurrentCreateGetsUniqueConnectionCreateOnDemand() throws Exception {
         doTestConcurrentCreateGetsUniqueConnection(false);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConcurrentCreateGetsUniqueConnectionCreateOnStart() throws Exception {
         doTestConcurrentCreateGetsUniqueConnection(true);
     }
@@ -435,7 +439,7 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         executor.shutdown();
         assertTrue(executor.awaitTermination(30, TimeUnit.SECONDS));
 
-        assertEquals("Should have all unique connections", numConnections, connections.size());
+        assertEquals(numConnections, connections.size(), "Should have all unique connections");
 
         connections.clear();
         cf.stop();

@@ -16,10 +16,10 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -55,13 +55,15 @@ import javax.transaction.xa.Xid;
 import org.apache.activemq.ActiveMQXAConnectionFactory;
 import org.apache.activemq.ActiveMQXASession;
 import org.apache.activemq.command.ActiveMQTopic;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
+@Timeout(60)
 public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
     @SuppressWarnings("resource")
-    @Test(timeout = 60000)
+    @Test
     public void testAfterCompletionCanClose() throws Exception {
         final Vector<Synchronization> syncs = new Vector<Synchronization>();
         ActiveMQTopic topic = new ActiveMQTopic("test");
@@ -174,7 +176,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testAckModeOfPoolNonXAWithTM() throws Exception {
         final Vector<Synchronization> syncs = new Vector<Synchronization>();
         ActiveMQTopic topic = new ActiveMQTopic("test");
@@ -261,7 +263,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
         TopicConnection connection = (TopicConnection) pcf.createConnection();
         TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
-        assertEquals("client ack is enforce", Session.CLIENT_ACKNOWLEDGE, session.getAcknowledgeMode());
+        assertEquals(Session.CLIENT_ACKNOWLEDGE, session.getAcknowledgeMode(), "client ack is enforce");
         TopicPublisher publisher = session.createPublisher(topic);
         publisher.publish(session.createMessage());
 
@@ -276,7 +278,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testInstanceOf() throws  Exception {
         JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
         assertTrue(pcf instanceof QueueConnectionFactory);
@@ -284,7 +286,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testBindable() throws Exception {
         JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
         assertTrue(pcf instanceof ObjectFactory);
@@ -293,7 +295,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testBindableEnvOverrides() throws Exception {
         JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
         assertTrue(pcf instanceof ObjectFactory);
@@ -304,7 +306,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSenderAndPublisherDest() throws Exception {
         JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
 
@@ -324,7 +326,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSessionArgsIgnoredWithTm() throws Exception {
         JmsPoolXAConnectionFactory pcf = createXAPooledConnectionFactory();
 
@@ -377,7 +379,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
         QueueConnection connection = pcf.createQueueConnection();
         // like ee tck
-        assertNotNull("can create session(false, 0)", connection.createQueueSession(false, 0));
+        assertNotNull(connection.createQueueSession(false, 0), "can create session(false, 0)");
 
         connection.close();
         pcf.stop();

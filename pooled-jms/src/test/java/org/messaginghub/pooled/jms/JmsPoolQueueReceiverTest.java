@@ -16,10 +16,10 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
@@ -28,12 +28,14 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSQueueReceiver;
 
 /**
  * Tests for the JMS Pool QueueReceiver wrapper
  */
+@Timeout(60)
 public class JmsPoolQueueReceiverTest extends JmsPoolTestSupport {
 
     @Test

@@ -16,12 +16,12 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -39,7 +39,8 @@ import javax.jms.TopicConnectionFactory;
 
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.command.ConnectionId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +54,12 @@ import org.slf4j.LoggerFactory;
  * don't block. This test succeeds if an exception is returned and fails if the
  * call to getSession() blocks.
  */
+@Timeout(60)
 public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
 
     public final static Logger LOG = LoggerFactory.getLogger(PooledConnectionFactoryTest.class);
 
-    @Test(timeout = 60000)
+    @Test
     public void testInstanceOf() throws  Exception {
         JmsPoolConnectionFactory pcf = new JmsPoolConnectionFactory();
         assertTrue(pcf instanceof QueueConnectionFactory);
@@ -65,7 +67,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testFailToCreateJMSContext() throws  Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 
@@ -79,7 +81,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testFailToCreateJMSContextWithSessionMode() throws  Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 
@@ -93,7 +95,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testFailToCreateJMSContextWithCredentials() throws  Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 
@@ -107,7 +109,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testFailToCreateJMSContextWithCredentialsAndSessionMode() throws  Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 
@@ -121,7 +123,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testClearAllConnections() throws Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(3);
@@ -153,7 +155,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testMaxConnectionsAreCreated() throws Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(3);
@@ -173,7 +175,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testFactoryStopStart() throws Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(1);
@@ -197,7 +199,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsAreRotated() throws Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(10);
@@ -220,7 +222,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsArePooled() throws Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(1);
@@ -240,7 +242,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsArePooledAsyncCreate() throws Exception {
         final JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(1);
@@ -265,12 +267,12 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
                 });
             }
 
-            assertTrue("All connections should have been created.", Wait.waitFor(new Wait.Condition() {
+            assertTrue(Wait.waitFor(new Wait.Condition() {
                 @Override
                 public boolean isSatisfied() throws Exception {
                     return connections.size() == numConnections;
                 }
-            }, TimeUnit.SECONDS.toMillis(10), TimeUnit.MILLISECONDS.toMillis(50)));
+            }, TimeUnit.SECONDS.toMillis(10), TimeUnit.MILLISECONDS.toMillis(50)), "All connections should have been created.");
 
             executor.shutdown();
             assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS));
@@ -285,7 +287,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConcurrentCreateGetsUniqueConnection() throws Exception {
         final JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 
@@ -316,7 +318,7 @@ public class PooledConnectionFactoryTest extends ActiveMQJmsPoolTestSupport {
             executor.shutdown();
             assertTrue(executor.awaitTermination(30, TimeUnit.SECONDS));
 
-            assertEquals("Should have all unique connections", numConnections, connections.size());
+            assertEquals(numConnections, connections.size(), "Should have all unique connections");
 
             connections.clear();
         } finally {

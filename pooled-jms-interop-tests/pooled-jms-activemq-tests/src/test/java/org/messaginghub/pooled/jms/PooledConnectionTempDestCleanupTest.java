@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.jms.Connection;
 import javax.jms.Destination;
@@ -26,11 +26,11 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
 import org.apache.activemq.broker.region.RegionBroker;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test of lingering temporary destinations on pooled connections when the
@@ -38,10 +38,8 @@ import org.junit.rules.TestName;
  * PooledConnection does not delete the temporary destinations of another
  * PooledConnection that uses the same underlying ConnectionPool.
  */
+@Timeout(60)
 public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupport {
-
-    @Rule
-    public TestName testName = new TestName();
 
     protected Connection directConn1;
     protected Connection directConn2;
@@ -58,9 +56,9 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
      * broker, as well as creating the client connections to the broker.
      */
     @Override
-    @Before
-    public void setUp() throws java.lang.Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        super.setUp(info);
 
         // Create the JmsPoolConnectionFactory.
         pooledConnFact = createPooledConnectionFactory();
@@ -78,7 +76,7 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws java.lang.Exception {
         try {
             pooledConn1.stop();
@@ -110,7 +108,7 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
      * 5. close the first connection 6. check that the temporary destination no
      * longer exists in the broker
      */
-    @Test(timeout = 60000)
+    @Test
     public void testPooledLingeringTempDests() throws java.lang.Exception {
         Session session1;
         Session session2;
@@ -120,16 +118,16 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
 
         tempDest = session1.createTemporaryQueue();
 
-        assertTrue("The expected temporary destination does not exist: " + tempDest, destinationExists(tempDest));
+        assertTrue(destinationExists(tempDest), "The expected temporary destination does not exist: " + tempDest);
 
         pooledConn1.close();
 
-        assertTrue("Temporary destination from closed pooled connection is lingering: " + tempDest, !destinationExists(tempDest));
+        assertTrue(!destinationExists(tempDest), "Temporary destination from closed pooled connection is lingering: " + tempDest);
 
         session2.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testPooledTempDestsWithConsumer() throws java.lang.Exception {
         Session session1;
 
@@ -140,11 +138,11 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         MessageConsumer messageConsumer = session1.createConsumer(tempDest);
         messageConsumer.receiveNoWait();
 
-        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(tempDest));
+        assertTrue(destinationExists(tempDest), "TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST");
 
         pooledConn1.close();
 
-        assertTrue("FAILED: temp dest from closed pooled connection is lingering", !destinationExists(tempDest));
+        assertTrue(!destinationExists(tempDest), "FAILED: temp dest from closed pooled connection is lingering");
     }
 
     /*
@@ -159,7 +157,7 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
      * exists in the broker 8. check that the second temporary destination does
      * still exist in the broker
      */
-    @Test(timeout = 60000)
+    @Test
     public void testPooledTempDestsCleanupOverzealous() throws java.lang.Exception {
         Session session1;
         Session session2;
@@ -170,15 +168,15 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         tempDest = session1.createTemporaryQueue();
         otherTempDest = session2.createTemporaryQueue();
 
-        assertTrue("The expected temporary destination does not exist: " + tempDest, destinationExists(tempDest));
-        assertTrue("The expected temporary destination does not exist: " + otherTempDest, destinationExists(otherTempDest));
+        assertTrue(destinationExists(tempDest), "The expected temporary destination does not exist: " + tempDest);
+        assertTrue(destinationExists(otherTempDest), "The expected temporary destination does not exist: " + otherTempDest);
 
         pooledConn1.close();
 
         // Now confirm the first temporary destination no longer exists and the
         // second does.
-        assertTrue("Temporary destination from closed pooled connection is lingering: " + tempDest, !destinationExists(tempDest));
-        assertTrue("Second PooledConnection's temporary destination was incorrectly deleted", destinationExists(otherTempDest));
+        assertTrue(!destinationExists(tempDest), "Temporary destination from closed pooled connection is lingering: " + tempDest);
+        assertTrue(destinationExists(otherTempDest), "Second PooledConnection's temporary destination was incorrectly deleted");
     }
 
     /*
@@ -194,7 +192,7 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
      * the first connection 6. check that the destination no longer exists in
      * the broker
      */
-    @Test(timeout = 60000)
+    @Test
     public void testDirectLingeringTempDests() throws java.lang.Exception {
         Session session1;
         Session session2;
@@ -204,17 +202,17 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
 
         tempDest = session1.createTemporaryQueue();
 
-        assertTrue("The expected temporary destination does not exist: " + tempDest, destinationExists(tempDest));
+        assertTrue(destinationExists(tempDest), "The expected temporary destination does not exist: " + tempDest);
 
         directConn1.close();
 
         // Now confirm the temporary destination no longer exists.
-        assertTrue("Temporary destination from closed pooled connection is lingering: " + tempDest, !destinationExists(tempDest));
+        assertTrue(!destinationExists(tempDest), "Temporary destination from closed pooled connection is lingering: " + tempDest);
 
         session2.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testDirectLingeringTempDestsWithConsumer() throws java.lang.Exception {
         Session session1;
 
@@ -225,12 +223,12 @@ public class PooledConnectionTempDestCleanupTest extends ActiveMQJmsPoolTestSupp
         MessageConsumer messageConsumer = session1.createConsumer(tempDest);
         messageConsumer.receiveNoWait();
 
-        assertTrue("TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST", destinationExists(tempDest));
+        assertTrue(destinationExists(tempDest), "TEST METHOD FAILURE - NEW TEMP DESTINATION DOES NOT EXIST");
 
         directConn1.close();
 
         // Now confirm the temporary destination no longer exists.
-        assertTrue("CONTROL TEST FAILURE - TEST METHOD IS SUSPECT", (!destinationExists(tempDest)));
+        assertTrue((!destinationExists(tempDest)), "CONTROL TEST FAILURE - TEST METHOD IS SUSPECT");
     }
 
     private boolean destinationExists(Destination dest) throws Exception {

@@ -1,4 +1,3 @@
-package org.messaginghub.pooled.jms;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,6 +14,8 @@ package org.messaginghub.pooled.jms;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.messaginghub.pooled.jms;
+
 import javax.jms.JMSContext;
 import javax.jms.XAJMSContext;
 import javax.transaction.xa.XAResource;

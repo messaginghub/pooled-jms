@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
@@ -26,16 +26,18 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 
 import org.apache.activemq.command.ActiveMQTopic;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
+@Timeout(60)
 public class PooledTopicPublisherTest extends ActiveMQJmsPoolTestSupport {
 
     private TopicConnection connection;
     private JmsPoolConnectionFactory pcf;
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (connection != null) {
             try {
@@ -53,7 +55,7 @@ public class PooledTopicPublisherTest extends ActiveMQJmsPoolTestSupport {
         super.tearDown();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testJmsPoolConnectionFactory() throws Exception {
         ActiveMQTopic topic = new ActiveMQTopic("test");
         pcf = createPooledConnectionFactory();
@@ -64,7 +66,7 @@ public class PooledTopicPublisherTest extends ActiveMQJmsPoolTestSupport {
         publisher.publish(session.createMessage());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetGetExceptionListener() throws Exception {
         pcf = createPooledConnectionFactory();
 

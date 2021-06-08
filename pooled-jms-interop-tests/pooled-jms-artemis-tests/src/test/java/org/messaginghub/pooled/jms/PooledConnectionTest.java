@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.Connection;
 import javax.jms.IllegalStateException;
@@ -27,18 +27,20 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A test against the PooledConnection class using QpidJMS
  */
+@Timeout(60)
 public class PooledConnectionTest extends ArtemisJmsPoolTestSupport {
 
     private final Logger LOG = LoggerFactory.getLogger(PooledConnectionTest.class);
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithSameID() throws Exception {
         // test: call setClientID("newID") twice
         // this should be tolerated and not result in an exception
@@ -59,7 +61,7 @@ public class PooledConnectionTest extends ArtemisJmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithDifferentID() throws Exception {
         Connection connection = cf.createConnection();
 
@@ -79,7 +81,7 @@ public class PooledConnectionTest extends ArtemisJmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDAfterConnectionStart() throws Exception {
         Connection connection = cf.createConnection();
 
@@ -99,7 +101,7 @@ public class PooledConnectionTest extends ArtemisJmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testTopicMessageSend() throws Exception {
         cf.setMaxConnections(1);
 

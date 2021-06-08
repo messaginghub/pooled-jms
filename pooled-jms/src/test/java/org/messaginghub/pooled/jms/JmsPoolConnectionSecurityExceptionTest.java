@@ -16,9 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.Connection;
 import javax.jms.JMSContext;
@@ -29,8 +29,9 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.messaginghub.pooled.jms.mock.MockJMSUser;
 import org.slf4j.Logger;
@@ -39,14 +40,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Test for handling of cases of JMSSecurityException on create of Connection
  */
+@Timeout(60)
 public class JmsPoolConnectionSecurityExceptionTest extends JmsPoolTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmsPoolConnectionSecurityExceptionTest.class);
 
     private MockJMSUser user;
 
-    @Override
-    @Before
+    @BeforeEach
     public void setUp() {
         user = new MockJMSUser("admin", "admin");
 

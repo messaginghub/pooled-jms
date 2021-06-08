@@ -16,9 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,8 +32,9 @@ import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
  * (maximumActive). When using setBlockIfSessionPoolIsFull(true) on the ConnectionFactory, further requests for sessions
  * should block. If it does not block, its a bug.
  */
+@Timeout(60)
 public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSupport {
 
     public final static Logger LOG = LoggerFactory.getLogger(JmsPoolConnectionFactoryMaximumActiveTest.class);
@@ -54,14 +56,12 @@ public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSuppor
         sessions.put(s.hashCode(), s);
     }
 
-    @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
         sessions.clear();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionBlocksWhenMaxSessionsLoanedOutUntilReturned() throws Exception {
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);
@@ -111,7 +111,7 @@ public class JmsPoolConnectionFactoryMaximumActiveTest extends JmsPoolTestSuppor
      *
      * @throws Exception
      */
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionBlocksWhenMaxSessionsLoanedOut() throws Exception {
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);

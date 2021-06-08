@@ -16,11 +16,11 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.CompletionListener;
 import javax.jms.DeliveryMode;
@@ -33,7 +33,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSDestination;
 import org.messaginghub.pooled.jms.mock.MockJMSQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSTopic;
@@ -41,6 +42,7 @@ import org.messaginghub.pooled.jms.mock.MockJMSTopic;
 /**
  * Tests for the JMS Pool MessageProducer wrapper class.
  */
+@Timeout(60)
 public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
 
     private final TestCompletionListener completionListener = new TestCompletionListener();
@@ -279,7 +281,7 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         } catch (InvalidDestinationException ide) {}
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testAnonymousProducerThrowsUOEWhenExplictDestinationNotProvided() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
         Session session = connection.createSession();
@@ -315,12 +317,12 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testExplicitQueueProducerThrowsIDEWhenNullDestinationIsProvidedOnSend() throws Exception {
         doExplicitProducerThrowsIDEWhenNullDestinationIsProvidedOnSendTestImpl(new MockJMSQueue("explicitQueueDest"));
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testExplicitTopicProducerThrowsIDEWhenInvalidDestinationIsProvidedOnSend() throws Exception {
         doExplicitProducerThrowsIDEWhenNullDestinationIsProvidedOnSendTestImpl(new MockJMSTopic("explicitTopicDest"));
     }
@@ -362,7 +364,7 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testExplicitProducerThrowsUOEWhenExplictDestinationIsProvided() throws Exception {
         Destination dest = new MockJMSQueue("explicitDestination");
         JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
@@ -400,7 +402,7 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testAnonymousDestinationProducerThrowsIDEWhenNullDestinationIsProvided() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
         Session session = connection.createSession();
@@ -437,7 +439,7 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testAnonymousProducerThrowsIAEWhenNullCompletionListenerProvided() throws Exception {
         Destination dest = new MockJMSQueue("explicitDestination");
 
@@ -462,7 +464,7 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testExplicitProducerThrowsIAEWhenNullCompletionListenerIsProvided() throws Exception {
         Destination dest = new MockJMSQueue("explicitDestination");
         JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();

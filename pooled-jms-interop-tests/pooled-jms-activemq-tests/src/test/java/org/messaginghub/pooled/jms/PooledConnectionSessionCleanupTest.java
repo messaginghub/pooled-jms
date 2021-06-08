@@ -16,9 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 
@@ -32,11 +32,14 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.jmx.QueueViewMBean;
 import org.apache.activemq.command.ActiveMQQueue;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.util.Wait;
 
+@Timeout(60)
 public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSupport {
 
     protected ActiveMQConnectionFactory directConnFact;
@@ -55,9 +58,9 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
      * broker, as well as creating the client connections to the broker.
      */
     @Override
-    @Before
-    public void setUp() throws java.lang.Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        super.setUp(info);
 
         // Create the ActiveMQConnectionFactory and the JmsPoolConnectionFactory.
         // Set a long idle timeout on the pooled connections to better show the
@@ -82,7 +85,7 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws java.lang.Exception {
         try {
             if (pooledConn1 != null) {
@@ -125,7 +128,7 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
         producer.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testLingeringPooledSessionsHoldingPrefetchedMessages() throws Exception {
         produceMessages();
 
@@ -134,13 +137,13 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
 
         final QueueViewMBean view = getProxyToQueue(queue.getPhysicalName());
 
-        assertTrue("Should have all sent messages in flight:", Wait.waitFor(new Wait.Condition() {
+        assertTrue(Wait.waitFor(new Wait.Condition() {
 
             @Override
             public boolean isSatisfied() throws Exception {
                 return view.getInFlightCount() == MESSAGE_COUNT;
             }
-        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)));
+        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)), "Should have all sent messages in flight:");
 
         // While all the message are in flight we should get anything on this consumer.
         Session session = directConn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -149,20 +152,20 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
 
         pooledConn1.close();
 
-        assertTrue("Should have only one consumer now:", Wait.waitFor(new Wait.Condition() {
+        assertTrue(Wait.waitFor(new Wait.Condition() {
 
             @Override
             public boolean isSatisfied() throws Exception {
                 return view.getSubscriptions().length == 1;
             }
-        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)));
+        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)), "Should have only one consumer now:");
 
         // Now we'd expect that the message stuck in the prefetch of the pooled session's
         // consumer would be rerouted to the non-pooled session's consumer.
         assertNotNull(consumer.receive(10000));
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testNonPooledConnectionCloseNotHoldingPrefetchedMessages() throws Exception {
         produceMessages();
 
@@ -171,13 +174,13 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
 
         final QueueViewMBean view = getProxyToQueue(queue.getPhysicalName());
 
-        assertTrue("Should have all sent messages in flight:", Wait.waitFor(new Wait.Condition() {
+        assertTrue(Wait.waitFor(new Wait.Condition() {
 
             @Override
             public boolean isSatisfied() throws Exception {
                 return view.getInFlightCount() == MESSAGE_COUNT;
             }
-        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)));
+        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)), "Should have all sent messages in flight:");
 
         // While all the message are in flight we should get anything on this consumer.
         Session session = directConn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -186,13 +189,13 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
 
         directConn2.close();
 
-        assertTrue("Should have only one consumer now:", Wait.waitFor(new Wait.Condition() {
+        assertTrue(Wait.waitFor(new Wait.Condition() {
 
             @Override
             public boolean isSatisfied() throws Exception {
                 return view.getSubscriptions().length == 1;
             }
-        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)));
+        }, TimeUnit.SECONDS.toMillis(20), TimeUnit.MILLISECONDS.toMillis(25)), "Should have only one consumer now:");
 
         // Now we'd expect that the message stuck in the prefetch of the first session's
         // consumer would be rerouted to the alternate session's consumer.
@@ -200,7 +203,7 @@ public class PooledConnectionSessionCleanupTest extends ActiveMQJmsPoolTestSuppo
     }
 
     @Override
-	protected String createBroker() throws Exception {
+    protected String createBroker() throws Exception {
         brokerService = new BrokerService();
         brokerService.setDeleteAllMessagesOnStartup(true);
         brokerService.setPersistent(false);

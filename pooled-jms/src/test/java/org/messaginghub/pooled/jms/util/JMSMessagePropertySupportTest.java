@@ -16,19 +16,22 @@
  */
 package org.messaginghub.pooled.jms.util;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 
 import javax.jms.JMSException;
 import javax.jms.MessageFormatException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * Test for the JMS Message Property support class
  */
+@Timeout(20)
 public class JMSMessagePropertySupportTest {
 
     //----- convertPropertyTo tests ------------------------------------------//
@@ -38,29 +41,39 @@ public class JMSMessagePropertySupportTest {
         assertFalse(JMSMessagePropertySupport.convertPropertyTo("timeout", null, Boolean.class));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConvertPropertyToNullFloatTarget() throws JMSException {
-        JMSMessagePropertySupport.convertPropertyTo("float", null, Float.class);
+        assertThrows(NullPointerException.class, () -> {
+            JMSMessagePropertySupport.convertPropertyTo("float", null, Float.class);
+        });
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testConvertPropertyToNullDoubleTarget() throws JMSException {
-        JMSMessagePropertySupport.convertPropertyTo("double", null, Double.class);
+        assertThrows(NullPointerException.class, () -> {
+            JMSMessagePropertySupport.convertPropertyTo("double", null, Double.class);
+        });
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testConvertPropertyToNullShortTarget() throws JMSException {
-        JMSMessagePropertySupport.convertPropertyTo("number", null, Short.class);
+        assertThrows(NumberFormatException.class, () -> {
+            JMSMessagePropertySupport.convertPropertyTo("number", null, Short.class);
+        });
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testConvertPropertyToNullIntegerTarget() throws JMSException {
-        JMSMessagePropertySupport.convertPropertyTo("number", null, Integer.class);
+        assertThrows(NumberFormatException.class, () -> {
+            JMSMessagePropertySupport.convertPropertyTo("number", null, Integer.class);
+        });
     }
 
-    @Test(expected = NumberFormatException.class)
+    @Test
     public void testConvertPropertyToNullLongTarget() throws JMSException {
-        JMSMessagePropertySupport.convertPropertyTo("number", null, Long.class);
+        assertThrows(NumberFormatException.class, () -> {
+            JMSMessagePropertySupport.convertPropertyTo("number", null, Long.class);
+        });
     }
 
     @Test
@@ -70,14 +83,18 @@ public class JMSMessagePropertySupportTest {
 
     //----- checkPropertyNameIsValid tests -----------------------------------//
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckPropertyNameIsValidWithNullName() throws JMSException {
-        JMSMessagePropertySupport.checkPropertyNameIsValid(null, true);
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkPropertyNameIsValid(null, true);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckPropertyNameIsValidWithEmptyName() throws JMSException {
-        JMSMessagePropertySupport.checkPropertyNameIsValid("", true);
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkPropertyNameIsValid("", true);
+        });
     }
 
     @Test
@@ -87,61 +104,83 @@ public class JMSMessagePropertySupportTest {
 
     //----- checkIdentifierIsntLogicOperator tests ---------------------------//
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorOr() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("OR");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("OR");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorAnd() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("AND");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("AND");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorNot() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("NOT");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("NOT");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorBetween() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("BETWEEN");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("BETWEEN");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorIn() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("IN");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("IN");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorLike() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("LIKE");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("LIKE");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorIs() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("IS");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("IS");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntLogicOperatorEscape() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("ESCAPE");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntLogicOperator("ESCAPE");
+        });
     }
 
     //----- checkIdentifierIsntNullTrueFalse tests ---------------------------//
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntNullTrueFalseFalse() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntNullTrueFalse("FALSE");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntNullTrueFalse("FALSE");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntNullTrueFalseNull() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntNullTrueFalse("NULL");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntNullTrueFalse("NULL");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierIsntNullTrueFalseTrue() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierIsntNullTrueFalse("TRUE");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierIsntNullTrueFalse("TRUE");
+        });
     }
 
     //----- checkIdentifierLetterAndDigitRequirements ------------------------//
@@ -151,19 +190,25 @@ public class JMSMessagePropertySupportTest {
         JMSMessagePropertySupport.checkIdentifierLetterAndDigitRequirements("test");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierLetterAndDigitRequirementsStartWithNumber() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierLetterAndDigitRequirements("1");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierLetterAndDigitRequirements("1");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierLetterAndDigitRequirementsContainsColon() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierLetterAndDigitRequirements("a:b");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierLetterAndDigitRequirements("a:b");
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCheckIdentifierLetterAndDigitRequirementsContainsEndWithColon() throws JMSException {
-        JMSMessagePropertySupport.checkIdentifierLetterAndDigitRequirements("a:b");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JMSMessagePropertySupport.checkIdentifierLetterAndDigitRequirements("a:b");
+        });
     }
 
     //----- checkValidObject -------------------------------------------------//
@@ -218,8 +263,10 @@ public class JMSMessagePropertySupportTest {
         JMSMessagePropertySupport.checkValidObject(null);
     }
 
-    @Test(expected = MessageFormatException.class)
+    @Test
     public void testCheckValidObjectList() throws JMSException {
-        JMSMessagePropertySupport.checkValidObject(Collections.EMPTY_LIST);
+        assertThrows(MessageFormatException.class, () -> {
+            JMSMessagePropertySupport.checkValidObject(Collections.EMPTY_LIST);
+        });
     }
 }

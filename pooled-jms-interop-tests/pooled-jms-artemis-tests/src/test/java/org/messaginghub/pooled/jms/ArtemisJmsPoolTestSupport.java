@@ -16,46 +16,81 @@
  */
 package org.messaginghub.pooled.jms;
 
+import java.util.Map;
+
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
+import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.apache.activemq.artemis.junit.EmbeddedJMSResource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ArtemisJmsPoolTestSupport {
 
-    @Rule public TestName name = new TestName();
-    @Rule public EmbeddedJMSResource server = new EmbeddedJMSResource(false);
-
     protected static final Logger LOG = LoggerFactory.getLogger(ArtemisJmsPoolTestSupport.class);
 
+    private static final String SERVER_NAME = "embedded-server";
+
+    protected String testName;
     protected ActiveMQConnectionFactory artemisJmsConnectionFactory;
     protected JmsPoolConnectionFactory cf;
 
-    @Before
-    public void setUp() throws Exception {
-        LOG.info("========== started test: " + getTestName() + " ==========");
+    protected Configuration configuration;
+    protected EmbeddedActiveMQ server;
 
-        artemisJmsConnectionFactory = new ActiveMQConnectionFactory(server.getVmURL());
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        LOG.info("========== started test: " + info.getDisplayName() + " ==========");
+
+        testName = info.getDisplayName();
+
+        configuration = new ConfigurationImpl().setName(SERVER_NAME)
+                                               .setPersistenceEnabled(false)
+                                               .setSecurityEnabled(false)
+                                               .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName()))
+                                               .addAddressesSetting("#", new AddressSettings().setDeadLetterAddress(SimpleString.toSimpleString("dla")).setExpiryAddress(SimpleString.toSimpleString("expiry")));
+        server = new EmbeddedActiveMQ().setConfiguration(configuration);
+        server.start();
+
+        artemisJmsConnectionFactory = new ActiveMQConnectionFactory(getVmURL());
 
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(artemisJmsConnectionFactory);
         cf.setMaxConnections(1);
     }
 
-    @After
+    private String getVmURL() {
+        String vmURL = "vm://0";
+        for (TransportConfiguration transportConfiguration : configuration.getAcceptorConfigurations()) {
+           Map<String, Object> params = transportConfiguration.getParams();
+           if (params != null && params.containsKey(TransportConstants.SERVER_ID_PROP_NAME)) {
+              vmURL = "vm://" + params.get(TransportConstants.SERVER_ID_PROP_NAME);
+           }
+        }
+
+        return vmURL;
+     }
+
+    @AfterEach
     public void tearDown() throws Exception {
         if (cf != null) {
             cf.stop();
         }
 
+        server.stop();
+
         LOG.info("========== completed test: " + getTestName() + " ==========");
     }
 
     public String getTestName() {
-        return name.getMethodName();
+        return testName;
     }
 }

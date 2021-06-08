@@ -16,34 +16,34 @@
  */
 package org.messaginghub.pooled.jms;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JmsPoolTestSupport {
 
-    @Rule public TestName name = new TestName();
-
     protected static final Logger LOG = LoggerFactory.getLogger(JmsPoolTestSupport.class);
+
+    private String testName;
 
     protected MockJMSConnectionFactory factory;
     protected JmsPoolConnectionFactory cf;
 
-    @Before
-    public void setUp() throws Exception {
-        LOG.info("========== start test: " + getTestName() + " ==========");
+    @BeforeEach
+    public void setUp(TestInfo testInfo) throws Exception {
+        LOG.info("========== start test: " + testInfo.getDisplayName() + " ==========");
 
+        testName = testInfo.getDisplayName();
         factory = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);
         cf.setMaxConnections(1);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         try {
             cf.stop();
@@ -51,10 +51,10 @@ public class JmsPoolTestSupport {
             // ignored
         }
 
-        LOG.info("========== finished test " + getTestName() + " ==========");
+        LOG.info("========== finished test " + getTestName()+ " ==========");
     }
 
     public String getTestName() {
-        return name.getMethodName();
+        return testName;
     }
 }

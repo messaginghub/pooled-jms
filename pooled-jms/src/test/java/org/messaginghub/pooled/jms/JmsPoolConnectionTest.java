@@ -16,13 +16,13 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -43,7 +43,8 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
@@ -56,11 +57,12 @@ import org.slf4j.LoggerFactory;
 /**
  * A couple of tests against the PooledConnection class.
  */
+@Timeout(60)
 public class JmsPoolConnectionTest extends JmsPoolTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmsPoolConnectionTest.class);
 
-    @Test(timeout = 60000)
+    @Test
     public void testExceptionListenerGetsNotified() throws Exception {
         final CountDownLatch signal = new CountDownLatch(1);
         Connection connection = cf.createConnection();
@@ -81,7 +83,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         assertTrue(signal.await(10, TimeUnit.SECONDS));
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testExceptionListenerPreservedFromOriginalConnectionFactory() throws Exception {
         final CountDownLatch signal = new CountDownLatch(1);
 
@@ -104,13 +106,13 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         assertTrue(signal.await(10, TimeUnit.SECONDS));
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testGetConnectionMetaData() throws Exception {
         Connection connection = cf.createConnection();
         assertNotNull(connection.getMetaData());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSession() throws Exception {
         Connection connection = cf.createConnection();
 
@@ -127,22 +129,22 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         assertNotSame(wrapperSession1.getSession(), wrapperSession2.getSession());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionAutoAcknowledge() throws Exception {
         doTestCreateSessionWithGivenAckMode(Session.AUTO_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionDupsOkAcknowledge() throws Exception {
         doTestCreateSessionWithGivenAckMode(Session.DUPS_OK_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionClientAcknowledge() throws Exception {
         doTestCreateSessionWithGivenAckMode(Session.CLIENT_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionSessionTransacted() throws Exception {
         doTestCreateSessionWithGivenAckMode(Session.SESSION_TRANSACTED);
     }
@@ -163,42 +165,42 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         assertNotSame(wrapperSession1.getSession(), wrapperSession2.getSession());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionAutoAcknowledgeNoTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(false, Session.AUTO_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionAutoAcknowledgeTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(true, Session.AUTO_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionDupsOkAcknowledgeNoTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(false, Session.DUPS_OK_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionDupsOkAcknowledgeTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(true, Session.DUPS_OK_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionClientAcknowledgeNoTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(false, Session.CLIENT_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionClientAcknowledgeTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(true, Session.CLIENT_ACKNOWLEDGE);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionSessionTransactedNoTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(false, Session.SESSION_TRANSACTED);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionSessionTransactedTX() throws Exception {
         doTestCreateSessionWithGivenAckModeAndTXFlag(true, Session.SESSION_TRANSACTED);
     }
@@ -232,7 +234,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithSameID() throws Exception {
         Connection connection = cf.createConnection();
 
@@ -254,7 +256,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithDifferentID() throws Exception {
         Connection connection = cf.createConnection();
 
@@ -274,7 +276,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDAfterConnectionStart() throws Exception {
         Connection connection = cf.createConnection();
 
@@ -300,7 +302,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
      *
      * @throws Exception
      */
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionDoesNotBlockWhenNotConfiguredTo() throws Exception {
         // using separate thread for testing so that we can interrupt the test
         // if the call to get a new session blocks.
@@ -394,7 +396,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionDeletesOnlyItsOwnTempQueuesOnClose() throws JMSException {
         JmsPoolConnection connection1 = (JmsPoolConnection) cf.createConnection();
         JmsPoolConnection connection2 = (JmsPoolConnection) cf.createConnection();
@@ -437,7 +439,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         assertTrue(deleted.contains(tempQueue4));
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionDeletesOnlyItsOwnTempTopicsOnClose() throws JMSException {
         JmsPoolConnection connection1 = (JmsPoolConnection) cf.createConnection();
         JmsPoolConnection connection2 = (JmsPoolConnection) cf.createConnection();
@@ -480,7 +482,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         assertTrue(deleted.contains(tempTopic4));
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionIgnoresDeleteTempDestinationErrorOnClose() throws JMSException {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
 
@@ -508,7 +510,7 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionFailures() throws Exception {
         final CountDownLatch failed = new CountDownLatch(1);
 

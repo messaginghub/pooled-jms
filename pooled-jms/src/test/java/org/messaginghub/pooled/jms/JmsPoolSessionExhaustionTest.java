@@ -16,29 +16,34 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.Connection;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Timeout(60)
 public class JmsPoolSessionExhaustionTest extends JmsPoolTestSupport {
 
     public final static Logger LOG = LoggerFactory.getLogger(JmsPoolSessionExhaustionTest.class);
 
     @Override
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp(TestInfo testInfo) throws Exception {
+        super.setUp(testInfo);
+
         factory = new MockJMSConnectionFactory();
         cf = new JmsPoolConnectionFactory();
         cf.setConnectionFactory(factory);
@@ -47,12 +52,12 @@ public class JmsPoolSessionExhaustionTest extends JmsPoolTestSupport {
         cf.setMaxSessionsPerConnection(1);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionThrowsWhenSessionPoolExhaustedSharedConnectionNoTimeout() throws JMSException {
         doTestCreateSessionThrowsWhenSessionPoolExhaustedSharedConnection(false);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionThrowsWhenSessionPoolExhaustedSharedConnectionTimeout() throws JMSException {
         doTestCreateSessionThrowsWhenSessionPoolExhaustedSharedConnection(true);
     }
@@ -105,12 +110,12 @@ public class JmsPoolSessionExhaustionTest extends JmsPoolTestSupport {
         assertNotSame(session1, session2);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionThrowsWhenSessionPoolExhaustedNonSharedConnectionNoTimeout() throws JMSException {
         doTestCreateSessionThrowsWhenSessionPoolExhaustedNonSharedConnection(false);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionThrowsWhenSessionPoolExhaustedNonSharedConnectionWithTimeout() throws JMSException {
         doTestCreateSessionThrowsWhenSessionPoolExhaustedNonSharedConnection(true);
     }

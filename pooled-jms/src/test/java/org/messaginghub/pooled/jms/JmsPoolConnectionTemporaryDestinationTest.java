@@ -16,20 +16,22 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Timeout(60)
 public class JmsPoolConnectionTemporaryDestinationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmsPoolConnectionTemporaryDestinationTest.class);
@@ -37,7 +39,7 @@ public class JmsPoolConnectionTemporaryDestinationTest {
     private MockJMSConnectionFactory mock;
     private JmsPoolConnectionFactory cf;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         mock = new MockJMSConnectionFactory();
 
@@ -48,7 +50,7 @@ public class JmsPoolConnectionTemporaryDestinationTest {
         cf.setMaxConnections(1);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testTemporaryQueueWithMultipleConnectionUsers() throws Exception {
         JmsPoolConnection connection1 = null;
         JmsPoolConnection connection2 = null;
@@ -84,7 +86,7 @@ public class JmsPoolConnectionTemporaryDestinationTest {
         assertEquals(0, pooledConnection.getConnectionStats().getActiveTemporaryQueueCount());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testNoTemporaryQueueLeaksAfterConnectionClose() throws Exception {
         JmsPoolConnection connection = null;
         MockJMSConnection pooledConnection = null;
@@ -105,7 +107,7 @@ public class JmsPoolConnectionTemporaryDestinationTest {
         assertEquals(10, pooledConnection.getConnectionStats().getTotalTemporaryQueuesCreated());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testNoTemporaryTopicLeaksAfterConnectionClose() throws Exception {
         JmsPoolConnection connection = null;
         MockJMSConnection pooledConnection = null;

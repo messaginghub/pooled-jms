@@ -16,12 +16,12 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,20 +37,22 @@ import javax.jms.Topic;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
 import org.messaginghub.pooled.jms.mock.MockJMSSession;
 
+@Timeout(60)
 public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateMessageProducerWithAnonymousProducerEnabled() throws Exception {
         doTestCreateMessageProducer(true);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateMessageProducerWithAnonymousProducerDisabled() throws Exception {
         doTestCreateMessageProducer(false);
     }
@@ -76,12 +78,12 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateAnonymousMessageProducerWithAnonymousProducerEnabled() throws Exception {
         doTestCreateAnonymousMessageProducer(true);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateAnonymousMessageProducerWithAnonymousProducerDisabled() throws Exception {
         doTestCreateAnonymousMessageProducer(false);
     }
@@ -101,12 +103,12 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateTopicPublisherWithAnonymousProducerEnabled() throws Exception {
         doTestCreateTopicPublisher(true);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateTopicPublisherWithAnonymousProducerDisabled() throws Exception {
         doTestCreateTopicPublisher(false);
     }
@@ -132,12 +134,12 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateAnonymousTopicPublisherWithAnonymousProducerEnabled() throws Exception {
         doTestCreateAnonymousTopicPublisher(true);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateAnonymousTopicPublisherWithAnonymousProducerDisabled() throws Exception {
         doTestCreateAnonymousTopicPublisher(false);
     }
@@ -157,12 +159,12 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateQueueSenderWithAnonymousProducerEnabled() throws Exception {
         doTestCreateQueueSender(true);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateQueueSenderWithAnonymousProducerDisabled() throws Exception {
         doTestCreateQueueSender(false);
     }
@@ -188,12 +190,12 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateAnonymousQueueSenderWithAnonymousProducerEnabled() throws Exception {
         doTestAnonymousCreateQueueSender(true);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateAnonymousQueueSenderWithAnonymousProducerDisabled() throws Exception {
         doTestAnonymousCreateQueueSender(false);
     }
@@ -213,7 +215,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSendThrowsWhenProducerHasExplicitDestination() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -236,17 +238,17 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateMessageProducerWithAnonymousProducerEnabledAndCacheSize() throws Exception {
         doTestCreateMessageProducerWithCacheSizeOption(true, 2);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateMessageProducerWithAnonymousProducerDisabledAndCacheSize() throws Exception {
         doTestCreateMessageProducerWithCacheSizeOption(false, 2);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateMessageProducerWithAnonymousProducerDisabledAndCacheSizeZero() throws Exception {
         doTestCreateMessageProducerWithCacheSizeOption(false, 0);
     }
@@ -287,7 +289,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testRemoteCloseOfPooledAnonymousMessageProducerCanRecover() throws Exception {
         final AtomicInteger produersCreated = new AtomicInteger();
         final AtomicInteger producersClosed = new AtomicInteger();
@@ -337,7 +339,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         assertEquals(1, producersClosed.get());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testRemoteCloseAfterSendOfPooledAnonymousMessageProducerCanRecover() throws Exception {
         final AtomicInteger produersCreated = new AtomicInteger();
         final AtomicInteger producersClosed = new AtomicInteger();
@@ -391,7 +393,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         assertEquals(1, producersClosed.get());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testRemoteCloseAfterSendOfPooledAnonymousTopicPublisherCanRecover() throws Exception {
         final AtomicInteger produersCreated = new AtomicInteger();
         final AtomicInteger producersClosed = new AtomicInteger();
@@ -445,7 +447,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         assertEquals(1, producersClosed.get());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testRemoteCloseAfterSendOfPooledAnonymousQueueSenderCanRecover() throws Exception {
         final AtomicInteger produersCreated = new AtomicInteger();
         final AtomicInteger producersClosed = new AtomicInteger();
@@ -499,7 +501,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         assertEquals(1, producersClosed.get());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCachedProducersAreClosedWhenSendTriggersIllegalStateException() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(10);
@@ -566,7 +568,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         assertEquals(1, producersClosed.get());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCachedPublishersAreClosedWhenSendTriggersIllegalStateException() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(10);
@@ -633,7 +635,7 @@ public class JmsPoolWrappedProducersTest extends JmsPoolTestSupport {
         assertEquals(1, producersClosed.get());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCachedSenderAreClosedWhenSendTriggersIllegalStateException() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(10);

@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.concurrent.Executors;
 
@@ -30,17 +30,19 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Timeout(60)
 public class PooledConnectionTempQueueTest extends ActiveMQJmsPoolTestSupport {
 
     private final Logger LOG = LoggerFactory.getLogger(PooledConnectionTempQueueTest.class);
 
     protected static final String SERVICE_QUEUE = "queue1";
 
-    @Test(timeout = 60000)
+    @Test
     public void testTempQueueIssue() throws JMSException, InterruptedException {
         final JmsPoolConnectionFactory cf = createPooledConnectionFactory();
 

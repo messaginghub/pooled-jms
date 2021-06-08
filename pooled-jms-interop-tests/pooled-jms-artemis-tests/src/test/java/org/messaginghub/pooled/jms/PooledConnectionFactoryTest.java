@@ -16,17 +16,18 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.jms.Connection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnectionFactory;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +40,12 @@ import org.slf4j.LoggerFactory;
  * don't block. This test succeeds if an exception is returned and fails if the
  * call to getSession() blocks.
  */
+@Timeout(60)
 public class PooledConnectionFactoryTest extends ArtemisJmsPoolTestSupport {
 
     public final static Logger LOG = LoggerFactory.getLogger(PooledConnectionFactoryTest.class);
 
-    @Test(timeout = 60000)
+    @Test
     public void testInstanceOf() throws  Exception {
         JmsPoolConnectionFactory pcf = new JmsPoolConnectionFactory();
         assertTrue(pcf instanceof QueueConnectionFactory);
@@ -51,7 +53,7 @@ public class PooledConnectionFactoryTest extends ArtemisJmsPoolTestSupport {
         pcf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testClearAllConnections() throws Exception {
         cf.setMaxConnections(3);
 
@@ -80,7 +82,7 @@ public class PooledConnectionFactoryTest extends ArtemisJmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testMaxConnectionsAreCreated() throws Exception {
         cf.setMaxConnections(3);
 
@@ -97,7 +99,7 @@ public class PooledConnectionFactoryTest extends ArtemisJmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testFactoryStopStart() throws Exception {
         cf.setMaxConnections(1);
 
@@ -118,7 +120,7 @@ public class PooledConnectionFactoryTest extends ArtemisJmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsAreRotated() throws Exception {
         cf.setMaxConnections(10);
 
@@ -138,7 +140,7 @@ public class PooledConnectionFactoryTest extends ArtemisJmsPoolTestSupport {
         cf.stop();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionsArePooled() throws Exception {
         cf.setMaxConnections(1);
 

@@ -16,9 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 
@@ -26,12 +26,14 @@ import javax.jms.Connection;
 import javax.jms.IllegalStateException;
 import javax.jms.Session;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 
+@Timeout(60)
 public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSupport {
 
-    @Test(timeout = 60000)
+    @Test
     public void testEvictionOfIdle() throws Exception {
         cf.setConnectionIdleTimeout(10);
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
@@ -44,10 +46,10 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
 
         JmsPoolConnection connection2 = (JmsPoolConnection) cf.createConnection();
         Connection amq2 = connection2.getConnection();
-        assertTrue("not equal", !amq1.equals(amq2));
+        assertTrue(!amq1.equals(amq2), "not equal");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testEvictionOfSeeminglyClosedConnection() throws Exception {
         cf.setConnectionIdleTimeout(10);
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
@@ -63,7 +65,7 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
         assertNotSame(mockConnection1, mockConnection2);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testNotIdledWhenInUse() throws Exception {
         cf.setConnectionIdleTimeout(10);
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
@@ -82,7 +84,7 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
             // any operation on session first checks whether session is closed
             s.getTransacted();
         } catch (IllegalStateException e) {
-            assertTrue("Session should be fine, instead: " + e.getMessage(), false);
+            assertTrue(false, "Session should be fine, instead: " + e.getMessage());
         }
 
         Connection original = connection.getConnection();

@@ -16,14 +16,14 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,7 +40,8 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultSessionListener;
@@ -51,9 +52,10 @@ import org.messaginghub.pooled.jms.mock.MockJMSTemporaryQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryTopic;
 import org.messaginghub.pooled.jms.mock.MockJMSTopic;
 
+@Timeout(60)
 public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
-    @Test(timeout = 60000)
+    @Test
     public void testToString() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -62,7 +64,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertNotNull(session.toString());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testIsIgnoreClose() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -71,7 +73,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertTrue(session.isIgnoreClose());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testIgnoreClose() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -84,7 +86,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertEquals(Session.AUTO_ACKNOWLEDGE, session.getAcknowledgeMode());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testRun() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -102,12 +104,12 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testGetXAResource() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-        assertNull("Non-XA session should not return an XA Resource", session.getXAResource());
+        assertNull(session.getXAResource(), "Non-XA session should not return an XA Resource");
 
         session.close();
 
@@ -117,7 +119,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testClose() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -138,7 +140,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (IllegalStateException ise) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCloseOnTXSessionTriggersRollback() throws Exception {
         final AtomicBoolean rolledBack = new AtomicBoolean();
 
@@ -154,10 +156,10 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         });
 
         session.close();
-        assertTrue("Session should rollback on close" , rolledBack.get());
+        assertTrue(rolledBack.get(), "Session should rollback on close");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCloseWithErrorOnRollbackInvalidatesSession() throws Exception {
         final AtomicBoolean rolledBack = new AtomicBoolean();
 
@@ -180,13 +182,13 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
         session.close();
 
-        assertTrue("Session should rollback on close" , rolledBack.get());
+        assertTrue(rolledBack.get(), "Session should rollback on close");
 
         assertEquals(0, connection.getNumSessions());
         assertEquals(0, connection.getNumtIdleSessions());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionCloseReflectedInSessionState() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -208,7 +210,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (IllegalStateException ise) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateQueue() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -218,7 +220,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertTrue(queue instanceof MockJMSQueue);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateTopic() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -228,7 +230,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertTrue(topic instanceof MockJMSTopic);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateTemporaryQueue() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -237,7 +239,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertTrue(queue instanceof MockJMSTemporaryQueue);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateTemporaryTopic() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -246,14 +248,14 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertTrue(topic instanceof MockJMSTemporaryTopic);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testGetXAResourceOnNonXAPooledSession() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         assertNull(session.getXAResource());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testPooledSessionStatsOneSession() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
 
@@ -272,7 +274,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testPooledSessionStatsOneSessionWithSessionLimit() throws Exception {
         cf.setMaxSessionsPerConnection(1);
         cf.setBlockIfSessionPoolIsFull(false);
@@ -307,7 +309,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testPooledSessionStatsTwoSessions() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
 
@@ -329,7 +331,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testAddSessionEventListener() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession();
@@ -374,7 +376,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (IllegalStateException ise) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateDurableSubscriber() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -389,7 +391,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (JMSException ex) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateDurableSubscriberWithSelectorAndNoLocal() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -404,7 +406,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (JMSException ex) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSubscriber() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -419,7 +421,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (JMSException ex) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSubscriberWithSelectorAndNoLocal() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -434,7 +436,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (JMSException ex) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateReceiver() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -449,7 +451,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (JMSException ex) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateReceiverWithSelector() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -464,7 +466,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (JMSException ex) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetMessageListener() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         JmsPoolSession session = (JmsPoolSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -499,7 +501,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         } catch (JMSException ex) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCachedProducersEnabledReturnsCached() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(2);
@@ -524,7 +526,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCachedProducersEnabledReturnsCachedOnNewSession() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(1);
@@ -548,7 +550,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCachedProducersEnabledEvictsOldAndCreatesNew() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(2);
@@ -583,7 +585,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCachedProducersEvictedFromCacheNotClosedUntilAllReferencesAreClosed() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(1);
@@ -656,7 +658,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateAnonymousProducerDoesNotEvictCachedExplicitProducer() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(1);
@@ -686,7 +688,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testEvictedProducerClosedOnSessionClose() throws Exception {
         cf.setUseAnonymousProducers(false);
         cf.setExplicitProducerCacheSize(1);
@@ -723,7 +725,7 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         connection.close();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testEvictionOfSeeminglyClosedSession() throws Exception {
         cf.setConnectionIdleTimeout(10);
         cf.setMaxSessionsPerConnection(2);

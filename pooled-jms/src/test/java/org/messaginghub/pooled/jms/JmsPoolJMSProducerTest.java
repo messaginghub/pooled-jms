@@ -16,12 +16,12 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -43,9 +43,11 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageFormatRuntimeException;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
@@ -55,6 +57,7 @@ import org.messaginghub.pooled.jms.mock.MockJMSTopic;
 /**
  * Tests for the JMSProducer implementation provided by the JMS Pool
  */
+@Timeout(60)
 public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
 
     private final String STRING_PROPERTY_NAME = "StringProperty";
@@ -92,15 +95,15 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
     private JmsPoolJMSContext context;
 
     @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        super.setUp(info);
 
         context = (JmsPoolJMSContext) cf.createContext();
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         try {
             context.close();
@@ -111,7 +114,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
 
     //----- Test basic functionality -----------------------------------------//
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateJMSProducer() throws JMSException {
         JmsPoolJMSProducer producer = (JmsPoolJMSProducer) context.createProducer();
         assertNotNull(producer);
@@ -129,7 +132,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testToString() throws JMSException {
         JMSProducer producer = context.createProducer();
         assertNotNull(producer.toString());
@@ -790,7 +793,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         assertEquals(DeliveryMode.NON_PERSISTENT, producer.getDeliveryMode());
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testDeliveryModeConfigurationWithInvalidMode() throws Exception {
         JMSProducer producer = context.createProducer();
 
@@ -869,7 +872,7 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         assertEquals(4, producer.getPriority());
     }
 
-    @Test(timeout = 10000)
+    @Test
     public void testPriorityConfigurationWithInvalidPriorityValues() throws Exception {
         JMSProducer producer = context.createProducer();
 

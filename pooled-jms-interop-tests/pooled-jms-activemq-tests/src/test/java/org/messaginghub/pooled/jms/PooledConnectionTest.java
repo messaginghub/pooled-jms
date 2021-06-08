@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -32,7 +32,8 @@ import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +41,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Tests against the PooledConnection class.
  */
+@Timeout(60)
 public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(PooledConnectionTest.class);
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithSameID() throws Exception {
         LOG.debug("running testRepeatedSetClientIDCalls()");
 
@@ -68,7 +70,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithDifferentID() throws Exception {
         LOG.debug("running testRepeatedSetClientIDCalls()");
 
@@ -90,7 +92,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDAfterConnectionStart() throws Exception {
         LOG.debug("running testRepeatedSetClientIDCalls()");
 
@@ -118,7 +120,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
      *
      * @throws Exception
      */
-    @Test(timeout = 60000)
+    @Test
     public void testCreateSessionDoesNotBlockWhenNotConfiguredTo() throws Exception {
         // using separate thread for testing so that we can interrupt the test
         // if the call to get a new session blocks.
@@ -208,7 +210,7 @@ public class PooledConnectionTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testAllSessionsAvailableOnConstrainedPool() throws Exception {
         JmsPoolConnectionFactory cf = createPooledConnectionFactory();
         cf.setMaxConnections(5);

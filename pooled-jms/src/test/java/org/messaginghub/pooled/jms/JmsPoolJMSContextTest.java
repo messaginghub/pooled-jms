@@ -16,13 +16,13 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.ExceptionListener;
 import javax.jms.IllegalStateRuntimeException;
@@ -34,7 +34,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSContext;
 import org.messaginghub.pooled.jms.mock.MockJMSUser;
@@ -42,9 +43,10 @@ import org.messaginghub.pooled.jms.mock.MockJMSUser;
 /**
  * Tests for the JMS Pool JMSContext implementation.
  */
+@Timeout(60)
 public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateContextCreatesConnection() {
         JMSContext context = cf.createContext();
 
@@ -53,13 +55,13 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertEquals(1, cf.getNumConnections());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testToString() {
         JMSContext context = cf.createContext();
         assertNotNull(context.toString());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testGetMetaData() {
         JMSContext context = cf.createContext();
         assertNotNull(context.getMetaData());
@@ -72,7 +74,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testGetClientID() {
         JMSContext context = cf.createContext();
         assertNotNull(context.getClientID());
@@ -85,7 +87,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testGetExceptionListener() {
         JMSContext context = cf.createContext();
         assertNull(context.getExceptionListener());
@@ -115,7 +117,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testGetConnectionAfterClosed() {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext();
 
@@ -129,7 +131,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateQueue() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createQueue(getTestName()));
@@ -141,7 +143,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateTemporaryQueue() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createTemporaryQueue());
@@ -153,7 +155,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateTopic() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createTopic(getTestName()));
@@ -165,7 +167,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateTemporaryTopic() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createTemporaryTopic());
@@ -177,7 +179,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateMessage() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createMessage());
@@ -189,7 +191,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateBytesMessage() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createBytesMessage());
@@ -201,7 +203,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateMapMessage() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createMapMessage());
@@ -213,7 +215,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateObjectMessage() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createObjectMessage());
@@ -225,7 +227,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateObjectMessageWithPayload() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createObjectMessage("body"));
@@ -237,7 +239,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateStreamMessage() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createStreamMessage());
@@ -249,7 +251,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateTextMessage() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createTextMessage());
@@ -261,7 +263,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateTextMessageWithPayload() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createTextMessage("body"));
@@ -273,7 +275,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateProducer() {
         JMSContext context = cf.createContext();
         assertNotNull(context.createProducer());
@@ -286,7 +288,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateProducerAnonymousNotAuthorized() {
         MockJMSUser user = new MockJMSUser("user", "password");
         user.setCanProducerAnonymously(false);
@@ -300,7 +302,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSSecurityRuntimeException jmssre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateBrowser() {
         JMSContext context = cf.createContext();
         Queue queue = context.createQueue(getTestName());
@@ -313,7 +315,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateBrowserWithSelector() {
         JMSContext context = cf.createContext();
         Queue queue = context.createQueue(getTestName());
@@ -326,7 +328,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateConsumer() {
         JMSContext context = cf.createContext();
         Queue queue = context.createQueue(getTestName());
@@ -339,7 +341,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateConsumerWithSelector() {
         JMSContext context = cf.createContext();
         Queue queue = context.createQueue(getTestName());
@@ -352,7 +354,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateConsumerWithSelectorAndNoLocal() {
         JMSContext context = cf.createContext();
         Queue queue = context.createQueue(getTestName());
@@ -365,7 +367,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testSharedCreateConsumer() {
         JMSContext context = cf.createContext();
         Topic topic = context.createTopic(getTestName());
@@ -378,7 +380,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testSharedCreateConsumerWithSelector() {
         JMSContext context = cf.createContext();
         Topic topic = context.createTopic(getTestName());
@@ -391,7 +393,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateDurableConsumer() {
         JMSContext context = cf.createContext();
         Topic topic = context.createTopic(getTestName());
@@ -404,7 +406,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateSharedDurableConsumer() {
         JMSContext context = cf.createContext();
         Topic topic = context.createTopic(getTestName());
@@ -417,7 +419,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateDurableConsumerWithSelector() {
         JMSContext context = cf.createContext();
         Topic topic = context.createTopic(getTestName());
@@ -430,7 +432,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateSharedDurableConsumerWithSelector() {
         JMSContext context = cf.createContext();
         Topic topic = context.createTopic(getTestName());
@@ -443,7 +445,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (IllegalStateRuntimeException isre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateSubContextWithInvalidSessionMode() {
         JMSContext context = cf.createContext();
 
@@ -453,7 +455,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateSubContextAfterParentClosed() {
         JMSContext context = cf.createContext();
 
@@ -465,7 +467,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateContextOptOutConfiguration() {
         cf.setUseProviderJMSContext(true);
 
@@ -477,7 +479,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertEquals(0, cf.getNumConnections());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateContextOptOutConfigurationWithCredentials() {
         cf.setUseProviderJMSContext(true);
 
@@ -489,7 +491,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertEquals(0, cf.getNumConnections());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateContextOptOutConfigurationUserName() {
         cf.setUseProviderJMSContext(true);
 
@@ -501,7 +503,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertEquals(0, cf.getNumConnections());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCreateContextFromExistingContext() {
         JmsPoolJMSContext context1 = (JmsPoolJMSContext) cf.createContext();
         JmsPoolJMSContext context2 = (JmsPoolJMSContext) context1.createContext(Session.AUTO_ACKNOWLEDGE);
@@ -510,7 +512,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertSame(context1.getConnection(), context2.getConnection());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCloseContextAfterCreatingContextLeaveCreatedContextOpen() {
         JmsPoolJMSContext context1 = (JmsPoolJMSContext) cf.createContext();
         JmsPoolJMSContext context2 = (JmsPoolJMSContext) context1.createContext(Session.AUTO_ACKNOWLEDGE);
@@ -525,7 +527,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertNotNull(context2.createBrowser(context2.createQueue(getTestName())));
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testGetTransacted() {
         JmsPoolJMSContext context1 = (JmsPoolJMSContext) cf.createContext();
         JmsPoolJMSContext context2 = (JmsPoolJMSContext) context1.createContext(Session.SESSION_TRANSACTED);
@@ -534,7 +536,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertTrue(context2.getTransacted());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testCommit() {
         JmsPoolJMSContext context1 = (JmsPoolJMSContext) cf.createContext();
         JmsPoolJMSContext context2 = (JmsPoolJMSContext) context1.createContext(Session.SESSION_TRANSACTED);
@@ -547,7 +549,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         context2.commit();
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testRollback() {
         JmsPoolJMSContext context1 = (JmsPoolJMSContext) cf.createContext();
         JmsPoolJMSContext context2 = (JmsPoolJMSContext) context1.createContext(Session.SESSION_TRANSACTED);
@@ -560,7 +562,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         context2.rollback();
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testRecover() {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext();
 
@@ -573,14 +575,14 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testAcknowledgeAutoAckContext() {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext();
 
         context.acknowledge();
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testUnsubscribe() {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext();
 
@@ -593,7 +595,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testAcknowledgeClientAckContext() {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext(Session.CLIENT_ACKNOWLEDGE);
 
@@ -603,7 +605,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         } catch (JMSRuntimeException jmsre) {}
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithSameID() throws Exception {
         JMSContext context = cf.createContext();
 
@@ -625,7 +627,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDTwiceWithDifferentID() throws Exception {
         JMSContext context = cf.createContext();
 
@@ -645,7 +647,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testSetClientIDAfterConnectionStart() throws Exception {
         JMSContext context = cf.createContext();
 
@@ -665,7 +667,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         LOG.debug("Test finished.");
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testAutStartByDefault() throws JMSException {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext();
         assertNotNull(context.createConsumer(context.createQueue(getTestName())));
@@ -674,7 +676,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertTrue(connection.isStarted());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testAutoStartCanBeDisabled() throws JMSException {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext();
         context.setAutoStart(false);
@@ -688,7 +690,7 @@ public class JmsPoolJMSContextTest extends JmsPoolTestSupport {
         assertFalse(connection.isStarted());
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testStartStopConnection() throws JMSException {
         JmsPoolJMSContext context = (JmsPoolJMSContext) cf.createContext();
         context.setAutoStart(false);

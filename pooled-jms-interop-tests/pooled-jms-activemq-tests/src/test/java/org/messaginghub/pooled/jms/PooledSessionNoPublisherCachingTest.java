@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.jms.Queue;
 import javax.jms.QueueSession;
@@ -25,18 +25,21 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSession;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 
+@Timeout(60)
 public class PooledSessionNoPublisherCachingTest extends ActiveMQJmsPoolTestSupport {
 
     private JmsPoolConnectionFactory pooledFactory;
 
     @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        super.setUp(info);
 
         pooledFactory = createPooledConnectionFactory();
         pooledFactory.setMaxConnections(1);
@@ -45,7 +48,7 @@ public class PooledSessionNoPublisherCachingTest extends ActiveMQJmsPoolTestSupp
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         try {
             pooledFactory.stop();
@@ -56,7 +59,7 @@ public class PooledSessionNoPublisherCachingTest extends ActiveMQJmsPoolTestSupp
         super.tearDown();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testMessageProducersAreUnique() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) pooledFactory.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -70,7 +73,7 @@ public class PooledSessionNoPublisherCachingTest extends ActiveMQJmsPoolTestSupp
         assertNotSame(producer1.getMessageProducer(), producer2.getMessageProducer());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testThrowsWhenDestinationGiven() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) pooledFactory.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -93,7 +96,7 @@ public class PooledSessionNoPublisherCachingTest extends ActiveMQJmsPoolTestSupp
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCreateTopicPublisher() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) pooledFactory.createConnection();
         TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -107,7 +110,7 @@ public class PooledSessionNoPublisherCachingTest extends ActiveMQJmsPoolTestSupp
         assertNotSame(publisher1.getMessageProducer(), publisher2.getMessageProducer());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testQueueSender() throws Exception {
         JmsPoolConnection connection = (JmsPoolConnection) pooledFactory.createConnection();
         QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);

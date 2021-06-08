@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.jms.Connection;
 import javax.jms.Queue;
@@ -24,11 +24,14 @@ import javax.jms.Session;
 import javax.jms.Topic;
 
 import org.apache.activemq.broker.region.RegionBroker;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Timeout(60)
 public class PooledConnectionFactoryWithTemporaryDestinationsTest extends ActiveMQJmsPoolTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(PooledConnectionFactoryWithTemporaryDestinationsTest.class);
@@ -36,14 +39,14 @@ public class PooledConnectionFactoryWithTemporaryDestinationsTest extends Active
     private JmsPoolConnectionFactory pooledFactory;
 
     @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        super.setUp(info);
 
         pooledFactory = createPooledConnectionFactory();
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testTemporaryQueueWithMultipleConnectionUsers() throws Exception {
         Connection pooledConnection = null;
         Connection pooledConnection2 = null;
@@ -74,7 +77,7 @@ public class PooledConnectionFactoryWithTemporaryDestinationsTest extends Active
         assertEquals(0, countBrokerTemporaryQueues());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testTemporaryQueueLeakAfterConnectionClose() throws Exception {
         Connection pooledConnection = null;
         Session session = null;
@@ -90,7 +93,7 @@ public class PooledConnectionFactoryWithTemporaryDestinationsTest extends Active
         assertEquals(0, countBrokerTemporaryQueues());
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testTemporaryTopicLeakAfterConnectionClose() throws Exception {
         Connection pooledConnection = null;
         Session session = null;

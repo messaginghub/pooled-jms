@@ -27,33 +27,32 @@ import org.apache.activemq.broker.jmx.BrokerViewMBean;
 import org.apache.activemq.broker.jmx.ConnectorViewMBean;
 import org.apache.activemq.broker.jmx.QueueViewMBean;
 import org.apache.qpid.jms.JmsConnectionFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class QpidJmsPoolTestSupport {
 
-    @Rule public TestName name = new TestName();
-
     protected static final Logger LOG = LoggerFactory.getLogger(QpidJmsPoolTestSupport.class);
 
+    protected String testName;
     protected BrokerService brokerService;
     protected String connectionURI;
     protected JmsConnectionFactory qpidJmsConnectionFactory;
 
-    @Before
-    public void setUp() throws Exception {
-        LOG.info("========== start " + getTestName() + " ==========");
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        LOG.info("========== start " + info.getDisplayName() + " ==========");
 
+        testName = info.getDisplayName();
         brokerService = createBroker();
 
         qpidJmsConnectionFactory = new JmsConnectionFactory(connectionURI);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (brokerService != null) {
             try {
@@ -69,7 +68,7 @@ public class QpidJmsPoolTestSupport {
     }
 
     public String getTestName() {
-        return name.getMethodName();
+        return testName;
     }
 
     protected BrokerService createBroker() throws Exception {

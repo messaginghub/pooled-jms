@@ -56,7 +56,7 @@
     <commons-pool2-version>2.10.0</commons-pool2-version>
     <slf4j-version>1.7.30</slf4j-version>
     <mockito-version>3.11.0</mockito-version>
-    <junit-version>4.13.2</junit-version>
+    <junit.jupiter.version>5.7.2</junit.jupiter.version>
     <geronimo.jms.2.spec.version>1.0-alpha-2</geronimo.jms.2.spec.version>
     <geronimo.jms.1.1.spec.version>1.1.1</geronimo.jms.1.1.spec.version>
 
@@ -195,9 +195,21 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit-version}</version>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit.jupiter.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -206,10 +218,15 @@
         <version>${mockito-version}</version>
         <scope>test</scope>
       </dependency>
-
       <dependency>
         <groupId>org.apache.activemq</groupId>
-        <artifactId>artemis-junit</artifactId>
+        <artifactId>artemis-jms-server</artifactId>
+        <version>${artemis-version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>artemis-jms-client</artifactId>
         <version>${artemis-version}</version>
         <scope>test</scope>
       </dependency>

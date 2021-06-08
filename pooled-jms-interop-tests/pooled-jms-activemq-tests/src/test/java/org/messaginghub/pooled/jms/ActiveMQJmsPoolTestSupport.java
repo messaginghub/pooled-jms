@@ -38,16 +38,13 @@ import org.apache.activemq.security.AuthorizationPlugin;
 import org.apache.activemq.security.DefaultAuthorizationMap;
 import org.apache.activemq.security.SimpleAuthenticationPlugin;
 import org.apache.activemq.security.TempDestinationAuthorizationEntry;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ActiveMQJmsPoolTestSupport {
-
-    @Rule public TestName name = new TestName();
 
     protected static final Logger LOG = LoggerFactory.getLogger(ActiveMQJmsPoolTestSupport.class);
 
@@ -56,23 +53,25 @@ public class ActiveMQJmsPoolTestSupport {
     private static final String GUEST = "guest";
     private static final String USER_PASSWORD = "password";
 
+    protected String testName;
     protected BrokerService brokerService;
     protected String connectionURI;
     protected ActiveMQConnectionFactory amqFactory;
     protected ActiveMQXAConnectionFactory amqXAFactory;
     protected ActiveMQConnectionFactory amqFailoverFactory;
 
-    @Before
-    public void setUp() throws Exception {
-        LOG.info("========== start " + getTestName() + " ==========");
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        LOG.info("========== start " + info.getDisplayName() + " ==========");
 
+        testName = info.getDisplayName();
         connectionURI = createBroker();
         amqFactory = new ActiveMQConnectionFactory(connectionURI);
         amqXAFactory = new ActiveMQXAConnectionFactory(connectionURI);
         amqFailoverFactory = new ActiveMQConnectionFactory("failover:" + connectionURI);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (brokerService != null) {
             try {
@@ -88,7 +87,7 @@ public class ActiveMQJmsPoolTestSupport {
     }
 
     public String getTestName() {
-        return name.getMethodName();
+        return testName;
     }
 
     protected String createBroker() throws Exception {

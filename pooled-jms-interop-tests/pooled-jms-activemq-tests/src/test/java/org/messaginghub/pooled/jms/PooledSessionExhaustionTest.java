@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +35,15 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Timeout(60)
 public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
 
     private final Logger LOG = LoggerFactory.getLogger(PooledSessionExhaustionTest.class);
@@ -52,10 +55,10 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
     private int numReceived = 0;
     private final List<Exception> exceptionList = new ArrayList<Exception>();
 
-    @Before
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    public void setUp(TestInfo info) throws Exception {
+        super.setUp(info);
 
         pooledFactory = createPooledConnectionFactory();
         pooledFactory.setMaxConnections(1);
@@ -64,7 +67,7 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         try {
             pooledFactory.stop();
@@ -111,7 +114,7 @@ public class PooledSessionExhaustionTest extends ActiveMQJmsPoolTestSupport {
         }
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testCanExhaustSessions() throws Exception {
         Thread thread = new Thread(new Runnable() {
             @Override

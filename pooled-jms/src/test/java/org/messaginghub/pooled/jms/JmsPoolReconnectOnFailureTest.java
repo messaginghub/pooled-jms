@@ -16,9 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -31,20 +31,25 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Timeout(60)
 public class JmsPoolReconnectOnFailureTest extends JmsPoolTestSupport {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmsPoolReconnectOnFailureTest.class);
 
     @Override
-    @Before
-    public void setUp() throws java.lang.Exception {
+    @BeforeEach
+    public void setUp(TestInfo info) throws java.lang.Exception {
+        super.setUp(info);
+
         factory = new MockJMSConnectionFactory();
 
         cf = new JmsPoolConnectionFactory();
@@ -52,7 +57,7 @@ public class JmsPoolReconnectOnFailureTest extends JmsPoolTestSupport {
         cf.setMaxConnections(1);
     }
 
-    @Test(timeout = 60000)
+    @Test
     public void testConnectionCanBeCreatedAfterFailure() throws Exception {
 
         final CountDownLatch failed = new CountDownLatch(1);
