@@ -69,7 +69,7 @@ public class JmsPoolQueueBrowser implements QueueBrowser, AutoCloseable {
     public void close() throws JMSException {
         if (closed.compareAndSet(false, true)) {
             // ensure session removes browser from it's list of managed resources.
-            session.onQueueBrowserClose(delegate);
+            session.onQueueBrowserClose(this);
             delegate.close();
         }
     }
