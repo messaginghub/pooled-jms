@@ -50,7 +50,7 @@ public class JmsPoolMessageConsumer implements MessageConsumer, AutoCloseable {
     public void close() throws JMSException {
         // ensure session removes consumer from it's list of managed resources.
         if (closed.compareAndSet(false, true)) {
-            session.onConsumerClose(messageConsumer);
+            session.onConsumerClose(this);
             messageConsumer.close();
         }
     }

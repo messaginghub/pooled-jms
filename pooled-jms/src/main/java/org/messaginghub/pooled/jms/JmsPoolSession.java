@@ -60,9 +60,9 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
 
     private final PooledSessionKey key;
     private final KeyedObjectPool<PooledSessionKey, PooledSessionHolder> sessionPool;
-    private final CopyOnWriteArrayList<MessageProducer> producers = new CopyOnWriteArrayList<>();
-    private final CopyOnWriteArrayList<MessageConsumer> consumers = new CopyOnWriteArrayList<>();
-    private final CopyOnWriteArrayList<QueueBrowser> browsers = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<JmsPoolMessageProducer> producers = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<JmsPoolMessageConsumer> consumers = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<JmsPoolQueueBrowser> browsers = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<JmsPoolSessionEventListener> sessionEventListeners = new CopyOnWriteArrayList<>();
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -487,7 +487,7 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
      * @param consumer
      * 		the consumer which is being closed.
      */
-    protected void onConsumerClose(MessageConsumer consumer) {
+    protected void onConsumerClose(JmsPoolMessageConsumer consumer) {
         consumers.remove(consumer);
     }
 
@@ -500,7 +500,7 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
      * @param browser
      * 		the browser which is being closed.
      */
-    protected void onQueueBrowserClose(QueueBrowser browser) {
+    protected void onQueueBrowserClose(JmsPoolQueueBrowser browser) {
         browsers.remove(browser);
     }
 
@@ -540,25 +540,25 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
 
     private QueueBrowser addQueueBrowser(QueueBrowser browser) {
         browser = new JmsPoolQueueBrowser(this, browser);
-        browsers.add(browser);
+        browsers.add((JmsPoolQueueBrowser) browser);
         return browser;
     }
 
     private MessageConsumer addConsumer(MessageConsumer consumer) {
         consumer = new JmsPoolMessageConsumer(this, consumer);
-        consumers.add(consumer);
+        consumers.add((JmsPoolMessageConsumer) consumer);
         return consumer;
     }
 
     private TopicSubscriber addTopicSubscriber(TopicSubscriber subscriber) {
         subscriber = new JmsPoolTopicSubscriber(this, subscriber);
-        consumers.add(subscriber);
+        consumers.add((JmsPoolMessageConsumer) subscriber);
         return subscriber;
     }
 
     private QueueReceiver addQueueReceiver(QueueReceiver receiver) {
         receiver = new JmsPoolQueueReceiver(this, receiver);
-        consumers.add(receiver);
+        consumers.add((JmsPoolMessageConsumer) receiver);
         return receiver;
     }
 
