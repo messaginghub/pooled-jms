@@ -47,7 +47,7 @@
          notice from SLF4J that none was found -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-simple</artifactId>
     </dependency>
   </dependencies>
 
