@@ -50,11 +50,11 @@
   </developers>
 
   <properties>
-    <qpid-jms-version>1.4.1</qpid-jms-version>
+    <qpid-jms-version>1.5.0</qpid-jms-version>
     <activemq-version>5.16.3</activemq-version>
-    <artemis-version>2.19.0</artemis-version>
+    <artemis-version>2.20.0</artemis-version>
     <commons-pool2-version>2.11.1</commons-pool2-version>
-    <slf4j-version>1.7.32</slf4j-version>
+    <slf4j-version>1.7.33</slf4j-version>
     <mockito-version>4.2.0</mockito-version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <geronimo.jms.2.spec.version>1.0-alpha-2</geronimo.jms.2.spec.version>
@@ -129,7 +129,7 @@
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
+        <artifactId>slf4j-simple</artifactId>
         <version>${slf4j-version}</version>
       </dependency>
 
