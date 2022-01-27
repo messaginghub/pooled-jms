@@ -78,17 +78,22 @@ public class HelloWorld {
 
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+            StringBuilder messageReceived = new StringBuilder().append("Received: ");
+
             MessageConsumer messageConsumer = session.createConsumer(queue);
             for (int i = 0; i < messagePayload.length(); ++i) {
                 TextMessage receivedMessage = (TextMessage) messageConsumer.receive(2000l);
                 if (receivedMessage != null) {
-                    System.out.print(receivedMessage.getText());
+                	messageReceived.append(receivedMessage.getText());
                 } else {
+                	messageReceived.setLength(0);
+                	messageReceived.append("No message received within the given timeout!");
                     System.out.println("No message received within the given timeout!");
+                    break;
                 }
             }
 
-            System.out.println();
+            System.out.println(messageReceived.toString());
 
             connection.close();
         } catch (Exception exp) {
