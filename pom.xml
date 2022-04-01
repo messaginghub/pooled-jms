@@ -50,15 +50,16 @@
   </developers>
 
   <properties>
-    <qpid-jms-version>1.5.0</qpid-jms-version>
-    <activemq-version>5.16.3</activemq-version>
-    <artemis-version>2.20.0</artemis-version>
+    <qpid-jms-version>1.6.0</qpid-jms-version>
+    <activemq-version>5.17.0</activemq-version>
+    <artemis-version>2.21.0</artemis-version>
     <commons-pool2-version>2.11.1</commons-pool2-version>
     <slf4j-version>1.7.36</slf4j-version>
-    <mockito-version>4.3.1</mockito-version>
+    <mockito-version>4.4.0</mockito-version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <geronimo.jms.2.spec.version>1.0-alpha-2</geronimo.jms.2.spec.version>
     <geronimo.jms.1.1.spec.version>1.1.1</geronimo.jms.1.1.spec.version>
+    <jakarta.jms-api-version>2.0.3</jakarta.jms-api-version>
+    <geronimo-transaction-version>3.1.5</geronimo-transaction-version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -135,9 +136,9 @@
 
       <!-- Spec Jars -->
       <dependency>
-        <groupId>org.apache.geronimo.specs</groupId>
-        <artifactId>geronimo-jms_2.0_spec</artifactId>
-        <version>${geronimo.jms.2.spec.version}</version>
+        <groupId>jakarta.jms</groupId>
+        <artifactId>jakarta.jms-api</artifactId>
+        <version>${jakarta.jms-api-version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geronimo.specs</groupId>
@@ -148,7 +149,7 @@
       <dependency>
         <groupId>org.apache.geronimo.components</groupId>
         <artifactId>geronimo-transaction</artifactId>
-        <version>3.1.4</version>
+        <version>${geronimo-transaction-version}</version>
       </dependency>
 
       <!-- Test Dependencies -->

@@ -40,8 +40,8 @@
          since its what's implemented by Qpid JMS, and also helps to
          verify the pool works when both APIs are on the classpath -->
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jms_2.0_spec</artifactId>
+      <groupId>jakarta.jms</groupId>
+      <artifactId>jakarta.jms-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.components</groupId>
