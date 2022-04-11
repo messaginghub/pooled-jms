@@ -51,4 +51,4 @@ There is some basic documentation in the pooled-jms-docs module.
 
 ## Continuous Integration
 
-[![Build Status](https://travis-ci.org/messaginghub/pooled-jms.svg?branch=master)](https://travis-ci.org/messaginghub/pooled-jms)
+[![Build](https://github.com/messaginghub/pooled-jms/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/messaginghub/pooled-jms/actions/workflows/build.yml)
