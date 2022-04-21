@@ -16,10 +16,10 @@
  */
 package org.messaginghub.pooled.jms.mock;
 
-import javax.jms.JMSConsumer;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageListener;
+import jakarta.jms.JMSConsumer;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageListener;
 
 import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
 

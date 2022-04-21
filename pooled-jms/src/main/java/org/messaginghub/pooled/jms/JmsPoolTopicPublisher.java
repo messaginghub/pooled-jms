@@ -18,11 +18,11 @@ package org.messaginghub.pooled.jms;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Topic;
-import javax.jms.TopicPublisher;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicPublisher;
 
 /**
  * A {@link TopicPublisher} instance that is created and managed by a PooledConnection.

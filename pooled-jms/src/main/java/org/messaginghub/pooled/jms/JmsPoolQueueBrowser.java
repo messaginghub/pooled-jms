@@ -19,10 +19,10 @@ package org.messaginghub.pooled.jms;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueBrowser;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
 
 /**
  * A {@link QueueBrowser} which was created by {@link JmsPoolSession}.

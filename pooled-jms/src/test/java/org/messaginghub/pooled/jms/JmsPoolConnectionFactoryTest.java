@@ -33,15 +33,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.Connection;
-import javax.jms.IllegalStateException;
-import javax.jms.IllegalStateRuntimeException;
-import javax.jms.JMSException;
-import javax.jms.JMSRuntimeException;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
+import jakarta.jms.Connection;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.IllegalStateRuntimeException;
+import jakarta.jms.JMSException;
+import jakarta.jms.QueueConnection;
+import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.TopicConnection;
+import jakarta.jms.TopicConnectionFactory;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -474,27 +473,6 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
         public void setConnectionFactory(Object factory) {
             // Simulate bad Pooled factory subclass to ensure we validate what it gave us.
             this.connectionFactory = factory;
-            this.jmsContextSupported = true;
-        }
-    }
-
-    @Test
-    public void testPooledCreateContextFailsWhenJMS20NotSupported() throws Exception {
-        cf = new JMS20NotAllowedJmsPoolConnectionFactory();
-        cf.setConnectionFactory(new MockJMSConnectionFactory());
-
-        try {
-            cf.createContext();
-            fail("Should throw JMSRuntimeException when told JMS 2.0 isn't available");
-        } catch (JMSRuntimeException jmsre) {}
-    }
-
-    private class JMS20NotAllowedJmsPoolConnectionFactory extends JmsPoolConnectionFactory {
-
-        @Override
-        public void setConnectionFactory(Object factory) {
-            super.setConnectionFactory(factory);
-            this.jmsContextSupported = false;
         }
     }
 }

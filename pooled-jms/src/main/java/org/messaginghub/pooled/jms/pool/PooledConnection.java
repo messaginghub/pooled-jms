@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.jms.Connection;
-import javax.jms.ExceptionListener;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.JMSRuntimeException;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
+import jakarta.jms.Connection;
+import jakarta.jms.ExceptionListener;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSException;
+import jakarta.jms.JMSRuntimeException;
+import jakarta.jms.Session;
+import jakarta.jms.TemporaryQueue;
+import jakarta.jms.TemporaryTopic;
 
 import org.apache.commons.pool2.KeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
@@ -84,20 +84,14 @@ public class PooledConnection implements ExceptionListener {
             LOG.warn("Could not set exception listener on create of ConnectionPool");
         }
 
-        // Check if JMS API on the classpath supports JMS 2+
+        // Determine the version support of this client
         try {
-            Connection.class.getMethod("createSession", int.class);
-            // Determine the version range of this JMS 2+ client
-            try {
-                jmsMajorVersion = connection.getMetaData().getJMSMajorVersion();
-                jmsMinorVersion = connection.getMetaData().getJMSMajorVersion();
-            } catch (JMSException ex) {
-                LOG.debug("Error while fetching JMS API version from provider, defaulting to v1.1");
-                jmsMajorVersion = 1;
-                jmsMinorVersion = 1;
-            }
-        } catch (NoSuchMethodException nsme) {
-            LOG.trace("JMS API on the classpath is not JMS 2.0+ defaulting to v1.1 internally");
+            jmsMajorVersion = connection.getMetaData().getJMSMajorVersion();
+            jmsMinorVersion = connection.getMetaData().getJMSMajorVersion();
+        } catch (JMSException ex) {
+            LOG.debug("Error while fetching JMS API version from provider, defaulting to v3.0");
+            jmsMajorVersion = 3;
+            jmsMinorVersion = 0;
         }
 
         // Create our internal Pool of session instances.

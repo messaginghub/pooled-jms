@@ -36,16 +36,9 @@
     <!-- Required Dependencies               -->
     <!-- =================================== -->
 
-    <!-- Adding the JMS 2.0 API jar for these tests explicitly, first,
-         since its what's implemented by Qpid JMS, and also helps to
-         verify the pool works when both APIs are on the classpath -->
     <dependency>
       <groupId>jakarta.jms</groupId>
       <artifactId>jakarta.jms-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geronimo.components</groupId>
-      <artifactId>geronimo-transaction</artifactId>
     </dependency>
     <dependency>
       <groupId>org.messaginghub</groupId>
@@ -81,12 +74,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-jms-server</artifactId>
+      <artifactId>artemis-server</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-jms-client</artifactId>
+      <artifactId>artemis-jakarta-client</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

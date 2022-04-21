@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
-import javax.jms.Connection;
+import jakarta.jms.Connection;
 
 import org.messaginghub.pooled.jms.pool.PooledJCAConnection;
 

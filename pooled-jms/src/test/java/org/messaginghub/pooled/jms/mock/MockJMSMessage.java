@@ -22,13 +22,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotReadableException;
-import javax.jms.MessageNotWriteableException;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageFormatException;
+import jakarta.jms.MessageNotReadableException;
+import jakarta.jms.MessageNotWriteableException;
 
 /**
  * Mock JMS Message Implementation
@@ -37,7 +37,7 @@ public class MockJMSMessage implements Message {
 
     protected Map<String, Object> properties = new HashMap<String, Object>();
 
-    protected int priority = javax.jms.Message.DEFAULT_PRIORITY;
+    protected int priority = jakarta.jms.Message.DEFAULT_PRIORITY;
     protected String groupId;
     protected int groupSequence;
     protected String messageId;

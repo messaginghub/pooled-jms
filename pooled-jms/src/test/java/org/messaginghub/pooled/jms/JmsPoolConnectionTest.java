@@ -33,20 +33,22 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.Connection;
-import javax.jms.ExceptionListener;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionMetaData;
+import jakarta.jms.ExceptionListener;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.Session;
+import jakarta.jms.TemporaryQueue;
+import jakarta.jms.TemporaryTopic;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
+import org.messaginghub.pooled.jms.mock.MockJMSConnectionMetaData;
 import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryQueue;
 import org.messaginghub.pooled.jms.mock.MockJMSTemporaryTopic;
@@ -109,7 +111,10 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
     @Test
     public void testGetConnectionMetaData() throws Exception {
         Connection connection = cf.createConnection();
-        assertNotNull(connection.getMetaData());
+        ConnectionMetaData metaData = connection.getMetaData();
+
+        assertNotNull(metaData);
+        assertSame(metaData, MockJMSConnectionMetaData.INSTANCE);
     }
 
     @Test

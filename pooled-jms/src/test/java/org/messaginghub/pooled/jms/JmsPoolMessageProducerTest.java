@@ -22,16 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.jms.CompletionListener;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
+import jakarta.jms.CompletionListener;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.Destination;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.InvalidDestinationException;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.Session;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -245,11 +245,11 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         CompletionListener listener = new CompletionListener() {
 
             @Override
-            public void onException(javax.jms.Message message, Exception exception) {
+            public void onException(jakarta.jms.Message message, Exception exception) {
             }
 
             @Override
-            public void onCompletion(javax.jms.Message message) {
+            public void onCompletion(jakarta.jms.Message message) {
             }
         };
 
@@ -267,11 +267,11 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
         CompletionListener listener = new CompletionListener() {
 
             @Override
-            public void onException(javax.jms.Message message, Exception exception) {
+            public void onException(jakarta.jms.Message message, Exception exception) {
             }
 
             @Override
-            public void onCompletion(javax.jms.Message message) {
+            public void onCompletion(jakarta.jms.Message message) {
             }
         };
 

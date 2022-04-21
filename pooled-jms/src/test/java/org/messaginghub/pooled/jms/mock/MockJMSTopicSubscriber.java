@@ -16,10 +16,10 @@
  */
 package org.messaginghub.pooled.jms.mock;
 
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSException;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicSubscriber;
 
 /**
  * Implementation of a TopicSubscriber

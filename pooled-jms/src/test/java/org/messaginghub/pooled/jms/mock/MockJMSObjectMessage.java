@@ -18,9 +18,9 @@ package org.messaginghub.pooled.jms.mock;
 
 import java.io.Serializable;
 
-import javax.jms.JMSException;
-import javax.jms.MessageFormatException;
-import javax.jms.ObjectMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageFormatException;
+import jakarta.jms.ObjectMessage;
 
 /**
  * Mock JMS ObjectMessage implementation.

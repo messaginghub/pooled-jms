@@ -19,8 +19,8 @@ package org.messaginghub.pooled.jms.mock;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jms.JMSException;
-import javax.jms.StreamMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.StreamMessage;
 
 /**
  * Mock JMS StreamMessage implementation.

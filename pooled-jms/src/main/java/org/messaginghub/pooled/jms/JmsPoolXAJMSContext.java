@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms;
 
-import javax.jms.JMSContext;
-import javax.jms.XAJMSContext;
+import jakarta.jms.JMSContext;
+import jakarta.jms.XAJMSContext;
 import javax.transaction.xa.XAResource;
 
 /**

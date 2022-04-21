@@ -50,15 +50,14 @@
   </developers>
 
   <properties>
-    <qpid-jms-version>1.6.0</qpid-jms-version>
-    <activemq-version>5.17.0</activemq-version>
+    <qpid-jms-version>2.0.0</qpid-jms-version>
     <artemis-version>2.21.0</artemis-version>
     <commons-pool2-version>2.11.1</commons-pool2-version>
     <slf4j-version>1.7.36</slf4j-version>
     <mockito-version>4.4.0</mockito-version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <geronimo.jms.1.1.spec.version>1.1.1</geronimo.jms.1.1.spec.version>
-    <jakarta.jms-api-version>2.0.3</jakarta.jms-api-version>
+    <jakarta.jms-api-version>3.0.0</jakarta.jms-api-version>
+    <jakarta-transaction-version>2.0.0</jakarta-transaction-version>
     <geronimo-transaction-version>3.1.5</geronimo-transaction-version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -141,54 +140,28 @@
         <version>${jakarta.jms-api-version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.geronimo.specs</groupId>
-        <artifactId>geronimo-jms_1.1_spec</artifactId>
-        <version>${geronimo.jms.1.1.spec.version}</version>
-        <scope>test</scope>
+        <groupId>jakarta.transaction</groupId>
+        <artifactId>jakarta.transaction-api</artifactId>
+        <version>${jakarta-transaction-version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geronimo.components</groupId>
         <artifactId>geronimo-transaction</artifactId>
         <version>${geronimo-transaction-version}</version>
+        <classifier>jakarta</classifier>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jta_1.1_spec</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-j2ee-connector_1.6_spec</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- Test Dependencies -->
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-broker</artifactId>
-        <version>${activemq-version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-client</artifactId>
-        <version>${activemq-version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-kahadb-store</artifactId>
-        <version>${activemq-version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-amqp</artifactId>
-        <version>${activemq-version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-jaas</artifactId>
-        <version>${activemq-version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.activemq.tooling</groupId>
-        <artifactId>activemq-junit</artifactId>
-        <version>${activemq-version}</version>
-        <scope>test</scope>
-      </dependency>
       <dependency>
         <groupId>org.apache.qpid</groupId>
         <artifactId>qpid-jms-client</artifactId>
@@ -221,13 +194,19 @@
       </dependency>
       <dependency>
         <groupId>org.apache.activemq</groupId>
-        <artifactId>artemis-jms-server</artifactId>
+        <artifactId>artemis-server</artifactId>
         <version>${artemis-version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.activemq</groupId>
-        <artifactId>artemis-jms-client</artifactId>
+        <artifactId>artemis-amqp-protocol</artifactId>
+        <version>${artemis-version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>artemis-jakarta-client</artifactId>
         <version>${artemis-version}</version>
         <scope>test</scope>
       </dependency>

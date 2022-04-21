@@ -18,9 +18,9 @@ package org.messaginghub.pooled.jms;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.IllegalStateException;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.IllegalStateException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -37,8 +37,6 @@ public class PooledConnectionTest extends QpidJmsPoolTestSupport {
 
     @Test
     public void testSetClientIDTwiceWithSameID() throws Exception {
-        LOG.debug("running testRepeatedSetClientIDCalls()");
-
         // test: call setClientID("newID") twice
         // this should be tolerated and not result in an exception
         ConnectionFactory cf = createPooledConnectionFactory();
@@ -61,8 +59,6 @@ public class PooledConnectionTest extends QpidJmsPoolTestSupport {
 
     @Test
     public void testSetClientIDTwiceWithDifferentID() throws Exception {
-        LOG.debug("running testRepeatedSetClientIDCalls()");
-
         ConnectionFactory cf = createPooledConnectionFactory();
         Connection conn = cf.createConnection();
 
@@ -84,8 +80,6 @@ public class PooledConnectionTest extends QpidJmsPoolTestSupport {
 
     @Test
     public void testSetClientIDAfterConnectionStart() throws Exception {
-        LOG.debug("running testRepeatedSetClientIDCalls()");
-
         ConnectionFactory cf = createPooledConnectionFactory();
         Connection conn = cf.createConnection();
 

@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms.mock;
 
-import javax.jms.Topic;
+import jakarta.jms.Topic;
 
 /**
  * Mock JMS Topic object.
@@ -33,7 +33,7 @@ public class MockJMSTopic extends MockJMSDestination implements Topic {
 
     /**
      * @return the name
-     * @see javax.jms.Topic#getTopicName()
+     * @see jakarta.jms.Topic#getTopicName()
      */
     @Override
     public String getTopicName() {

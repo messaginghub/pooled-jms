@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms.mock;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
 
 /**
  * Listen in on events in the MockJMSConnection and influence outcomes

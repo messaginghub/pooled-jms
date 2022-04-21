@@ -22,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.Connection;
-import javax.jms.IllegalStateException;
-import javax.jms.Session;
+import jakarta.jms.Connection;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.Session;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;

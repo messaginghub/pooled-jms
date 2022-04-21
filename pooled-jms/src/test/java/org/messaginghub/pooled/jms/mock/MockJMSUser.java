@@ -19,7 +19,7 @@ package org.messaginghub.pooled.jms.mock;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.jms.JMSSecurityException;
+import jakarta.jms.JMSSecurityException;
 
 /**
  * Mock JMS User object containing authentication and authorization data.

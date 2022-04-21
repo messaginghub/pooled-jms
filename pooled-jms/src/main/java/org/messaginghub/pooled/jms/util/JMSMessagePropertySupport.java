@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms.util;
 
-import javax.jms.JMSException;
-import javax.jms.MessageFormatException;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageFormatException;
 
 /**
  * Provides methods for use when working with JMS Message Properties and their values.

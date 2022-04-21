@@ -21,17 +21,17 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.IllegalStateException;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.JMSRuntimeException;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.Session;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.JMSRuntimeException;
+import jakarta.jms.QueueConnection;
+import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.Session;
+import jakarta.jms.TopicConnection;
+import jakarta.jms.TopicConnectionFactory;
 
 import org.apache.commons.pool2.KeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
@@ -84,7 +84,6 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     private GenericKeyedObjectPool<PooledConnectionKey, PooledConnection> connectionsPool;
 
     protected Object connectionFactory;
-    protected boolean jmsContextSupported;
 
     private int maxSessionsPerConnection = 500;
     private int connectionIdleTimeout = 30 * 1000;
@@ -197,21 +196,9 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      */
     public void setConnectionFactory(final Object factory) {
         if (factory instanceof ConnectionFactory) {
-            String logMessage = "JMS ConnectionFactory on classpath is not a JMS 2.0+ version.";
-            try {
-                ConnectionFactory.class.getMethod("createContext", int.class);
-                logMessage = "Provided ConnectionFactory implementation is not JMS 2.0+ capable.";
-                factory.getClass().getMethod("createContext", int.class);
-                logMessage = "Provided ConnectionFactory implementation is JMS 2.0+ capable.";
-                jmsContextSupported = true;
-            } catch (NoSuchMethodException | SecurityException e) {
-            } finally {
-                LOG.info(logMessage);
-            }
-
             this.connectionFactory = factory;
         } else {
-            throw new IllegalArgumentException("connectionFactory should implement javax.jms.ConnectionFactory");
+            throw new IllegalArgumentException("connectionFactory should implement jakarta.jms.ConnectionFactory");
         }
     }
 
@@ -269,10 +256,6 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
         if (stopped.get()) {
             LOG.debug("JmsPoolConnectionFactory is stopped, skip create new connection.");
             return null;
-        }
-
-        if (!jmsContextSupported) {
-            throw new JMSRuntimeException("Configured ConnectionFactory is not JMS 2+ capable");
         }
 
         if (isUseProviderJMSContext()) {
@@ -490,7 +473,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     /**
      * Sets whether a pooled Session uses a cache for MessageProducer instances that are
      * created against an explicit destination instead of creating new MessageProducer on each
-     * call to {@linkplain Session#createProducer(javax.jms.Destination)}.
+     * call to {@linkplain Session#createProducer(jakarta.jms.Destination)}.
      * <p>
      * When caching explicit producers the cache will hold up to the configured number of producers
      * and if more producers are created than the configured cache size the oldest or lest recently
@@ -663,7 +646,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                 return ((ConnectionFactory) connectionFactory).createConnection(key.getUserName(), key.getPassword());
             }
         } else {
-            throw new IllegalStateException("connectionFactory should implement javax.jms.ConnectionFactory");
+            throw new IllegalStateException("connectionFactory should implement jakarta.jms.ConnectionFactory");
         }
     }
 
@@ -689,7 +672,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                 return ((ConnectionFactory) connectionFactory).createContext(username, password, sessionMode);
             }
         } else {
-            throw new javax.jms.IllegalStateRuntimeException("connectionFactory should implement javax.jms.ConnectionFactory");
+            throw new jakarta.jms.IllegalStateRuntimeException("connectionFactory should implement jakarta.jms.ConnectionFactory");
         }
     }
 

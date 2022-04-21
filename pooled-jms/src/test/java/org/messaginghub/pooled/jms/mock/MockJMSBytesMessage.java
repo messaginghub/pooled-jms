@@ -24,9 +24,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.MessageFormatException;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageFormatException;
 
 import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
 

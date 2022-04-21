@@ -16,20 +16,25 @@
  */
 package org.messaginghub.pooled.jms;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import javax.jms.JMSException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.jmx.BrokerViewMBean;
-import org.apache.activemq.broker.jmx.ConnectorViewMBean;
-import org.apache.activemq.broker.jmx.QueueViewMBean;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
+import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
+import org.apache.activemq.artemis.spi.core.remoting.Acceptor;
 import org.apache.qpid.jms.JmsConnectionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
+import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,28 +42,31 @@ public class QpidJmsPoolTestSupport {
 
     protected static final Logger LOG = LoggerFactory.getLogger(QpidJmsPoolTestSupport.class);
 
+    private static final String NETTY_ACCEPTOR = "netty-acceptor";
+    private static final String SERVER_NAME = "embedded-server";
+
     protected String testName;
-    protected BrokerService brokerService;
     protected String connectionURI;
     protected JmsConnectionFactory qpidJmsConnectionFactory;
+
+    protected Configuration configuration;
+    protected EmbeddedActiveMQ broker;
 
     @BeforeEach
     public void setUp(TestInfo info) throws Exception {
         LOG.info("========== start " + info.getDisplayName() + " ==========");
 
         testName = info.getDisplayName();
-        brokerService = createBroker();
+        broker = createBroker();
 
         qpidJmsConnectionFactory = new JmsConnectionFactory(connectionURI);
     }
 
     @AfterEach
     public void tearDown() throws Exception {
-        if (brokerService != null) {
+        if (broker != null) {
             try {
-                brokerService.stop();
-                brokerService.waitUntilStopped();
-                brokerService = null;
+                broker.stop();
             } catch (Exception ex) {
                 LOG.warn("Suppress error on shutdown: {}", ex);
             }
@@ -71,20 +79,39 @@ public class QpidJmsPoolTestSupport {
         return testName;
     }
 
-    protected BrokerService createBroker() throws Exception {
-        BrokerService brokerService = new BrokerService();
-        brokerService.setDeleteAllMessagesOnStartup(true);
-        brokerService.setPersistent(false);
-        brokerService.setUseJmx(false);
-        brokerService.setAdvisorySupport(false);
-        brokerService.setSchedulerSupport(false);
+    protected EmbeddedActiveMQ createBroker() throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        params.put(TransportConstants.PORT_PROP_NAME, 0);
+        params.put(TransportConstants.PROTOCOLS_PROP_NAME, "AMQP");
 
-        connectionURI = brokerService.addConnector("amqp://localhost:0").getPublishableConnectString();
+        TransportConfiguration tc = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params, NETTY_ACCEPTOR);
 
-        brokerService.start();
-        brokerService.waitUntilStarted();
+        configuration = new ConfigurationImpl().setName(SERVER_NAME)
+                                                 .setPersistenceEnabled(false)
+                                                 .setSecurityEnabled(false)
+                                                 .addAcceptorConfiguration(tc)
+                                                 .addAddressesSetting("#",
+                                                         new AddressSettings().setDeadLetterAddress(SimpleString.toSimpleString("dla"))
+                                                         .setExpiryAddress(SimpleString.toSimpleString("expiry")));
+        broker = new EmbeddedActiveMQ().setConfiguration(configuration);
+        broker.start();
 
-        return brokerService;
+        ActiveMQServer server = broker.getActiveMQServer();
+        if(!server.waitForActivation(5000, TimeUnit.MILLISECONDS)) {
+            throw new IllegalStateException("Server not activated within timeout");
+        }
+
+        Acceptor acceptor = server.getRemotingService().getAcceptor(NETTY_ACCEPTOR);
+        if(!Wait.waitFor(() -> acceptor.getActualPort() > 0, 5000, 20)) {
+            throw new IllegalStateException("Acceptor port not determined within timeout");
+        }
+        int actualPort = acceptor.getActualPort();
+
+        LOG.error("Acceptor was bound to port " + actualPort);//TODO: level
+
+        connectionURI = "amqp://localhost:" + actualPort;
+
+        return broker;
     }
 
     protected JmsPoolConnectionFactory createPooledConnectionFactory() {
@@ -93,42 +120,5 @@ public class QpidJmsPoolTestSupport {
         cf.setMaxConnections(1);
         LOG.debug("ConnectionFactory initialized.");
         return cf;
-    }
-
-    protected BrokerViewMBean getProxyToBroker() throws MalformedObjectNameException, JMSException {
-        ObjectName brokerViewMBean = new ObjectName(
-            "org.apache.activemq:type=Broker,brokerName=" + brokerService.getBrokerName());
-        BrokerViewMBean proxy = (BrokerViewMBean) brokerService.getManagementContext()
-                .newProxyInstance(brokerViewMBean, BrokerViewMBean.class, true);
-        return proxy;
-    }
-
-    protected ConnectorViewMBean getProxyToConnectionView(String connectionType) throws Exception {
-        ObjectName connectorQuery = new ObjectName(
-            "org.apache.activemq:type=Broker,brokerName=" + brokerService.getBrokerName() + ",connector=clientConnectors,connectorName="+connectionType+"_//*");
-
-        Set<ObjectName> results = brokerService.getManagementContext().queryNames(connectorQuery, null);
-
-        if (results == null || results.isEmpty() || results.size() > 1) {
-            throw new Exception("Unable to find the exact Connector instance.");
-        }
-
-        ConnectorViewMBean proxy = (ConnectorViewMBean) brokerService.getManagementContext()
-                .newProxyInstance(results.iterator().next(), ConnectorViewMBean.class, true);
-        return proxy;
-    }
-
-    protected QueueViewMBean getProxyToQueue(String name) throws MalformedObjectNameException, JMSException {
-        ObjectName queueViewMBeanName = new ObjectName("org.apache.activemq:type=Broker,brokerName=" + brokerService.getBrokerName() + ",destinationType=Queue,destinationName="+name);
-        QueueViewMBean proxy = (QueueViewMBean) brokerService.getManagementContext()
-                .newProxyInstance(queueViewMBeanName, QueueViewMBean.class, true);
-        return proxy;
-    }
-
-    protected QueueViewMBean getProxyToTopic(String name) throws MalformedObjectNameException, JMSException {
-        ObjectName queueViewMBeanName = new ObjectName("org.apache.activemq:type=Broker,brokerName=" + brokerService.getBrokerName() + ",destinationType=Topic,destinationName="+name);
-        QueueViewMBean proxy = (QueueViewMBean) brokerService.getManagementContext()
-                .newProxyInstance(queueViewMBeanName, QueueViewMBean.class, true);
-        return proxy;
     }
 }

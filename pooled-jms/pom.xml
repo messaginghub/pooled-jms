@@ -44,8 +44,14 @@
       <artifactId>jakarta.jms-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>jakarta.transaction</groupId>
+      <artifactId>jakarta.transaction-api</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>org.apache.geronimo.components</groupId>
       <artifactId>geronimo-transaction</artifactId>
+      <classifier>jakarta</classifier>
       <optional>true</optional>
     </dependency>
     <dependency>

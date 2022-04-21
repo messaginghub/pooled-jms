@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms;
 
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
+import jakarta.jms.TemporaryQueue;
+import jakarta.jms.TemporaryTopic;
 
 public interface JmsPoolSessionEventListener {
 

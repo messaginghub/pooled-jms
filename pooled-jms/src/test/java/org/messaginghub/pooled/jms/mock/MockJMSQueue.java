@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms.mock;
 
-import javax.jms.Queue;
+import jakarta.jms.Queue;
 
 /**
  * Mock JMS Queue implementation
@@ -33,7 +33,7 @@ public class MockJMSQueue extends MockJMSDestination implements Queue {
 
     /**
      * @return name
-     * @see javax.jms.Queue#getQueueName()
+     * @see jakarta.jms.Queue#getQueueName()
      */
     @Override
     public String getQueueName() {

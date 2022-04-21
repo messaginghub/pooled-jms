@@ -22,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 
-import javax.jms.JMSException;
-import javax.jms.MessageFormatException;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageFormatException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;

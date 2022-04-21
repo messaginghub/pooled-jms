@@ -20,18 +20,18 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XAJMSContext;
+import jakarta.jms.Connection;
+import jakarta.jms.JMSException;
+import jakarta.jms.XAConnection;
+import jakarta.jms.XAConnectionFactory;
+import jakarta.jms.XAJMSContext;
+import jakarta.transaction.TransactionManager;
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.spi.ObjectFactory;
-import javax.transaction.TransactionManager;
 
 import org.messaginghub.pooled.jms.pool.PooledConnectionKey;
 import org.messaginghub.pooled.jms.pool.PooledXAConnection;
@@ -72,17 +72,9 @@ public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory impleme
     @Override
     public void setConnectionFactory(Object toUse) {
         if (toUse instanceof XAConnectionFactory) {
-            try {
-                toUse.getClass().getMethod("createContext", String.class, String.class);
-                LOG.info("Provided ConnectionFactory is JMS 2.0+ capable.");
-                jmsContextSupported = true;
-            } catch (NoSuchMethodException | SecurityException e) {
-                LOG.info("Provided ConnectionFactory is not JMS 2.0+ capable.");
-            }
-
             connectionFactory = toUse;
         } else {
-            throw new IllegalArgumentException("connectionFactory should implement javax.jms.XAConnectionFactory");
+            throw new IllegalArgumentException("connectionFactory should implement jakarta.jms.XAConnectionFactory");
         }
     }
 
@@ -95,7 +87,7 @@ public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory impleme
                 return ((XAConnectionFactory) connectionFactory).createXAConnection(key.getUserName(), key.getPassword());
             }
         } else {
-            throw new IllegalStateException("connectionFactory should implement javax.jms.XAConnectionFactory");
+            throw new IllegalStateException("connectionFactory should implement jakarta.jms.XAConnectionFactory");
         }
     }
 
@@ -108,7 +100,7 @@ public class JmsPoolXAConnectionFactory extends JmsPoolConnectionFactory impleme
                 return ((XAConnectionFactory) connectionFactory).createXAContext(username, password);
             }
         } else {
-            throw new javax.jms.IllegalStateRuntimeException("connectionFactory should implement javax.jms.XAConnectionFactory");
+            throw new jakarta.jms.IllegalStateRuntimeException("connectionFactory should implement jakarta.jms.XAConnectionFactory");
         }
     }
 

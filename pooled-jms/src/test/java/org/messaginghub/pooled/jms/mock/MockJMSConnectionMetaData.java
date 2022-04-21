@@ -18,8 +18,8 @@ package org.messaginghub.pooled.jms.mock;
 
 import java.util.Enumeration;
 
-import javax.jms.ConnectionMetaData;
-import javax.jms.JMSException;
+import jakarta.jms.ConnectionMetaData;
+import jakarta.jms.JMSException;
 
 /**
  * Mock JMS Connection Meta-Data
@@ -28,14 +28,18 @@ public class MockJMSConnectionMetaData implements ConnectionMetaData {
 
     public static final MockJMSConnectionMetaData INSTANCE = new MockJMSConnectionMetaData();
 
+    private MockJMSConnectionMetaData() {
+        // Use the INSTANCE
+    }
+
     @Override
     public String getJMSVersion() throws JMSException {
-        return "2.0";
+        return "3.0";
     }
 
     @Override
     public int getJMSMajorVersion() throws JMSException {
-        return 2;
+        return 3;
     }
 
     @Override

@@ -19,13 +19,13 @@ package org.messaginghub.pooled.jms;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.jms.Connection;
-import javax.jms.IllegalStateException;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
+import jakarta.jms.Connection;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.Session;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicConnection;
+import jakarta.jms.TopicPublisher;
+import jakarta.jms.TopicSession;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;

@@ -16,8 +16,8 @@
  */
 package org.messaginghub.pooled.jms.mock;
 
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.TextMessage;
 
 /**
  * Mock JMS TextMessage implementation.

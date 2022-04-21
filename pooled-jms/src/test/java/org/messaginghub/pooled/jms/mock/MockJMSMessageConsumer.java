@@ -18,11 +18,11 @@ package org.messaginghub.pooled.jms.mock;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.jms.IllegalStateException;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.MessageListener;
 
 /**
  * Mock JMS MessageConsumer implementation.

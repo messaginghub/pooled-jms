@@ -16,9 +16,9 @@
  */
 package org.messaginghub.pooled.jms;
 
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueReceiver;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueReceiver;
 
 /**
  * A {@link QueueReceiver} which was created by {@link JmsPoolSession}.

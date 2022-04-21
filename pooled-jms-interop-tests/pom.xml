@@ -32,7 +32,6 @@
   </properties>
 
   <modules>
-    <module>pooled-jms-activemq-tests</module>
     <module>pooled-jms-qpid-jms-tests</module>
     <module>pooled-jms-artemis-tests</module>
   </modules>

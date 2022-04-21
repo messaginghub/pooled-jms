@@ -16,7 +16,7 @@
  */
 package org.messaginghub.pooled.jms.mock;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 
 /**
  * Temporary Destination Object

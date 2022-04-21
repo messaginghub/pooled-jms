@@ -19,7 +19,7 @@ package org.messaginghub.pooled.jms.mock;
 /**
  * Mock JMS Destination implementation
  */
-public abstract class MockJMSDestination implements javax.jms.Destination, Comparable<MockJMSDestination> {
+public abstract class MockJMSDestination implements jakarta.jms.Destination, Comparable<MockJMSDestination> {
 
     protected transient String name;
     protected transient boolean topic;
