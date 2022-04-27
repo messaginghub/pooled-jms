@@ -16,18 +16,10 @@
  */
 package org.messaginghub.pooled.jms.pool;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import jakarta.jms.Connection;
-import jakarta.jms.ExceptionListener;
-import jakarta.jms.IllegalStateException;
-import jakarta.jms.JMSException;
-import jakarta.jms.JMSRuntimeException;
-import jakarta.jms.Session;
-import jakarta.jms.TemporaryQueue;
-import jakarta.jms.TemporaryTopic;
 
 import org.apache.commons.pool2.KeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
@@ -38,6 +30,15 @@ import org.messaginghub.pooled.jms.JmsPoolSession;
 import org.messaginghub.pooled.jms.JmsPoolSessionEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.jms.Connection;
+import jakarta.jms.ExceptionListener;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSException;
+import jakarta.jms.JMSRuntimeException;
+import jakarta.jms.Session;
+import jakarta.jms.TemporaryQueue;
+import jakarta.jms.TemporaryTopic;
 
 /**
  * Holds a real JMS connection along with the session pools associated with it.
@@ -355,7 +356,7 @@ public class PooledConnection implements ExceptionListener {
      * @see #setBlockIfSessionPoolIsFull(boolean)
      */
     public long getBlockIfSessionPoolIsFullTimeout() {
-        return this.sessionPool.getMaxWaitMillis();
+        return this.sessionPool.getMaxWaitDuration().toMillis();
     }
 
     /**
@@ -373,7 +374,7 @@ public class PooledConnection implements ExceptionListener {
      *                                        then use this setting to configure how long to block before retry
      */
     public void setBlockIfSessionPoolIsFullTimeout(long blockIfSessionPoolIsFullTimeout) {
-        this.sessionPool.setMaxWaitMillis(blockIfSessionPoolIsFullTimeout);
+        this.sessionPool.setMaxWait(Duration.ofMillis(blockIfSessionPoolIsFullTimeout));
     }
 
     /**

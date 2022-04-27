@@ -16,22 +16,11 @@
  */
 package org.messaginghub.pooled.jms;
 
+import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import jakarta.jms.Connection;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.IllegalStateException;
-import jakarta.jms.JMSContext;
-import jakarta.jms.JMSException;
-import jakarta.jms.JMSRuntimeException;
-import jakarta.jms.QueueConnection;
-import jakarta.jms.QueueConnectionFactory;
-import jakarta.jms.Session;
-import jakarta.jms.TopicConnection;
-import jakarta.jms.TopicConnectionFactory;
 
 import org.apache.commons.pool2.KeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
@@ -44,6 +33,18 @@ import org.messaginghub.pooled.jms.pool.PooledSessionKey;
 import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.JMSRuntimeException;
+import jakarta.jms.QueueConnection;
+import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.Session;
+import jakarta.jms.TopicConnection;
+import jakarta.jms.TopicConnectionFactory;
 
 /**
  * A JMS provider which pools Connection, Session and MessageProducer instances
@@ -503,14 +504,14 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      *      The time to wait between runs of the Connection check thread.
      */
     public void setConnectionCheckInterval(long connectionCheckInterval) {
-        getConnectionsPool().setTimeBetweenEvictionRunsMillis(connectionCheckInterval);
+        getConnectionsPool().setTimeBetweenEvictionRuns(Duration.ofMillis(connectionCheckInterval));
     }
 
     /**
      * @return the number of milliseconds to sleep between runs of the connection check thread.
      */
     public long getConnectionCheckInterval() {
-        return getConnectionsPool().getTimeBetweenEvictionRunsMillis();
+        return getConnectionsPool().getDurationBetweenEvictionRuns().toMillis();
     }
 
     /**
