@@ -34,7 +34,7 @@ public class MockJMSConnectionMetaData implements ConnectionMetaData {
 
     @Override
     public String getJMSVersion() throws JMSException {
-        return "3.0";
+        return "3.1";
     }
 
     @Override
@@ -44,7 +44,7 @@ public class MockJMSConnectionMetaData implements ConnectionMetaData {
 
     @Override
     public int getJMSMinorVersion() throws JMSException {
-        return 0;
+        return 1;
     }
 
     @Override
