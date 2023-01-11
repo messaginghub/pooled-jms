@@ -51,11 +51,11 @@
 
   <properties>
     <qpid-jms-version>2.1.0</qpid-jms-version>
-    <artemis-version>2.26.0</artemis-version>
+    <artemis-version>2.27.1</artemis-version>
     <commons-pool2-version>2.11.1</commons-pool2-version>
     <slf4j-version>1.7.36</slf4j-version>
-    <mockito-version>4.8.0</mockito-version>
-    <junit.jupiter.version>5.9.1</junit.jupiter.version>
+    <mockito-version>4.11.0</mockito-version>
+    <junit.jupiter.version>5.9.2</junit.jupiter.version>
     <jakarta.jms-api-version>3.1.0</jakarta.jms-api-version>
     <jakarta-transaction-version>2.0.1</jakarta-transaction-version>
     <geronimo-transaction-version>3.1.5</geronimo-transaction-version>
@@ -67,7 +67,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.release>11</maven.compiler.release>
 
-    <apache-rat-version>0.13</apache-rat-version>
+    <apache-rat-version>0.15</apache-rat-version>
     <maven-assembly-plugin-version>3.3.0</maven-assembly-plugin-version>
     <maven-gpg-plugin-version>1.6</maven-gpg-plugin-version>
     <maven-eclipse-plugin-version>2.10</maven-eclipse-plugin-version>
@@ -81,7 +81,7 @@
     <maven-javadoc-plugin-version>3.2.0</maven-javadoc-plugin-version>
     <maven-deploy-plugin-version>2.8.2</maven-deploy-plugin-version>
     <findbugs-maven-plugin-version>3.0.5</findbugs-maven-plugin-version>
-    <jacoco-plugin-version>0.8.7</jacoco-plugin-version>
+    <jacoco-plugin-version>0.8.8</jacoco-plugin-version>
 
     <!-- Test properties -->
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
