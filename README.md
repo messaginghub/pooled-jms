@@ -4,6 +4,8 @@ JMS Connection pool for messaging applications that provides pooling for JMS Con
 
 This project was forked from the ActiveMQ JMS Pool and enhanced to provide JMS 2.0 functionality.
 
+Following the 3.0 release this project has transitioned to the Jakarta JMS API. For those still using JMS 2.0 or 1.1 based clients the previous 2.x release series should be used. 
+
 Below are some quick pointers you might find useful.
 
 ## Using the PooledJMS library
