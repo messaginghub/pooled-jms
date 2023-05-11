@@ -68,18 +68,18 @@
     <maven.compiler.release>11</maven.compiler.release>
 
     <apache-rat-version>0.15</apache-rat-version>
-    <maven-assembly-plugin-version>3.4.2</maven-assembly-plugin-version>
+    <maven-assembly-plugin-version>3.5.0</maven-assembly-plugin-version>
     <maven-gpg-plugin-version>1.6</maven-gpg-plugin-version>
     <maven-eclipse-plugin-version>2.10</maven-eclipse-plugin-version>
     <maven-idea-plugin-version>2.2.1</maven-idea-plugin-version>
-    <maven-surefire-plugin-version>3.0.0-M8</maven-surefire-plugin-version>
-    <maven-release-plugin-version>3.0.0-M7</maven-release-plugin-version>
+    <maven-surefire-plugin-version>3.1.0</maven-surefire-plugin-version>
+    <maven-release-plugin-version>3.0.0</maven-release-plugin-version>
     <nexus-staging-maven-plugin-version>1.6.8</nexus-staging-maven-plugin-version>
     <maven-bundle-plugin-version>5.1.8</maven-bundle-plugin-version>
-    <maven-compiler-plugin-version>3.10.1</maven-compiler-plugin-version>
+    <maven-compiler-plugin-version>3.11.0</maven-compiler-plugin-version>
     <maven-source-plugin-version>3.2.1</maven-source-plugin-version>
-    <maven-javadoc-plugin-version>3.4.1</maven-javadoc-plugin-version>
-    <maven-deploy-plugin-version>3.0.0</maven-deploy-plugin-version>
+    <maven-javadoc-plugin-version>3.5.0</maven-javadoc-plugin-version>
+    <maven-deploy-plugin-version>3.1.1</maven-deploy-plugin-version>
     <findbugs-maven-plugin-version>3.0.5</findbugs-maven-plugin-version>
     <jacoco-plugin-version>0.8.10</jacoco-plugin-version>
 
