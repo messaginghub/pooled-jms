@@ -720,7 +720,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                             connectionsPool.addObject(key);
                             continue;
                         } else {
-                            throw nse;
+                            throw JMSExceptionSupport.createResourceAllocationException(nse);
                         }
                     }
                     synchronized (connection) {

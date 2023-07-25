@@ -79,11 +79,13 @@ public final class JMSExceptionSupport {
             }
         }
 
-        JMSException exception = new JMSException(message);
+        final JMSException exception = new JMSException(message);
         if (cause instanceof Exception) {
             exception.setLinkedException((Exception) cause);
         }
+
         exception.initCause(cause);
+
         return exception;
     }
 
@@ -107,11 +109,10 @@ public final class JMSExceptionSupport {
     /**
      * Creates or passes through a MessageEOFException to be thrown to the client.
      *
-     * In the event that the exception passed to this method is already a
-     * MessageEOFException it is passed through unmodified, otherwise a new
-     * MessageEOFException is created using the error message taken from the
-     * given Throwable value and the cause value is set to the given Throwable
-     * instance.
+     * In the event that the exception passed to this method is already a MessageEOFException
+     * it is passed through unmodified, otherwise a new MessageEOFException is created using
+     * the error message taken from the given Throwable value and the cause value is set to
+     * the given Throwable instance.
      *
      * @param cause
      *        The exception that caused this error state.
@@ -119,27 +120,32 @@ public final class JMSExceptionSupport {
      * @return a MessageEOFException instance.
      */
     public static MessageEOFException createMessageEOFException(Throwable cause) {
-        String message = cause.getMessage();
+    	if (cause instanceof MessageEOFException) {
+    		return (MessageEOFException) cause;
+    	}
+
+    	String message = cause.getMessage();
         if (message == null || message.length() == 0) {
             message = cause.toString();
         }
 
-        MessageEOFException exception = new MessageEOFException(message);
+        final MessageEOFException exception = new MessageEOFException(message);
         if (cause instanceof Exception) {
             exception.setLinkedException((Exception) cause);
         }
+
         exception.initCause(cause);
+
         return exception;
     }
 
     /**
      * Creates or passes through a MessageFormatException to be thrown to the client.
      *
-     * In the event that the exception passed to this method is already a
-     * MessageFormatException it is passed through unmodified, otherwise a new
-     * MessageFormatException is created using the error message taken from the
-     * given Throwable value and the cause value is set to the given Throwable
-     * instance.
+     * In the event that the exception passed to this method is already a MessageFormatException
+     * it is passed through unmodified, otherwise a new MessageFormatException is created using
+     * the error message taken from the given Throwable value and the cause value is set to the
+     * given Throwable instance.
      *
      * @param cause
      *        The exception that caused this error state.
@@ -147,16 +153,55 @@ public final class JMSExceptionSupport {
      * @return a MessageEOFException instance.
      */
     public static MessageFormatException createMessageFormatException(Throwable cause) {
+    	if (cause instanceof MessageFormatException) {
+    		return (MessageFormatException) cause;
+    	}
+
+    	String message = cause.getMessage();
+        if (message == null || message.length() == 0) {
+            message = cause.toString();
+        }
+
+        final MessageFormatException exception = new MessageFormatException(message);
+        if (cause instanceof Exception) {
+            exception.setLinkedException((Exception) cause);
+        }
+
+        exception.initCause(cause);
+
+        return exception;
+    }
+
+    /**
+     * Creates or passes through a ResourceAllocationException to be thrown to the client.
+     *
+     * In the event that the exception passed to this method is already a ResourceAllocationException
+     * it is passed through unmodified, otherwise a new ResourceAllocationException is created using
+     * the error message taken from the given Throwable value and the cause value is set to the given
+     * Throwable instance.
+     *
+     * @param cause
+     *        The exception that caused this error state.
+     *
+     * @return a ResourceAllocationException instance.
+     */
+    public static ResourceAllocationException createResourceAllocationException(Throwable cause) {
+    	if (cause instanceof ResourceAllocationException) {
+    		return (ResourceAllocationException) cause;
+    	}
+
         String message = cause.getMessage();
         if (message == null || message.length() == 0) {
             message = cause.toString();
         }
 
-        MessageFormatException exception = new MessageFormatException(message);
+        final ResourceAllocationException exception = new ResourceAllocationException(message);
         if (cause instanceof Exception) {
             exception.setLinkedException((Exception) cause);
         }
+
         exception.initCause(cause);
+
         return exception;
     }
 
