@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 
 import org.apache.commons.pool2.KeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
@@ -77,6 +78,10 @@ import jakarta.jms.TopicConnectionFactory;
 public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory {
 
     private static final transient Logger LOG = LoggerFactory.getLogger(JmsPoolConnectionFactory.class);
+
+    private static final int EXHUASTION_RECOVER_RETRY_LIMIT = 20;
+    private static final long EXHAUSTION_RECOVER_INITIAL_BACKOFF = 1_000L;
+    private static final long EXHAUSTION_RECOVER_BACKOFF_LIMIT = 10_000L;
 
     public static final int DEFAULT_MAX_CONNECTIONS = 1;
 
@@ -687,24 +692,29 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
             throw new IllegalStateException("No ConnectionFactory instance has been configured");
         }
 
-        final int exhaustionRecoverAttemptLimit = 10;
-
         PooledConnection connection = null;
         PooledConnectionKey key = new PooledConnectionKey(userName, password);
 
         // This will either return an existing non-expired ConnectionPool or it
-        // will create a new one to meet the demand.
+        // will create a new one to meet the demand in most cases but can be raced
+        // and result in no addition which will then fall into the borrow loop below
+        // which attempts to take a connection from the active set.
         if (getConnectionsPool().getNumIdle(key) < getMaxConnections()) {
             try {
                 connectionsPool.addObject(key);
                 connection = mostRecentlyCreated.getAndSet(null);
-                connection.incrementReferenceCount();
+                if (connection != null) {
+                    connection.incrementReferenceCount();
+                }
             } catch (Exception e) {
                 throw JMSExceptionSupport.create("Error while attempting to add new Connection to the pool", e);
             }
-        } else {
+        }
+
+        if (connection == null) {
             try {
                 int exhaustedPoolRecoveryAttempts = 0;
+                long exhaustedPoolRecoveryBackoff = EXHAUSTION_RECOVER_INITIAL_BACKOFF;
 
                 // We can race against other threads returning the connection when there is an
                 // expiration or idle timeout.  We keep pulling out ConnectionPool instances until
@@ -715,8 +725,16 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                     try {
                         connection = connectionsPool.borrowObject(key);
                     } catch (NoSuchElementException nse) {
-                        if (exhaustedPoolRecoveryAttempts++ < exhaustionRecoverAttemptLimit) {
-                            LOG.trace("Recover attempt {} from exhausted pool by refilling pool key and creating new Connection", exhaustedPoolRecoveryAttempts);
+                        if (exhaustedPoolRecoveryAttempts++ < EXHUASTION_RECOVER_RETRY_LIMIT) {
+                        	LOG.trace("Recover attempt {} from exhausted pool by refilling pool key and creating new Connection", exhaustedPoolRecoveryAttempts);
+                        	if (exhaustedPoolRecoveryAttempts > 1) {
+                        		LockSupport.parkNanos(exhaustedPoolRecoveryBackoff);
+                        		exhaustedPoolRecoveryBackoff = Math.min(EXHAUSTION_RECOVER_BACKOFF_LIMIT,
+                        												exhaustedPoolRecoveryBackoff + exhaustedPoolRecoveryBackoff);
+                        	} else {
+                        		Thread.yield();
+                        	}
+
                             connectionsPool.addObject(key);
                             continue;
                         } else {
