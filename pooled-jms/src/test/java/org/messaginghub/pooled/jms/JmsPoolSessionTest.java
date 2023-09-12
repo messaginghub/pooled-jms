@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -327,6 +329,32 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
         assertEquals(0, connection.getNumActiveSessions());
         assertEquals(2, connection.getNumtIdleSessions());
         assertEquals(2, connection.getNumSessions());
+
+        connection.close();
+    }
+
+    @Test
+    public void testPooledSessionStatsTenSessions() throws Exception {
+        int NUM_SESSIONS = 10; // should be bigger than {@link org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig.DEFAULT_MAX_IDLE_PER_KEY}
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        assertEquals(0, connection.getNumActiveSessions());
+        List<Session> sessions = new ArrayList<>();
+
+        for (int i = 0; i < NUM_SESSIONS; i++) {
+            sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
+        }
+
+        assertEquals(NUM_SESSIONS, connection.getNumActiveSessions());
+
+        for (int i = 0; i < NUM_SESSIONS; i++) {
+            sessions.get(i).close();
+        }
+
+        // All back in the pool now.
+        assertEquals(0, connection.getNumActiveSessions());
+        assertEquals(NUM_SESSIONS, connection.getNumtIdleSessions());
+        assertEquals(NUM_SESSIONS, connection.getNumSessions());
 
         connection.close();
     }
