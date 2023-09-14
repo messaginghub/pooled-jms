@@ -83,6 +83,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     private static final long EXHAUSTION_RECOVER_INITIAL_BACKOFF = 1_000L;
     private static final long EXHAUSTION_RECOVER_BACKOFF_LIMIT = 10_000L;
 
+    public static final int DEFAULT_MAX_SESSIONS_PER_CONNECTION = 500;
     public static final int DEFAULT_MAX_CONNECTIONS = 1;
 
     protected final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -91,7 +92,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     protected Object connectionFactory;
 
-    private int maxSessionsPerConnection = 500;
+    private int maxSessionsPerConnection = DEFAULT_MAX_SESSIONS_PER_CONNECTION;
+    private int maxIdleSessionsPerConnection = DEFAULT_MAX_SESSIONS_PER_CONNECTION;
     private int connectionIdleTimeout = 30 * 1000;
     private boolean blockIfSessionPoolIsFull = true;
     private long blockIfSessionPoolIsFullTimeout = -1L;
@@ -115,6 +117,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                         PooledConnection connection = createPooledConnection(delegate);
                         connection.setIdleTimeout(getConnectionIdleTimeout());
                         connection.setMaxSessionsPerConnection(getMaxSessionsPerConnection());
+                        connection.setMaxIdleSessionsPerConnection(
+                        	Math.min(getMaxIdleSessionsPerConnection(), getMaxSessionsPerConnection()));
                         connection.setBlockIfSessionPoolIsFull(isBlockIfSessionPoolIsFull());
                         if (isBlockIfSessionPoolIsFull() && getBlockIfSessionPoolIsFullTimeout() > 0) {
                             connection.setBlockIfSessionPoolIsFullTimeout(getBlockIfSessionPoolIsFullTimeout());
@@ -327,19 +331,63 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     //----- Connection Pool Configuration ------------------------------------//
 
+	/**
+	 * Returns the currently configured maximum idle sessions per connection which by
+	 * default matches the configured maximum active sessions per connection.
+	 *
+	 * @return the number if idle sessions allowed per connection before they are closed.
+	 *
+	 * @see setMaxSessionsPerConnection
+	 * @see setMaxIdleSessionsPerConnection
+	 */
+	public int getMaxIdleSessionsPerConnection() {
+		return maxIdleSessionsPerConnection;
+	}
+
+	/**
+	 * Sets the configured maximum idle sessions per connection which by default matches the
+	 * configured maximum active sessions per connection. This option allows the pool to be
+	 * configured to close sessions that are returned to the pool if the number of idle (not
+	 * in use Sessions) exceeds this amount which can reduce the amount of resources that are
+	 * allocated but not in use.
+	 * <p>
+	 * If the application in use opens and closes large amounts of sessions then leaving this
+	 * option at the default means that there is a higher chance that an idle session will be
+	 * available in the pool without the need to create a new instance however this does allow
+	 * for more idle resources to exist so in cases where turnover is low with only occasional
+	 * bursts in workloads it can be advantageous to lower this value to allow sessions to be
+	 * fully closed on return to the pool if there are already enough idle sessions to exceed
+	 * this amount.
+	 * <p>
+	 * If the max idle sessions per connection is configured larger than the max sessions value
+	 * it will be truncated to the max sessions value to conform to the total limit on how many
+	 * sessions can exists at any given time on a per connection basis.
+	 *
+	 * @param maxIdleSessionsPerConnection
+	 *    the number if idle sessions allowed per connection before they are closed.
+	 *
+	 * @see setMaxSessionsPerConnection
+	 */
+	public void setMaxIdleSessionsPerConnection(int maxIdleSessionsPerConnection) {
+		this.maxIdleSessionsPerConnection = maxIdleSessionsPerConnection;
+	}
+
     /**
      * Returns the currently configured maximum number of sessions a pooled Connection will
      * create before it either blocks or throws an exception when a new session is requested,
      * depending on configuration.
      *
      * @return the number of session instances that can be taken from a pooled connection.
+     *
+     * @see setMaxSessionsPerConnection
+     * @see setMaxIdleSessionsPerConnection
      */
     public int getMaxSessionsPerConnection() {
         return maxSessionsPerConnection;
     }
 
     /**
-     * Sets the maximum number of pooled sessions per connection in the pool.
+     * Sets the maximum number of pooled sessions allowed per connection.
      * <p>
      * A Connection that is created from this JMS Connection pool can limit the number
      * of Sessions that are created and loaned out.  When a limit is in place the client
