@@ -296,9 +296,16 @@ public class PooledConnection implements ExceptionListener {
         return this.sessionPool.getMaxTotalPerKey();
     }
 
-    public void setMaxSessionsPerConnection(int maActiveSessionsPerConnection) {
-        this.sessionPool.setMaxTotalPerKey(maActiveSessionsPerConnection);
-        this.sessionPool.setMaxIdlePerKey(maActiveSessionsPerConnection);
+    public void setMaxSessionsPerConnection(int maxActiveSessionsPerConnection) {
+        this.sessionPool.setMaxTotalPerKey(maxActiveSessionsPerConnection);
+    }
+
+    public int getMaxIdleSessionsPerConnection() {
+        return this.sessionPool.getMaxIdlePerKey();
+    }
+
+    public void setMaxIdleSessionsPerConnection(int maxIdleSessionsPerConnection) {
+        this.sessionPool.setMaxIdlePerKey(maxIdleSessionsPerConnection);
     }
 
     public boolean isUseAnonymousProducers() {

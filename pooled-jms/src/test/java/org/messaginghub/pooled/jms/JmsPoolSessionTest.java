@@ -335,7 +335,71 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
     @Test
     public void testPooledSessionStatsTenSessions() throws Exception {
-        int NUM_SESSIONS = 10; // should be bigger than {@link org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig.DEFAULT_MAX_IDLE_PER_KEY}
+        final int NUM_SESSIONS = 10;
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        assertEquals(0, connection.getNumActiveSessions());
+        List<Session> sessions = new ArrayList<>();
+
+        for (int i = 0; i < NUM_SESSIONS; i++) {
+            sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
+        }
+
+        assertEquals(NUM_SESSIONS, connection.getNumActiveSessions());
+
+        for (int i = 0; i < NUM_SESSIONS; i++) {
+            sessions.get(i).close();
+        }
+
+        // All back in the pool now.
+        assertEquals(0, connection.getNumActiveSessions());
+        assertEquals(NUM_SESSIONS, connection.getNumtIdleSessions());
+        assertEquals(NUM_SESSIONS, connection.getNumSessions());
+
+        connection.close();
+    }
+
+    @Test
+    public void testPooledSessionsClosedIfMaxIdleExceeded() throws Exception {
+        final int NUM_SESSIONS = 10;
+        final int NUM_IDLE_SESSIONS = 1;
+
+        // Configure max and idle to check that on all returned only the idle
+        // max amount of sessions remains.
+        cf.setMaxSessionsPerConnection(NUM_SESSIONS);
+        cf.setMaxIdleSessionsPerConnection(NUM_IDLE_SESSIONS);
+
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        assertEquals(0, connection.getNumActiveSessions());
+        List<Session> sessions = new ArrayList<>();
+
+        for (int i = 0; i < NUM_SESSIONS; i++) {
+            sessions.add(connection.createSession(false, Session.AUTO_ACKNOWLEDGE));
+        }
+
+        assertEquals(NUM_SESSIONS, connection.getNumActiveSessions());
+
+        for (int i = 0; i < NUM_SESSIONS; i++) {
+            sessions.get(i).close();
+        }
+
+        // All back in the pool now.
+        assertEquals(0, connection.getNumActiveSessions());
+        assertEquals(NUM_IDLE_SESSIONS, connection.getNumtIdleSessions());
+        assertEquals(NUM_IDLE_SESSIONS, connection.getNumSessions());
+
+        connection.close();
+    }
+
+    @Test
+    public void testPooledSessionsIdleAmountIsCappedAtMaxSession() throws Exception {
+        final int NUM_SESSIONS = 10;
+        final int NUM_IDLE_SESSIONS = 20;
+
+        // We should never allow more than max session regardless of faulty configured
+        // max idle sessions
+        cf.setMaxSessionsPerConnection(NUM_SESSIONS);
+        cf.setMaxIdleSessionsPerConnection(NUM_IDLE_SESSIONS);
 
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         assertEquals(0, connection.getNumActiveSessions());
