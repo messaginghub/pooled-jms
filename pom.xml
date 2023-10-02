@@ -51,8 +51,8 @@
 
   <properties>
     <qpid-jms-version>2.4.0</qpid-jms-version>
-    <artemis-version>2.30.0</artemis-version>
-    <commons-pool2-version>2.11.1</commons-pool2-version>
+    <artemis-version>2.31.0</artemis-version>
+    <commons-pool2-version>2.12.0</commons-pool2-version>
     <slf4j-version>1.7.36</slf4j-version>
     <mockito-version>5.5.0</mockito-version>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
