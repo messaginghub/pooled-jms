@@ -29,6 +29,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionConsumer;
 import jakarta.jms.ConnectionMetaData;
@@ -49,10 +53,6 @@ import jakarta.jms.TemporaryTopic;
 import jakarta.jms.Topic;
 import jakarta.jms.TopicConnection;
 import jakarta.jms.TopicSession;
-
-import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Mock JMS Connection object used for test the JMS Pool
@@ -122,6 +122,13 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
         if (closed.compareAndSet(false, true)) {
             connected.set(false);
             started.set(false);
+
+            sessions.forEach((k, v) -> {
+				try {
+					v.close();
+				} catch (JMSException e) {
+				}
+			});
 
             // Refuse any new work, and let any existing work complete.
             executor.shutdown();

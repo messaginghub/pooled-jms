@@ -26,6 +26,8 @@ import java.util.concurrent.locks.LockSupport;
 import org.apache.commons.pool2.KeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.EvictionConfig;
+import org.apache.commons.pool2.impl.EvictionPolicy;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.messaginghub.pooled.jms.pool.PooledConnection;
@@ -83,6 +85,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
     private static final long EXHAUSTION_RECOVER_INITIAL_BACKOFF = 1_000L;
     private static final long EXHAUSTION_RECOVER_BACKOFF_LIMIT = 10_000L;
 
+    private static final long DEFAULT_TIME_BETWEEN_EVICTION_RUNS = -1;
+
     public static final int DEFAULT_MAX_SESSIONS_PER_CONNECTION = 500;
     public static final int DEFAULT_MAX_CONNECTIONS = 1;
 
@@ -118,7 +122,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                         connection.setIdleTimeout(getConnectionIdleTimeout());
                         connection.setMaxSessionsPerConnection(getMaxSessionsPerConnection());
                         connection.setMaxIdleSessionsPerConnection(
-                        	Math.min(getMaxIdleSessionsPerConnection(), getMaxSessionsPerConnection()));
+                            Math.min(getMaxIdleSessionsPerConnection(), getMaxSessionsPerConnection()));
                         connection.setBlockIfSessionPoolIsFull(isBlockIfSessionPoolIsFull());
                         if (isBlockIfSessionPoolIsFull() && getBlockIfSessionPoolIsFullTimeout() > 0) {
                             connection.setBlockIfSessionPoolIsFullTimeout(getBlockIfSessionPoolIsFullTimeout());
@@ -177,13 +181,24 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
             // Set max idle (not max active) since our connections always idle in the pool.
             this.connectionsPool.setMaxIdlePerKey(DEFAULT_MAX_CONNECTIONS);
+            this.connectionsPool.setMinIdlePerKey(1); // Always want one connection pooled.
             this.connectionsPool.setLifo(false);
-            this.connectionsPool.setMinIdlePerKey(1);
             this.connectionsPool.setBlockWhenExhausted(false);
-
-            // We always want our validate method to control when idle objects are evicted.
+            this.connectionsPool.setTimeBetweenEvictionRuns(Duration.ofMillis(DEFAULT_TIME_BETWEEN_EVICTION_RUNS));
+            this.connectionsPool.setMinEvictableIdle(Duration.ofMillis(Long.MAX_VALUE));
             this.connectionsPool.setTestOnBorrow(true);
             this.connectionsPool.setTestWhileIdle(true);
+
+            // Don't use the default eviction policy as it ignores our own idle timeout option.
+            final EvictionPolicy<PooledConnection> policy = new EvictionPolicy<PooledConnection>() {
+
+                @Override
+                public boolean evict(EvictionConfig config, PooledObject<PooledConnection> underTest, int idleCount) {
+                    return false; // We use the validation of the instance to check for idle.
+                }
+            };
+
+            this.connectionsPool.setEvictionPolicy(policy);
         }
     }
 
@@ -331,46 +346,46 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     //----- Connection Pool Configuration ------------------------------------//
 
-	/**
-	 * Returns the currently configured maximum idle sessions per connection which by
-	 * default matches the configured maximum active sessions per connection.
-	 *
-	 * @return the number if idle sessions allowed per connection before they are closed.
-	 *
-	 * @see setMaxSessionsPerConnection
-	 * @see setMaxIdleSessionsPerConnection
-	 */
-	public int getMaxIdleSessionsPerConnection() {
-		return maxIdleSessionsPerConnection;
-	}
+    /**
+     * Returns the currently configured maximum idle sessions per connection which by
+     * default matches the configured maximum active sessions per connection.
+     *
+     * @return the number if idle sessions allowed per connection before they are closed.
+     *
+     * @see setMaxSessionsPerConnection
+     * @see setMaxIdleSessionsPerConnection
+     */
+    public int getMaxIdleSessionsPerConnection() {
+        return maxIdleSessionsPerConnection;
+    }
 
-	/**
-	 * Sets the configured maximum idle sessions per connection which by default matches the
-	 * configured maximum active sessions per connection. This option allows the pool to be
-	 * configured to close sessions that are returned to the pool if the number of idle (not
-	 * in use Sessions) exceeds this amount which can reduce the amount of resources that are
-	 * allocated but not in use.
-	 * <p>
-	 * If the application in use opens and closes large amounts of sessions then leaving this
-	 * option at the default means that there is a higher chance that an idle session will be
-	 * available in the pool without the need to create a new instance however this does allow
-	 * for more idle resources to exist so in cases where turnover is low with only occasional
-	 * bursts in workloads it can be advantageous to lower this value to allow sessions to be
-	 * fully closed on return to the pool if there are already enough idle sessions to exceed
-	 * this amount.
-	 * <p>
-	 * If the max idle sessions per connection is configured larger than the max sessions value
-	 * it will be truncated to the max sessions value to conform to the total limit on how many
-	 * sessions can exists at any given time on a per connection basis.
-	 *
-	 * @param maxIdleSessionsPerConnection
-	 *    the number if idle sessions allowed per connection before they are closed.
-	 *
-	 * @see setMaxSessionsPerConnection
-	 */
-	public void setMaxIdleSessionsPerConnection(int maxIdleSessionsPerConnection) {
-		this.maxIdleSessionsPerConnection = maxIdleSessionsPerConnection;
-	}
+    /**
+     * Sets the configured maximum idle sessions per connection which by default matches the
+     * configured maximum active sessions per connection. This option allows the pool to be
+     * configured to close sessions that are returned to the pool if the number of idle (not
+     * in use Sessions) exceeds this amount which can reduce the amount of resources that are
+     * allocated but not in use.
+     * <p>
+     * If the application in use opens and closes large amounts of sessions then leaving this
+     * option at the default means that there is a higher chance that an idle session will be
+     * available in the pool without the need to create a new instance however this does allow
+     * for more idle resources to exist so in cases where turnover is low with only occasional
+     * bursts in workloads it can be advantageous to lower this value to allow sessions to be
+     * fully closed on return to the pool if there are already enough idle sessions to exceed
+     * this amount.
+     * <p>
+     * If the max idle sessions per connection is configured larger than the max sessions value
+     * it will be truncated to the max sessions value to conform to the total limit on how many
+     * sessions can exists at any given time on a per connection basis.
+     *
+     * @param maxIdleSessionsPerConnection
+     *    the number if idle sessions allowed per connection before they are closed.
+     *
+     * @see setMaxSessionsPerConnection
+     */
+    public void setMaxIdleSessionsPerConnection(int maxIdleSessionsPerConnection) {
+        this.maxIdleSessionsPerConnection = maxIdleSessionsPerConnection;
+    }
 
     /**
      * Returns the currently configured maximum number of sessions a pooled Connection will
@@ -483,6 +498,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      *
      * @param connectionIdleTimeout
      *      The maximum time a pooled Connection can sit unused before it is eligible for removal.
+     *
+     * @see #setConnectionCheckInterval(long)
      */
     public void setConnectionIdleTimeout(int connectionIdleTimeout) {
         this.connectionIdleTimeout = connectionIdleTimeout;
@@ -555,6 +572,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      *
      * @param connectionCheckInterval
      *      The time to wait between runs of the Connection check thread.
+     *
+     * @see #setConnectionIdleTimeout(int)
      */
     public void setConnectionCheckInterval(long connectionCheckInterval) {
         getConnectionsPool().setTimeBetweenEvictionRuns(Duration.ofMillis(connectionCheckInterval));
@@ -600,6 +619,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * @param blockIfSessionPoolIsFullTimeout
      * 		if blockIfSessionPoolIsFullTimeout is true then use this setting
      *      to configure how long to block before an error is thrown.
+     *
+     * @see #setMaxSessionsPerConnection(int)
      */
     public void setBlockIfSessionPoolIsFullTimeout(long blockIfSessionPoolIsFullTimeout) {
         this.blockIfSessionPoolIsFullTimeout = blockIfSessionPoolIsFullTimeout;
@@ -774,14 +795,14 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                         connection = connectionsPool.borrowObject(key);
                     } catch (NoSuchElementException nse) {
                         if (exhaustedPoolRecoveryAttempts++ < EXHUASTION_RECOVER_RETRY_LIMIT) {
-                        	LOG.trace("Recover attempt {} from exhausted pool by refilling pool key and creating new Connection", exhaustedPoolRecoveryAttempts);
-                        	if (exhaustedPoolRecoveryAttempts > 1) {
-                        		LockSupport.parkNanos(exhaustedPoolRecoveryBackoff);
-                        		exhaustedPoolRecoveryBackoff = Math.min(EXHAUSTION_RECOVER_BACKOFF_LIMIT,
-                        												exhaustedPoolRecoveryBackoff + exhaustedPoolRecoveryBackoff);
-                        	} else {
-                        		Thread.yield();
-                        	}
+                            LOG.trace("Recover attempt {} from exhausted pool by refilling pool key and creating new Connection", exhaustedPoolRecoveryAttempts);
+                            if (exhaustedPoolRecoveryAttempts > 1) {
+                                LockSupport.parkNanos(exhaustedPoolRecoveryBackoff);
+                                exhaustedPoolRecoveryBackoff = Math.min(EXHAUSTION_RECOVER_BACKOFF_LIMIT,
+                                                                        exhaustedPoolRecoveryBackoff + exhaustedPoolRecoveryBackoff);
+                            } else {
+                                Thread.yield();
+                            }
 
                             connectionsPool.addObject(key);
                             continue;
