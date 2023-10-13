@@ -123,6 +123,13 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
             connected.set(false);
             started.set(false);
 
+            sessions.forEach((k, v) -> {
+                try {
+                    v.close();
+                } catch (JMSException e) {
+                }
+            });
+
             // Refuse any new work, and let any existing work complete.
             executor.shutdown();
         }

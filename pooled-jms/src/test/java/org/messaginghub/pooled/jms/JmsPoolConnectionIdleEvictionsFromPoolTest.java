@@ -19,6 +19,7 @@ package org.messaginghub.pooled.jms;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +37,8 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
     @Test
     public void testEvictionOfIdle() throws Exception {
         cf.setConnectionIdleTimeout(10);
+        cf.setConnectionCheckInterval(10);
+
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Connection amq1 = connection.getConnection();
 
@@ -52,6 +55,8 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
     @Test
     public void testEvictionOfSeeminglyClosedConnection() throws Exception {
         cf.setConnectionIdleTimeout(10);
+        cf.setConnectionCheckInterval(50_000); // Validation check should capture and evicit this
+
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         MockJMSConnection mockConnection1 = (MockJMSConnection) connection.getConnection();
 
@@ -68,6 +73,8 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
     @Test
     public void testNotIdledWhenInUse() throws Exception {
         cf.setConnectionIdleTimeout(10);
+        cf.setConnectionCheckInterval(10);
+
         JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
         Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -84,7 +91,7 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
             // any operation on session first checks whether session is closed
             s.getTransacted();
         } catch (IllegalStateException e) {
-            assertTrue(false, "Session should be fine, instead: " + e.getMessage());
+            fail("Session should be fine, instead: " + e.getMessage());
         }
 
         Connection original = connection.getConnection();
@@ -99,5 +106,53 @@ public class JmsPoolConnectionIdleEvictionsFromPoolTest extends JmsPoolTestSuppo
         // old one should have been inactive and idled out.
         JmsPoolConnection connection3 = (JmsPoolConnection) cf.createConnection();
         assertNotSame(original, connection3.getConnection());
+    }
+
+    @Test
+    public void testConnectionsAboveProtectedMinIdleAreNotIdledOutIfActive() throws Exception {
+        cf.setConnectionIdleTimeout(15);
+        cf.setConnectionCheckInterval(20);
+        cf.setMaxConnections(10);
+
+        final JmsPoolConnection safeConnection = (JmsPoolConnection) cf.createConnection();
+
+        // get a connection from pool again, it should be another connection which is now
+        // above the in-built minimum idle protections which guard the first connection and
+        // would be subject to reaping on idle timeout if not active but should never be
+        // reaped if active.
+        final JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        assertNotSame(connection.getConnection(), safeConnection.getConnection());
+
+        // Session we will use to check on liveness.
+        final Session s = connection.createSession(Session.SESSION_TRANSACTED);
+
+        TimeUnit.MILLISECONDS.sleep(40); // Test that connection is not idled out when borrowed
+
+        try {
+            // any operation on session first checks whether session is closed and we
+            // are not expecting that here.
+            s.rollback();
+        } catch (IllegalStateException e) {
+            fail("Session should be fine, instead: " + e.getMessage());
+        }
+
+        final Connection underlying = connection.getConnection();
+
+        connection.close();
+
+        TimeUnit.MILLISECONDS.sleep(40); // Test that connection is idled out when not borrowed
+
+        try {
+            // Now the connection was idle and not loaned out for long enough that
+            // we expect it to have been closed.
+            s.rollback();
+            fail("Session should be closed because its connection was expected to closed");
+        } catch (IllegalStateException e) {
+        }
+
+        // get a connection from pool again, it should be a new Connection instance as the
+        // old one should have been inactive and idled out.
+        final JmsPoolConnection another = (JmsPoolConnection) cf.createConnection();
+        assertNotSame(underlying, another.getConnection());
     }
 }

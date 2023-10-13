@@ -64,6 +64,7 @@ public class PooledConnection implements ExceptionListener {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final GenericKeyedObjectPool<PooledSessionKey, PooledSessionHolder> sessionPool;
     private final List<JmsPoolSession> loanedSessions = new CopyOnWriteArrayList<JmsPoolSession>();
+    private final String connectionId;
     private ExceptionListener parentExceptionListener;
 
     public PooledConnection(Connection connection) {
@@ -72,6 +73,7 @@ public class PooledConnection implements ExceptionListener {
         poolConfig.setTestOnBorrow(true);
 
         this.connection = wrap(connection);
+        this.connectionId = connection.toString();
 
         try {
             // Check if wrapped connection already had an exception listener and preserve it
@@ -429,7 +431,7 @@ public class PooledConnection implements ExceptionListener {
 
     @Override
     public String toString() {
-        return "ConnectionPool[" + connection + "]";
+        return "ConnectionPool[" + connectionId + "]";
     }
 
     public void checkClientJMSVersionSupport(int requiredMajor, int requiredMinor) throws JMSException {
