@@ -69,7 +69,9 @@ public class PooledXAConnection extends PooledConnection {
                 session.setIsXa(true);
                 transactionManager.getTransaction().registerSynchronization(new Synchronization(session));
                 incrementReferenceCount();
-                transactionManager.getTransaction().enlistResource(createXaResource(session));
+                if (!transactionManager.getTransaction().enlistResource(createXaResource(session))) {
+                    throw new JMSException("Unable to enlist connection to existing transaction");
+                }
             } else {
                 session.setIgnoreClose(false);
             }
