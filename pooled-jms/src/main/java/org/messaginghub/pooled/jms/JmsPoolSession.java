@@ -80,52 +80,8 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
 
     @Override
     public void close() throws JMSException {
-        if (ignoreClose) {
-            return;
-        }
-
-        if (closed.compareAndSet(false, true)) {
-            boolean invalidate = false;
-            try {
-                // lets reset the session
-                getInternalSession().setMessageListener(null);
-
-                // Close any consumers, producers and browsers that may have been created.
-                for (MessageConsumer consumer : consumers) {
-                    consumer.close();
-                }
-
-                for (QueueBrowser browser : browsers) {
-                    browser.close();
-                }
-
-                for (MessageProducer producer : producers) {
-                    producer.close();
-                }
-
-                consumers.clear();
-                producers.clear();
-                browsers.clear();
-
-                if (transactional && !isXa) {
-                    try {
-                        getInternalSession().rollback();
-                    } catch (JMSException e) {
-                        invalidate = true;
-                        LOG.warn("Caught exception trying rollback() when putting session back into the pool, will invalidate. " + e, e);
-                    }
-                }
-            } catch (JMSException ex) {
-                invalidate = true;
-                LOG.warn("Caught exception trying close() when putting session back into the pool, will invalidate. " + ex, ex);
-            } finally {
-                consumers.clear();
-                browsers.clear();
-                for (JmsPoolSessionEventListener listener : this.sessionEventListeners) {
-                    listener.onSessionClosed(this);
-                }
-                sessionEventListeners.clear();
-            }
+        if (!ignoreClose && closed.compareAndSet(false, true)) {
+            boolean invalidate = cleanupSession();
 
             if (invalidate) {
                 // lets close the session and not put the session back into the pool
@@ -155,6 +111,71 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
 
             sessionHolder = null;
         }
+    }
+
+    private boolean cleanupSession() {
+        Exception cleanupError = null;
+
+        try {
+            getInternalSession().setMessageListener(null);
+        } catch (JMSException e) {
+            cleanupError = cleanupError == null ? e : cleanupError;
+        }
+
+        // Close any consumers, producers and browsers that may have been created.
+        for (MessageConsumer consumer : consumers) {
+            try {
+                consumer.close();
+            } catch (JMSException e) {
+                LOG.trace("Caught exception trying close a consumer, will invalidate. " + e, e);
+                cleanupError = cleanupError == null ? e : cleanupError;
+            }
+        }
+
+        for (QueueBrowser browser : browsers) {
+            try {
+                browser.close();
+            } catch (JMSException e) {
+                LOG.trace("Caught exception trying close a browser, will invalidate. " + e, e);
+                cleanupError = cleanupError == null ? e : cleanupError;
+            }
+        }
+
+        for (MessageProducer producer : producers) {
+            try {
+                producer.close();
+            } catch (JMSException e) {
+                LOG.trace("Caught exception trying close a producer, will invalidate. " + e, e);
+                cleanupError = cleanupError == null ? e : cleanupError;
+            }
+        }
+
+        if (transactional && !isXa) {
+            try {
+                getInternalSession().rollback();
+            } catch (JMSException e) {
+                LOG.warn("Caught exception trying rollback() when putting session back into the pool, will invalidate. " + e, e);
+                cleanupError = cleanupError == null ? e : cleanupError;
+            }
+        }
+
+        producers.clear();
+        consumers.clear();
+        browsers.clear();
+
+        for (JmsPoolSessionEventListener listener : this.sessionEventListeners) {
+            try {
+                listener.onSessionClosed(this);
+            } catch (Exception e) {
+                cleanupError = cleanupError == null ? e : cleanupError;
+            }
+        }
+
+        if (cleanupError != null) {
+            LOG.warn("Caught exception trying close() when putting session back into the pool, will invalidate. " + cleanupError, cleanupError);
+        }
+
+        return cleanupError != null;
     }
 
     //----- Destination factory methods --------------------------------------//
