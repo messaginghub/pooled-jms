@@ -124,11 +124,11 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
             started.set(false);
 
             sessions.forEach((k, v) -> {
-				try {
-					v.close();
-				} catch (JMSException e) {
-				}
-			});
+                try {
+                    v.close();
+                } catch (JMSException e) {
+                }
+            });
 
             // Refuse any new work, and let any existing work complete.
             executor.shutdown();
@@ -450,7 +450,7 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
         return this;
     }
 
-    private void ensureConnected() throws JMSException {
+    protected void ensureConnected() throws JMSException {
         if (isConnected() || closed.get()) {
             return;
         }

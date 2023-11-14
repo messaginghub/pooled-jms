@@ -16,6 +16,12 @@
  */
 package org.messaginghub.pooled.jms.pool;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.transaction.xa.XAResource;
+
+import org.messaginghub.pooled.jms.JmsPoolSession;
+
 import jakarta.jms.Connection;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
@@ -24,9 +30,6 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-
-import org.messaginghub.pooled.jms.JmsPoolSession;
 
 /**
  * An XA-aware connection pool. When a session is created and an xa transaction
@@ -51,6 +54,7 @@ public class PooledXAConnection extends PooledConnection {
     public Session createSession(boolean transacted, int ackMode) throws JMSException {
         try {
             boolean isXa = (transactionManager != null && transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION);
+
             if (isXa) {
                 // if the xa tx aborts inflight we don't want to auto create a
                 // local transaction or auto ack
@@ -63,16 +67,29 @@ public class PooledXAConnection extends PooledConnection {
                     ackMode = Session.AUTO_ACKNOWLEDGE;
                 }
             }
-            JmsPoolSession session = (JmsPoolSession) super.createSession(transacted, ackMode);
+
+            final JmsPoolSession session = (JmsPoolSession) super.createSession(transacted, ackMode);
+
+            session.setIgnoreClose(isXa);
+            session.setIsXa(isXa);
+
             if (isXa) {
-                session.setIgnoreClose(true);
-                session.setIsXa(true);
-                transactionManager.getTransaction().registerSynchronization(new Synchronization(session));
                 incrementReferenceCount();
-                transactionManager.getTransaction().enlistResource(createXaResource(session));
-            } else {
-                session.setIgnoreClose(false);
+
+                final JmsPooledXASessionSynchronization sync = new JmsPooledXASessionSynchronization(session);
+
+                try {
+                    transactionManager.getTransaction().registerSynchronization(sync);
+
+                    if (!transactionManager.getTransaction().enlistResource(createXaResource(session))) {
+                        throw new JMSException("Enlistment of Pooled Session into transaction failed");
+                    }
+                } catch (Exception ex) {
+                    sync.close();
+                    throw ex;
+                }
             }
+
             return session;
         } catch (RollbackException e) {
             final JMSException jmsException = new JMSException("Rollback Exception");
@@ -89,12 +106,27 @@ public class PooledXAConnection extends PooledConnection {
         return session.getXAResource();
     }
 
-    protected class Synchronization implements jakarta.transaction.Synchronization {
+    protected class JmsPooledXASessionSynchronization implements jakarta.transaction.Synchronization {
 
-        private final JmsPoolSession session;
+        private final AtomicBoolean closed = new AtomicBoolean();
 
-        private Synchronization(JmsPoolSession session) {
+        private JmsPoolSession session;
+
+        private JmsPooledXASessionSynchronization(JmsPoolSession session) {
             this.session = session;
+        }
+
+        public void close() throws JMSException {
+            if (closed.compareAndSet(false, true)) {
+                // This will return session to the pool.
+                session.setIgnoreClose(false);
+                try {
+                    session.close();
+                } finally {
+                    session = null;
+                    decrementReferenceCount();
+                }
+            }
         }
 
         @Override
@@ -104,10 +136,7 @@ public class PooledXAConnection extends PooledConnection {
         @Override
         public void afterCompletion(int status) {
             try {
-                // This will return session to the pool.
-                session.setIgnoreClose(false);
-                session.close();
-                decrementReferenceCount();
+                close();
             } catch (JMSException e) {
                 throw new RuntimeException(e);
             }

@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
+
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.ExceptionListener;
@@ -31,8 +33,6 @@ import jakarta.jms.QueueConnectionFactory;
 import jakarta.jms.Session;
 import jakarta.jms.TopicConnection;
 import jakarta.jms.TopicConnectionFactory;
-
-import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
 
 /**
  * Mock JMS ConnectionFactory used to create Mock Connections
@@ -82,7 +82,7 @@ public class MockJMSConnectionFactory implements ConnectionFactory, QueueConnect
             throw new JMSSecurityException(user.getFailureCause());
         }
 
-        MockJMSConnection connection = new MockJMSConnection(user);
+        MockJMSConnection connection = createMockConnectionInstance(user);
 
         if (clientID != null && !clientID.isEmpty()) {
             connection.setClientID(clientID, true);
@@ -99,6 +99,10 @@ public class MockJMSConnectionFactory implements ConnectionFactory, QueueConnect
         }
 
         return connection;
+    }
+
+    protected MockJMSConnection createMockConnectionInstance(MockJMSUser user ) {
+        return new MockJMSConnection(user);
     }
 
     //----- JMS Context Creation Methods -------------------------------------//
