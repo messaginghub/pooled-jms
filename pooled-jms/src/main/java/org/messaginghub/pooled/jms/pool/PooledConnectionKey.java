@@ -99,4 +99,9 @@ public final class PooledConnectionKey {
 
         return true;
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " { " + userName + " }";
+    }
 }
