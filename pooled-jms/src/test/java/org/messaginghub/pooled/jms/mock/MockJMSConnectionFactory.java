@@ -82,7 +82,7 @@ public class MockJMSConnectionFactory implements ConnectionFactory, QueueConnect
             throw new JMSSecurityException(user.getFailureCause());
         }
 
-        MockJMSConnection connection = new MockJMSConnection(user);
+        MockJMSConnection connection = createMockConnectionInstance(user);
 
         if (clientID != null && !clientID.isEmpty()) {
             connection.setClientID(clientID, true);
@@ -99,6 +99,10 @@ public class MockJMSConnectionFactory implements ConnectionFactory, QueueConnect
         }
 
         return connection;
+    }
+
+    protected MockJMSConnection createMockConnectionInstance(MockJMSUser user ) {
+        return new MockJMSConnection(user);
     }
 
     //----- JMS Context Creation Methods -------------------------------------//

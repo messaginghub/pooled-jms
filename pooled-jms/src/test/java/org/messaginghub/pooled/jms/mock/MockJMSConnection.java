@@ -450,7 +450,7 @@ public class MockJMSConnection implements Connection, TopicConnection, QueueConn
         return this;
     }
 
-    private void ensureConnected() throws JMSException {
+    protected void ensureConnected() throws JMSException {
         if (isConnected() || closed.get()) {
             return;
         }

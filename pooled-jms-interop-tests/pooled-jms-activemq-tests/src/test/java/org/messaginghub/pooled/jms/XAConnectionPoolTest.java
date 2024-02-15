@@ -107,7 +107,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
                         } catch (XAException e) {
                             e.printStackTrace();
                         }
-                        return false;
+                        return true;
                     }
 
                     @Override
@@ -195,7 +195,7 @@ public class XAConnectionPoolTest extends ActiveMQJmsPoolTestSupport {
 
             @Override
             public int getStatus() throws SystemException {
-                return Status.STATUS_ACTIVE;
+                return Status.STATUS_NO_TRANSACTION;
             }
 
             @Override
