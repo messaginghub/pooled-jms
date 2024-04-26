@@ -85,7 +85,7 @@ public class PooledXAConnection extends PooledConnection {
                         throw new JMSException("Enlistment of Pooled Session into transaction failed");
                     }
                 } catch (Exception ex) {
-                    sync.close();
+                    sync.fail();
                     throw ex;
                 }
             }
@@ -114,6 +114,18 @@ public class PooledXAConnection extends PooledConnection {
 
         private JmsPooledXASessionSynchronization(JmsPoolSession session) {
             this.session = session;
+        }
+
+        public void fail() throws JMSException {
+            if (closed.compareAndSet(false, true)) {
+                // Force the session to close and invalidate itself.
+                try {
+                    session.internalClose(true);
+                } finally {
+                    session = null;
+                    decrementReferenceCount();
+                }
+            }
         }
 
         public void close() throws JMSException {
