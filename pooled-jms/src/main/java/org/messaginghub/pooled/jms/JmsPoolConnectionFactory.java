@@ -379,7 +379,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * sessions can exists at any given time on a per connection basis.
      *
      * @param maxIdleSessionsPerConnection
-     *    the number if idle sessions allowed per connection before they are closed.
+     *    the number of idle sessions allowed per connection before they are closed.
      *
      * @see setMaxSessionsPerConnection
      */
