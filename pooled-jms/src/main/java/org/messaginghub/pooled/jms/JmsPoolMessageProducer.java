@@ -308,7 +308,6 @@ public class JmsPoolMessageProducer implements MessageProducer, AutoCloseable {
         session.checkClientJMSVersionSupport(2, 0);
 
         this.deliveryDelay = deliveryDelay;
-        this.messageProducer.setDeliveryDelay(deliveryDelay);
     }
 
     @Override
