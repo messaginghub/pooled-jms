@@ -30,6 +30,7 @@ import org.apache.commons.pool2.impl.EvictionConfig;
 import org.apache.commons.pool2.impl.EvictionPolicy;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
+import org.messaginghub.pooled.jms.metrics.JmsPoolMetrics;
 import org.messaginghub.pooled.jms.pool.PooledConnection;
 import org.messaginghub.pooled.jms.pool.PooledConnectionKey;
 import org.messaginghub.pooled.jms.pool.PooledSessionKey;
@@ -647,6 +648,13 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      */
     public void setUseProviderJMSContext(boolean useProviderJMSContext) {
         this.useProviderJMSContext = useProviderJMSContext;
+    }
+
+    /**
+     *  @return a view on internal pool metrics.
+     */
+    public JmsPoolMetrics getJmsPoolMetrics() {
+        return this::getConnectionsPool;
     }
 
     //----- Internal implementation ------------------------------------------//
