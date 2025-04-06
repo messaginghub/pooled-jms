@@ -50,12 +50,12 @@
   </developers>
 
   <properties>
-    <qpid-jms-version>2.5.0</qpid-jms-version>
-    <artemis-version>2.33.0</artemis-version>
+    <qpid-jms-version>2.7.0</qpid-jms-version>
+    <artemis-version>2.40.0</artemis-version>
     <commons-pool2-version>2.12.0</commons-pool2-version>
     <slf4j-version>1.7.36</slf4j-version>
-    <mockito-version>5.11.0</mockito-version>
-    <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <mockito-version>5.17.0</mockito-version>
+    <junit.jupiter.version>5.12.1</junit.jupiter.version>
     <jakarta.jms-api-version>3.1.0</jakarta.jms-api-version>
     <jakarta-transaction-version>2.0.1</jakarta-transaction-version>
     <geronimo-transaction-version>3.1.5</geronimo-transaction-version>
@@ -81,7 +81,7 @@
     <maven-javadoc-plugin-version>3.5.0</maven-javadoc-plugin-version>
     <maven-deploy-plugin-version>3.1.1</maven-deploy-plugin-version>
     <findbugs-maven-plugin-version>3.0.5</findbugs-maven-plugin-version>
-    <jacoco-plugin-version>0.8.10</jacoco-plugin-version>
+    <jacoco-plugin-version>0.8.13</jacoco-plugin-version>
 
     <!-- Test properties -->
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
