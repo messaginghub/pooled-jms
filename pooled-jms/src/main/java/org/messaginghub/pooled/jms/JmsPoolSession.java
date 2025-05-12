@@ -81,8 +81,14 @@ public class JmsPoolSession implements Session, TopicSession, QueueSession, XASe
 
     @Override
     public void close() throws JMSException {
-        if (!ignoreClose && closed.compareAndSet(false, true)) {
-            boolean invalidate = cleanupSession();
+        if (!ignoreClose) {
+            internalClose(false);
+        }
+    }
+
+    public void internalClose(boolean forceInvalidate) throws JMSException {
+        if (closed.compareAndSet(false, true)) {
+            final boolean invalidate = cleanupSession() || forceInvalidate;
 
             if (invalidate) {
                 // lets close the session and not put the session back into the pool

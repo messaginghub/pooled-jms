@@ -22,6 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.messaginghub.pooled.jms.mock.MockJMSDestination;
+import org.messaginghub.pooled.jms.mock.MockJMSQueue;
+import org.messaginghub.pooled.jms.mock.MockJMSTopic;
+
 import jakarta.jms.CompletionListener;
 import jakarta.jms.DeliveryMode;
 import jakarta.jms.Destination;
@@ -32,12 +38,6 @@ import jakarta.jms.Message;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Queue;
 import jakarta.jms.Session;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.messaginghub.pooled.jms.mock.MockJMSDestination;
-import org.messaginghub.pooled.jms.mock.MockJMSQueue;
-import org.messaginghub.pooled.jms.mock.MockJMSTopic;
 
 /**
  * Tests for the JMS Pool MessageProducer wrapper class.
@@ -115,6 +115,26 @@ public class JmsPoolMessageProducerTest extends JmsPoolTestSupport {
             producer.getDeliveryDelay();
             fail("Should throw when producer is closed.");
         } catch (IllegalStateException ise) {}
+    }
+
+    @Test
+    public void testSetDeliveryDelayNoAppliedToUnderlyingProducer() throws JMSException {
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createQueueConnection();
+
+        Session session = connection.createSession();
+        Queue queue = session.createTemporaryQueue();
+        MessageProducer producer1 = session.createProducer(queue);
+
+        assertEquals(0, producer1.getDeliveryDelay());
+        producer1.setDeliveryDelay(1);
+        assertEquals(1, producer1.getDeliveryDelay());
+
+        producer1.close();
+
+        MessageProducer producer2 = session.createProducer(queue);
+        assertEquals(0, producer2.getDeliveryDelay());
+        producer2.setDeliveryDelay(1);
+        assertEquals(1, producer2.getDeliveryDelay());
     }
 
     @Test
