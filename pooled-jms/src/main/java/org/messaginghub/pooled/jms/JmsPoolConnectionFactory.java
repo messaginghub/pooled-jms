@@ -184,8 +184,8 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
             this.connectionsPool.setMinIdlePerKey(1); // Always want one connection pooled.
             this.connectionsPool.setLifo(false);
             this.connectionsPool.setBlockWhenExhausted(false);
-            this.connectionsPool.setTimeBetweenEvictionRuns(Duration.ofMillis(DEFAULT_TIME_BETWEEN_EVICTION_RUNS));
-            this.connectionsPool.setMinEvictableIdle(Duration.ofMillis(Long.MAX_VALUE));
+            this.connectionsPool.setDurationBetweenEvictionRuns(Duration.ofMillis(DEFAULT_TIME_BETWEEN_EVICTION_RUNS));
+            this.connectionsPool.setMinEvictableIdleDuration(Duration.ofMillis(Long.MAX_VALUE));
             this.connectionsPool.setTestOnBorrow(true);
             this.connectionsPool.setTestWhileIdle(true);
 
@@ -576,7 +576,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      * @see #setConnectionIdleTimeout(int)
      */
     public void setConnectionCheckInterval(long connectionCheckInterval) {
-        getConnectionsPool().setTimeBetweenEvictionRuns(Duration.ofMillis(connectionCheckInterval));
+        getConnectionsPool().setDurationBetweenEvictionRuns(Duration.ofMillis(connectionCheckInterval));
     }
 
     /**

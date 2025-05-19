@@ -91,8 +91,8 @@ public class QpidJmsPoolTestSupport {
                                                  .setSecurityEnabled(false)
                                                  .addAcceptorConfiguration(tc)
                                                  .addAddressesSetting("#",
-                                                         new AddressSettings().setDeadLetterAddress(SimpleString.toSimpleString("dla"))
-                                                         .setExpiryAddress(SimpleString.toSimpleString("expiry")));
+                                                         new AddressSettings().setDeadLetterAddress(SimpleString.of("dla"))
+                                                         .setExpiryAddress(SimpleString.of("expiry")));
         broker = new EmbeddedActiveMQ().setConfiguration(configuration);
         broker.start();
 

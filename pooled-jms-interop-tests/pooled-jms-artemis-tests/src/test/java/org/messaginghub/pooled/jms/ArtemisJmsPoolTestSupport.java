@@ -56,7 +56,7 @@ public class ArtemisJmsPoolTestSupport {
                                                .setPersistenceEnabled(false)
                                                .setSecurityEnabled(false)
                                                .addAcceptorConfiguration(new TransportConfiguration(InVMAcceptorFactory.class.getName()))
-                                               .addAddressesSetting("#", new AddressSettings().setDeadLetterAddress(SimpleString.toSimpleString("dla")).setExpiryAddress(SimpleString.toSimpleString("expiry")));
+                                               .addAddressesSetting("#", new AddressSettings().setDeadLetterAddress(SimpleString.of("dla")).setExpiryAddress(SimpleString.of("expiry")));
         server = new EmbeddedActiveMQ().setConfiguration(configuration);
         server.start();
 
