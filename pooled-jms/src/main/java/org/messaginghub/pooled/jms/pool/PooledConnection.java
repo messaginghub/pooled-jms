@@ -416,6 +416,9 @@ public class PooledConnection implements ExceptionListener {
 
     @Override
     public void onException(JMSException exception) {
+        LOG.debug("Pooled connection onException: {}", exception.getMessage());
+        LOG.trace("Pooled connection: Client exception detail", exception);
+
         // Closes the underlying connection and removes it from the pool
         close();
 
