@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.messaginghub</groupId>
   <artifactId>pooled-jms-parent</artifactId>
-  <version>3.1.9-SNAPSHOT</version>
+  <version>3.1.8-SNAPSHOT</version>
   <packaging>pom</packaging>
   <inceptionYear>2017</inceptionYear>
 
