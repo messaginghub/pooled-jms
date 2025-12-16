@@ -80,6 +80,7 @@
     <maven-source-plugin-version>3.2.1</maven-source-plugin-version>
     <maven-javadoc-plugin-version>3.5.0</maven-javadoc-plugin-version>
     <maven-deploy-plugin-version>3.1.1</maven-deploy-plugin-version>
+    <maven-central-publishing-version>0.8.0</maven-central-publishing-version>
     <findbugs-maven-plugin-version>3.0.5</findbugs-maven-plugin-version>
     <jacoco-plugin-version>0.8.14</jacoco-plugin-version>
 
@@ -98,17 +99,6 @@
     <module>pooled-jms-examples</module>
     <module>packaged-pooled-jms</module>
   </modules>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -370,6 +360,16 @@
         </executions>
         <configuration>
           <propertyName>jacoco-config</propertyName>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>${maven-central-publishing-version}</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <checksums>required</checksums>
         </configuration>
       </plugin>
     </plugins>
