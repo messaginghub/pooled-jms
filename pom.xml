@@ -67,7 +67,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.release>11</maven.compiler.release>
 
-    <apache-rat-version>0.16.1</apache-rat-version>
+    <apache-rat-version>0.17.0</apache-rat-version>
     <maven-assembly-plugin-version>3.6.0</maven-assembly-plugin-version>
     <maven-gpg-plugin-version>3.1.0</maven-gpg-plugin-version>
     <maven-eclipse-plugin-version>2.10</maven-eclipse-plugin-version>
@@ -81,7 +81,7 @@
     <maven-javadoc-plugin-version>3.5.0</maven-javadoc-plugin-version>
     <maven-deploy-plugin-version>3.1.1</maven-deploy-plugin-version>
     <findbugs-maven-plugin-version>3.0.5</findbugs-maven-plugin-version>
-    <jacoco-plugin-version>0.8.13</jacoco-plugin-version>
+    <jacoco-plugin-version>0.8.14</jacoco-plugin-version>
 
     <!-- Test properties -->
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
