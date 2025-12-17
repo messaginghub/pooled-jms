@@ -39,13 +39,16 @@ import jakarta.jms.IllegalStateRuntimeException;
 import jakarta.jms.JMSException;
 import jakarta.jms.QueueConnection;
 import jakarta.jms.QueueConnectionFactory;
+import jakarta.jms.Session;
 import jakarta.jms.TopicConnection;
 import jakarta.jms.TopicConnectionFactory;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.messaginghub.pooled.jms.metrics.JmsPoolMetrics;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
 import org.messaginghub.pooled.jms.mock.MockJMSConnectionFactory;
+import org.messaginghub.pooled.jms.pool.PooledConnectionKey;
 import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -465,6 +468,28 @@ public class JmsPoolConnectionFactoryTest extends JmsPoolTestSupport {
             cf.createContext();
             fail("Should throw IllegalStateRuntimeException when factory is an invalid type");
         } catch (IllegalStateRuntimeException isre) {}
+    }
+
+    @Test
+    public void testPoolMetrics() throws Exception {
+        String pck = new PooledConnectionKey(null, null).toString();
+
+        Connection connection = cf.createConnection();
+        connection.close();
+        connection = cf.createConnection();
+        Session session = connection.createSession();
+        JmsPoolMetrics metrics = cf.getJmsPoolMetrics();
+
+        assertNotNull(connection);
+        assertEquals(1, metrics.getCreatedCount());
+        assertEquals(1, metrics.getBorrowedCount());
+        assertEquals(1, metrics.getReturnedCount());
+        assertEquals(1, metrics.getNumActiveSessionsByKey().get(pck));
+        assertEquals(0, metrics.getNumIdleSessionsByKey().get(pck));
+        assertEquals(1, metrics.getNumSessionsByKey().get(pck));
+
+        session.close();
+        connection.close();
     }
 
     private class BadFactoryJmsPoolConnectionFactory extends JmsPoolConnectionFactory {
