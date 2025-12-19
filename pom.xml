@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.messaginghub</groupId>
   <artifactId>pooled-jms-parent</artifactId>
-  <version>3.2.1</version>
+  <version>3.2.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <inceptionYear>2017</inceptionYear>
 
@@ -39,7 +39,7 @@
     <url>https://github.com/messaginghub/pooled-jms.git</url>
     <connection>scm:git:git://github.com/messaginghub/pooled-jms.git</connection>
     <developerConnection>scm:git:git@github.com:messaginghub/pooled-jms.git</developerConnection>
-    <tag>3.2.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
