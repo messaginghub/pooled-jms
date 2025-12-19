@@ -68,7 +68,7 @@
     <maven.compiler.release>11</maven.compiler.release>
 
     <apache-rat-version>0.17</apache-rat-version>
-    <maven-assembly-plugin-version>3.6.0</maven-assembly-plugin-version>
+    <maven-assembly-plugin-version>3.8.0</maven-assembly-plugin-version>
     <maven-gpg-plugin-version>3.1.0</maven-gpg-plugin-version>
     <maven-eclipse-plugin-version>2.10</maven-eclipse-plugin-version>
     <maven-idea-plugin-version>2.2.1</maven-idea-plugin-version>
@@ -79,8 +79,8 @@
     <maven-compiler-plugin-version>3.11.0</maven-compiler-plugin-version>
     <maven-source-plugin-version>3.2.1</maven-source-plugin-version>
     <maven-javadoc-plugin-version>3.5.0</maven-javadoc-plugin-version>
-    <maven-deploy-plugin-version>3.1.1</maven-deploy-plugin-version>
-    <maven-central-publishing-version>0.8.0</maven-central-publishing-version>
+    <maven-deploy-plugin-version>3.1.4</maven-deploy-plugin-version>
+    <maven-central-publishing-version>0.9.0</maven-central-publishing-version>
     <findbugs-maven-plugin-version>3.0.5</findbugs-maven-plugin-version>
     <jacoco-plugin-version>0.8.14</jacoco-plugin-version>
 
