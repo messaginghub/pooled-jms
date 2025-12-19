@@ -16,6 +16,7 @@
  */
 package org.messaginghub.pooled.jms;
 
+import java.beans.ExceptionListener;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -89,6 +90,13 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     public static final int DEFAULT_MAX_SESSIONS_PER_CONNECTION = 500;
     public static final int DEFAULT_MAX_CONNECTIONS = 1;
+    public static final int DEFAULT_CONNECTION_IDLE_TIMEOUT = 30_000;
+    public static final boolean DEFAULT_BLOCK_IF_SESSION_FULL = true;
+    public static final long DEFAULT_BLOCK_IF_SESSION_FULL_TIMEOUT = -1L;
+    public static final boolean DEFAULT_USE_ANONYMOUS_PRODUCERS = true;
+    public static final int DEFUALT_EXPLICIT_PRODUCER_CACHE_SIZE = 0;
+    public static final boolean DEFAULT_USE_PROVIDER_JMS_CONTEXT = false;
+    public static final boolean DEFAULT_FAULT_TOLERANT_CONNECTIONS = false;
 
     protected final AtomicBoolean stopped = new AtomicBoolean(false);
 
@@ -98,12 +106,13 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
 
     private int maxSessionsPerConnection = DEFAULT_MAX_SESSIONS_PER_CONNECTION;
     private int maxIdleSessionsPerConnection = DEFAULT_MAX_SESSIONS_PER_CONNECTION;
-    private int connectionIdleTimeout = 30 * 1000;
-    private boolean blockIfSessionPoolIsFull = true;
-    private long blockIfSessionPoolIsFullTimeout = -1L;
-    private boolean useAnonymousProducers = true;
-    private int explicitProducerCacheSize = 0;
-    private boolean useProviderJMSContext = false;
+    private int connectionIdleTimeout = DEFAULT_CONNECTION_IDLE_TIMEOUT;
+    private boolean blockIfSessionPoolIsFull = DEFAULT_BLOCK_IF_SESSION_FULL;
+    private long blockIfSessionPoolIsFullTimeout = DEFAULT_BLOCK_IF_SESSION_FULL_TIMEOUT;
+    private boolean useAnonymousProducers = DEFAULT_USE_ANONYMOUS_PRODUCERS;
+    private int explicitProducerCacheSize = DEFUALT_EXPLICIT_PRODUCER_CACHE_SIZE;
+    private boolean useProviderJMSContext = DEFAULT_USE_PROVIDER_JMS_CONTEXT;
+    private boolean faultTolerantConnections = DEFAULT_FAULT_TOLERANT_CONNECTIONS;
 
     // Temporary value used to always fetch the result of makeObject.
     private final AtomicReference<PooledConnection> mostRecentlyCreated = new AtomicReference<PooledConnection>(null);
@@ -129,6 +138,7 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
                         }
                         connection.setUseAnonymousProducers(isUseAnonymousProducers());
                         connection.setExplicitProducerCacheSize(getExplicitProducerCacheSize());
+                        connection.setFaultTolerantConnection(isFaultTolerantConnections());
 
                         LOG.trace("Created new connection: {}", connection);
 
@@ -647,6 +657,36 @@ public class JmsPoolConnectionFactory implements ConnectionFactory, QueueConnect
      */
     public void setUseProviderJMSContext(boolean useProviderJMSContext) {
         this.useProviderJMSContext = useProviderJMSContext;
+    }
+
+    /**
+     * @return if the pool is configured to assume connections are fault tolerant.
+     */
+    public boolean isFaultTolerantConnections() {
+        return faultTolerantConnections;
+    }
+
+    /**
+     * Controls if the pool will consider the provider connection as being fault tolerant.
+     * <p>
+     * Some JMS providers can provide a connection that will perform reconnection and error
+     * handling in a generally transparent manner which would allow the pool to not close the
+     * provider connection on any call to the {@link ExceptionListener} the pool assigns to all
+     * pooled connections. This can reduce error handling needed in some client usage scenarios
+     * since it can be assumed that the connection remains open and usable regardless of any
+     * exception being thrown from JMS client APIs.
+     * <p>
+     * While this option is provided it can lead to broken connections being stuck in the pool
+     * and be loaned out to client code with no means of closing them down and recovering. The
+     * user who activates this configuration option assumes the risk here and must ensure that
+     * all cases where the provider connection might still fail either due to configured reconnect
+     * limits or because of fatal event that the providers server might issue are mitigated.
+     *
+     * @param faultTolerantConnections
+     * 		Boolean value indicating if the pool should assume connection are fault tolerant.
+     */
+    public void setFaultTolerantConnections(boolean faultTolerantConnections) {
+        this.faultTolerantConnections = faultTolerantConnections;
     }
 
     //----- Internal implementation ------------------------------------------//
