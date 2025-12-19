@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.messaginghub</groupId>
     <artifactId>pooled-jms-interop-tests</artifactId>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.2.1</version>
   </parent>
 
   <artifactId>pooled-jms-qpid-jms-tests</artifactId>
