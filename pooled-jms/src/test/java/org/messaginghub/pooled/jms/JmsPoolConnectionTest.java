@@ -33,17 +33,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.jms.Connection;
-import jakarta.jms.ConnectionMetaData;
-import jakarta.jms.ExceptionListener;
-import jakarta.jms.IllegalStateException;
-import jakarta.jms.JMSException;
-import jakarta.jms.MessageProducer;
-import jakarta.jms.Queue;
-import jakarta.jms.Session;
-import jakarta.jms.TemporaryQueue;
-import jakarta.jms.TemporaryTopic;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.messaginghub.pooled.jms.mock.MockJMSConnection;
@@ -55,6 +44,17 @@ import org.messaginghub.pooled.jms.mock.MockJMSTemporaryTopic;
 import org.messaginghub.pooled.jms.util.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionMetaData;
+import jakarta.jms.ExceptionListener;
+import jakarta.jms.IllegalStateException;
+import jakarta.jms.JMSException;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.Session;
+import jakarta.jms.TemporaryQueue;
+import jakarta.jms.TemporaryTopic;
 
 /**
  * A couple of tests against the PooledConnection class.
@@ -548,6 +548,50 @@ public class JmsPoolConnectionTest extends JmsPoolTestSupport {
 
         Connection connection2 = cf.createConnection();
         assertNotSame(connection, connection2);
+        LOG.info("Fetched new connection from the pool: {}", connection2);
+        session = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        connection2.close();
+    }
+
+    @Test
+    public void testConnectionFailuresWhenMarkedFaultTolerant() throws Exception {
+        final CountDownLatch failed = new CountDownLatch(1);
+
+        cf.setFaultTolerantConnections(true); // Should keep connection open on exception.
+
+        final JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+
+        LOG.info("Fetched new connection from the pool: {}", connection);
+        connection.setExceptionListener(new ExceptionListener() {
+
+            @Override
+            public void onException(JMSException exception) {
+                LOG.info("Pooled Connection failed");
+                failed.countDown();
+            }
+        });
+
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = session.createQueue(getTestName());
+        MessageProducer producer = session.createProducer(queue);
+
+        MockJMSConnection mockJMSConnection = (MockJMSConnection) connection.getConnection();
+        mockJMSConnection.injectConnectionError(new JMSException("Some non-fatal error"));
+
+        assertTrue(failed.await(15, TimeUnit.SECONDS));
+
+        try {
+            producer.send(session.createMessage());
+            LOG.info("Producer sent message after onException as expected: {}");
+        } catch (JMSException ex) {
+            fail("Should not be disconnected since fault tolerant is assumed");
+        }
+
+        final JmsPoolConnection connection2 = (JmsPoolConnection) cf.createConnection();
+
+        assertNotSame(connection, connection2);
+        assertSame(connection.getConnection(), connection2.getConnection());
         LOG.info("Fetched new connection from the pool: {}", connection2);
         session = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 

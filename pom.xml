@@ -87,6 +87,7 @@
     <!-- Test properties -->
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     <surefire.runOrder>filesystem</surefire.runOrder>
+    <jacoco-config></jacoco-config>
 
     <!-- surefire forked jvm arguments -->
     <argLine>-Xmx2g -enableassertions ${jacoco-config}</argLine>

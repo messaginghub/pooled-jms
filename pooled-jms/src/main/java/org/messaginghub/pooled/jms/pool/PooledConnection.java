@@ -58,9 +58,10 @@ public class PooledConnection implements ExceptionListener {
     private boolean hasExpired;
     private int idleTimeout = 30 * 1000;
     private boolean useAnonymousProducers = true;
-    private int explicitProducerCacheSize = 0;
+    private int explicitProducerCacheSize;
     private int jmsMajorVersion = 1;
     private int jmsMinorVersion = 1;
+    private boolean faultTolerantConnection;
 
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final GenericKeyedObjectPool<PooledSessionKey, PooledSessionHolder> sessionPool;
@@ -321,6 +322,14 @@ public class PooledConnection implements ExceptionListener {
         this.explicitProducerCacheSize = cacheSize;
     }
 
+    public boolean isFaultTolerantConnection() {
+        return faultTolerantConnection;
+    }
+
+    public void setFaultTolerantConnection(boolean faultTolerantConnection) {
+        this.faultTolerantConnection = faultTolerantConnection;
+    }
+
     /**
      * @return the total number of Pooled session including idle sessions that are not
      *          currently loaned out to any client.
@@ -419,8 +428,11 @@ public class PooledConnection implements ExceptionListener {
         LOG.debug("Pooled connection onException: {}", exception.getMessage());
         LOG.trace("Pooled connection: Client exception detail", exception);
 
-        // Closes the underlying connection and removes it from the pool
-        close();
+        // Closes the underlying connection and removes it from the pool if not configured
+        // to assume the connection is fault tolerant and can recover on its own.
+        if (!isFaultTolerantConnection()) {
+            close();
+        }
 
         if (parentExceptionListener != null) {
             parentExceptionListener.onException(exception);
