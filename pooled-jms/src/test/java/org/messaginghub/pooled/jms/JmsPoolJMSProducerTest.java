@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -27,9 +28,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
+import org.messaginghub.pooled.jms.mock.MockJMSConnection;
+import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
+import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
+import org.messaginghub.pooled.jms.mock.MockJMSSession;
+import org.messaginghub.pooled.jms.mock.MockJMSTopic;
 
 import jakarta.jms.CompletionListener;
 import jakarta.jms.DeliveryMode;
@@ -42,17 +57,8 @@ import jakarta.jms.JMSProducer;
 import jakarta.jms.JMSRuntimeException;
 import jakarta.jms.Message;
 import jakarta.jms.MessageFormatRuntimeException;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.Timeout;
-import org.messaginghub.pooled.jms.mock.MockJMSConnection;
-import org.messaginghub.pooled.jms.mock.MockJMSDefaultConnectionListener;
-import org.messaginghub.pooled.jms.mock.MockJMSMessageProducer;
-import org.messaginghub.pooled.jms.mock.MockJMSSession;
-import org.messaginghub.pooled.jms.mock.MockJMSTopic;
+import jakarta.jms.Queue;
+import jakarta.jms.TextMessage;
 
 /**
  * Tests for the JMSProducer implementation provided by the JMS Pool
@@ -184,6 +190,40 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
         assertTrue(producer.propertyExists("Property_2"));
         assertTrue(producer.propertyExists("Property_3"));
         assertFalse(producer.propertyExists("Property_4"));
+    }
+
+    @Test
+    public void testGetPropertyNamesReturnsActiveViewOfManagedProperties() throws Exception {
+        final String PROPERTY_A = "propertyA";
+        final String PROPERTY_B = "propertyB";
+        final String PROPERTY_C = "propertyC";
+
+        final JMSProducer producer = context.createProducer();
+        final Set<String> propertyNames = producer.getPropertyNames();
+
+        assertTrue(propertyNames.isEmpty());
+        producer.setProperty(PROPERTY_A, 1);
+        assertTrue(propertyNames.contains(PROPERTY_A), "Returned set must be a view of the producer's actual state");
+        assertThrows(UnsupportedOperationException.class, () -> propertyNames.remove(PROPERTY_A));
+
+        final Iterator<String> iterator = propertyNames.iterator();
+
+        iterator.next();
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            iterator.remove();
+        });
+
+        producer.setProperty(PROPERTY_B, 2);
+        producer.setProperty(PROPERTY_C, 3);
+
+        assertTrue(producer.propertyExists(PROPERTY_A));
+        assertTrue(producer.propertyExists(PROPERTY_B));
+        assertTrue(producer.propertyExists(PROPERTY_C));
+
+        producer.clearProperties();
+
+        assertTrue(propertyNames.isEmpty());
     }
 
     //----- Test for JMS Message Headers are stored --------------------------//
@@ -1337,6 +1377,35 @@ public class JmsPoolJMSProducerTest extends JmsPoolTestSupport {
             producer.send(context.createTemporaryQueue(), "test");
             fail("Should have thrown an exception");
         } catch (IllegalStateRuntimeException isre) {}
+    }
+
+    @Test
+    public void testUseAfterContextClosedFails() throws Exception {
+        final JMSProducer producer = context.createProducer();
+        final Queue queue = context.createQueue(getTestName());
+        final TextMessage message = context.createTextMessage("hello");
+        final AtomicInteger messageCount = new AtomicInteger();
+
+        final MockJMSConnection connection = (MockJMSConnection) context.getConnection();
+        connection.addConnectionListener(new MockJMSDefaultConnectionListener() {
+
+            @Override
+            public void onMessageSend(MockJMSSession session, MockJMSMessageProducer producer, Message message) throws JMSException {
+                messageCount.incrementAndGet();
+            }
+        });
+
+
+        producer.send(queue, "hello world");
+
+        context.close();
+
+        assertEquals(DeliveryMode.PERSISTENT, producer.getDeliveryMode());
+
+        assertThrows(IllegalStateRuntimeException.class, () -> producer.send(queue, "message"));
+        assertThrows(IllegalStateRuntimeException.class, () -> producer.send(queue, message));
+
+        assertEquals(1, messageCount.get());
     }
 
     //----- Internal Support -------------------------------------------------//

@@ -21,10 +21,12 @@ import static org.messaginghub.pooled.jms.util.JMSMessagePropertySupport.checkVa
 import static org.messaginghub.pooled.jms.util.JMSMessagePropertySupport.convertPropertyTo;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
 
 import jakarta.jms.BytesMessage;
 import jakarta.jms.CompletionListener;
@@ -39,8 +41,6 @@ import jakarta.jms.MessageFormatException;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.ObjectMessage;
 import jakarta.jms.TextMessage;
-
-import org.messaginghub.pooled.jms.util.JMSExceptionSupport;
 
 /**
  * JMSProducer implementation back by a pooled Connection.
@@ -194,7 +194,7 @@ public class JmsPoolJMSProducer implements JMSProducer {
 
     @Override
     public Set<String> getPropertyNames() {
-        return new HashSet<String>(messageProperties.keySet());
+        return Collections.unmodifiableSet(messageProperties.keySet());
     }
 
     @Override
