@@ -117,7 +117,11 @@ public final class PooledSessionHolder {
                     }
                 } catch (IllegalStateException jmsISE) {
                     // Delegated producer appears to be closed so remove it from pooling.
-                    producer.getRefCount().decrementAndGet();
+                    // Only cached named producers are reference counted, the shared
+                    // anonymous producer is not (wrappers reusing it carry no count).
+                    if (!isUseAnonymousProducer() && !producer.isAnonymousProducer()) {
+                        producer.getRefCount().decrementAndGet();
+                    }
                     force = true;
                 } catch (Exception ambiguous) {
                     // Not clear that the resource is closed so we don't assume it is.
