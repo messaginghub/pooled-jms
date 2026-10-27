@@ -959,4 +959,82 @@ public class JmsPoolSessionTest extends JmsPoolTestSupport {
 
         connection.close();
     }
+
+    @Test
+    public void testCloseOfSharedAnonymousProducerAfterDelegateClosedRemotely() throws Exception {
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = session.createTemporaryQueue();
+
+        // Both wrappers share the single anonymous producer, only the first one created it
+        JmsPoolMessageProducer producer1 = (JmsPoolMessageProducer) session.createProducer(queue);
+        JmsPoolMessageProducer producer2 = (JmsPoolMessageProducer) session.createProducer(queue);
+
+        assertSame(producer1.getDelegate(), producer2.getDelegate());
+
+        // Simulate the remote side closing the producer (e.g. on failover)
+        producer1.getDelegate().close();
+
+        producer2.close();
+        producer1.close();
+
+        // The closed anonymous producer must have been evicted so a new one is created
+        JmsPoolMessageProducer producer3 = (JmsPoolMessageProducer) session.createProducer(queue);
+
+        assertNotSame(producer1.getDelegate(), producer3.getDelegate());
+
+        producer3.send(session.createMessage());
+
+        connection.close();
+    }
+
+    @Test
+    public void testCloseOfSharedAnonymousPublisherAfterDelegateClosedRemotely() throws Exception {
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+        Topic topic = session.createTemporaryTopic();
+
+        JmsPoolTopicPublisher publisher1 = (JmsPoolTopicPublisher) session.createPublisher(topic);
+        JmsPoolTopicPublisher publisher2 = (JmsPoolTopicPublisher) session.createPublisher(topic);
+
+        assertSame(publisher1.getDelegate(), publisher2.getDelegate());
+
+        publisher1.getDelegate().close();
+
+        publisher2.close();
+        publisher1.close();
+
+        JmsPoolTopicPublisher publisher3 = (JmsPoolTopicPublisher) session.createPublisher(topic);
+
+        assertNotSame(publisher1.getDelegate(), publisher3.getDelegate());
+
+        publisher3.publish(session.createMessage());
+
+        connection.close();
+    }
+
+    @Test
+    public void testCloseOfSharedAnonymousSenderAfterDelegateClosedRemotely() throws Exception {
+        JmsPoolConnection connection = (JmsPoolConnection) cf.createConnection();
+        QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = session.createTemporaryQueue();
+
+        JmsPoolQueueSender sender1 = (JmsPoolQueueSender) session.createSender(queue);
+        JmsPoolQueueSender sender2 = (JmsPoolQueueSender) session.createSender(queue);
+
+        assertSame(sender1.getDelegate(), sender2.getDelegate());
+
+        sender1.getDelegate().close();
+
+        sender2.close();
+        sender1.close();
+
+        JmsPoolQueueSender sender3 = (JmsPoolQueueSender) session.createSender(queue);
+
+        assertNotSame(sender1.getDelegate(), sender3.getDelegate());
+
+        sender3.send(session.createMessage());
+
+        connection.close();
+    }
 }
